@@ -175,6 +175,7 @@ program
   .version('0.1.0')
   .argument('<url>', 'URL of container to be listed')
   .option('-r, --recursive', 'Recursively removes all files in given container') // Should this be default?
+  .option('-v, --verbose', 'Log all operations') // Should this be default?
   .action( async (url, options) => {
     let programOpts = program.opts();
     const authenticationInfo = await authenticate(programOpts)
@@ -190,58 +191,3 @@ program
 
 program
   .parse(process.argv);
-
-
-  
-
-
-/********************
- * HELPER FUNCTIONS *
- ********************/
-
-// async function authenticate(options) {
-//   let silent = options.silent || false;
-//   let loginOptions = {
-//     idp: options.identityprovider,
-//     email: options.email,
-//     password: options.password,
-//   }
-
-//   if (options.config) {
-//     try {
-//       let configObj = JSON.parse(fs.readFileSync(options.config, 'utf8'));
-//       if (configObj.email) loginOptions.email = configObj.email
-//       if (configObj.password) loginOptions.password = configObj.password
-//       if (configObj.idp) loginOptions.idp = configObj.idp
-//       if (configObj.dir) options.dir = configObj.dir
-//     } catch (error) {
-//       if (!silent) console.error('Error parsing config file. Please make sure it is valid JSON: ', error.message)
-//     }
-//   }
-
-//   let authenticated = true;
-//   if (!loginOptions.email) {
-//     if (!silent) console.error('Cannot authenticate: Please provide an email value. Continuing without authentication')
-//     authenticated = false;
-//   } else if (!loginOptions.password) {
-//     if (!silent) console.error('Cannot authenticate: Please provide a password value. Continuing without authentication')
-//     authenticated = false;
-//   } else if (!loginOptions.idp) {
-//     if (!silent) console.error('Cannot authenticate: Please provide an identity provider value. Continuing without authentication')
-//     authenticated = false;
-//   } 
-
-//   let loginInfo = {};
-//   if (authenticated) {      
-//     // Login to the session provider
-//     let session = await createAuthenticatedSession(loginOptions)
-//     // if (!silent) console.log(`Continuing as: ${session.info.webId}`)
-//     loginInfo.session = session;
-//     loginInfo.webId = session.info.webId;
-//     loginInfo.fetch = session.fetch;
-//   } else {
-//     if (!silent) console.log(`Continuing unauthenticated`)
-//     loginInfo.fetch = nodeFetch;
-//   }
-//   return loginInfo;
-// }

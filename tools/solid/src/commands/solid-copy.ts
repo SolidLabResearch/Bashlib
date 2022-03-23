@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { getFile, overwriteFile, getContentType, getContainedResourceUrlAll, getSolidDataset } from "@inrupt/solid-client"
-import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath } from '../utils/util';
+import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively } from '../utils/util';
 import Blob = require("fetch-blob")
 
 const mime = require('mime-types');
@@ -116,7 +116,7 @@ async function getLocalSourceFiles(source: srcOptions, verbose: boolean): Promis
 
 async function getRemoteSourceFiles(source: srcOptions, fetch: Function, verbose: boolean) : Promise<FileInfo[]> {
   if (source.isDir) {
-    let filePathInfos = await readRemoteDirectoryRecursively(source.path, undefined, undefined, verbose)
+    let filePathInfos = (await readRemoteDirectoryRecursively(source.path, { fetch, verbose })).files
     
     return await Promise.all(filePathInfos.map(async fileInfo => {
       const fileData = await readRemoteFile(fileInfo.absolutePath, fetch, verbose) 
@@ -218,33 +218,6 @@ function readLocalDirectoryRecursively(root_path: string, local_path: string = '
 
   for (let subdirLocalPath of subdirLocalPaths) {
     files = readLocalDirectoryRecursively(root_path, subdirLocalPath, files, verbose);
-  }
-  
-  return files;
-}
-
-async function readRemoteDirectoryRecursively(root_path: string, local_path: string = '', files: FileInfo[] = [], verbose: boolean): Promise<FileInfo[]> {
-  // Make sure directory path always ends with a /
-  if (local_path && !local_path.endsWith('/')) local_path = local_path + '/'
-  if (root_path && !root_path.endsWith('/')) root_path = root_path + '/'
-  let resourcePath = path.join(root_path + local_path)
-
-  let containerDataset = await getSolidDataset(resourcePath)
-  let containedURIs = getContainedResourceUrlAll(containerDataset);
-
-  const subdirRemoteURIs: string[] = []
-
-  for (let uri of containedURIs) {
-    let localURI = uri.slice(root_path.length)
-    if (uri.endsWith('/')) {
-      subdirRemoteURIs.push(localURI) // Push the updated local path
-    } else {
-      files.push({ absolutePath: uri, relativePath: localURI });
-    }
-  }
-
-  for (let subDirURI of subdirRemoteURIs) {
-    files =  await readRemoteDirectoryRecursively(root_path, subDirURI, files, verbose)
   }
   
   return files;
