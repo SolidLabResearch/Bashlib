@@ -12,17 +12,10 @@ export type ResourceInfo = {
 }
 
 export default async function list(url: string, options: any) {
-
   if (!isDirectory(url)) {
     console.error('List can only be called on containers. Please write containers with their trailing slash.')
   }
-  
-  console.log('listing', url, getSolidDataset, options.fetch)
-  const res = await fetch(url)
-  console.log('middle', res)
   let dataset = await getSolidDataset(url, { fetch: options.fetch })
-
-  console.log('listing dataset')
   let resourceInfos = []
   for (let containedResourceUrl of getContainedResourceUrlAll(dataset)) {
     const thing = getThing(dataset, containedResourceUrl)

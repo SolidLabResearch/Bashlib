@@ -150,8 +150,9 @@ program
         // SORT the listings
         listings.sort((a, b) => a.url.localeCompare(b.url))
 
-        console.log(`${titleFilenameString} | ${titleMTimeString} | ${titleSizeString} | ${titleModifiedString}`)
-        console.log('-'.repeat(fileNameFieldLength + mtimeFieldLength + sizeFieldLength + modifiedFieldLength + 9))
+        let output = ''
+        output += `${titleFilenameString} | ${titleMTimeString} | ${titleSizeString} | ${titleModifiedString}\n`
+        output += `${'-'.repeat(fileNameFieldLength + mtimeFieldLength + sizeFieldLength + modifiedFieldLength + 9)}\n`
         for (let listingInfo of listings) {
           const path = options.full
           ? listingInfo.url
@@ -160,8 +161,9 @@ program
           const mtime = (listingInfo.mtime ? listingInfo.mtime.toString() : '').padEnd(mtimeFieldLength)         
           const size = (listingInfo.size ? listingInfo.size.toString() : '').padEnd(sizeFieldLength)        
           const modified = (listingInfo.modified ? listingInfo.modified.toISOString() : '').padEnd(modifiedFieldLength)
-          console.log(`${pathString} | ${mtime} | ${size} | ${modified}`)
+          output += `${pathString} | ${mtime} | ${size} | ${modified}\n`
         }
+        console.log(output)
       }
       process.exit(0)
     })
@@ -191,40 +193,9 @@ program
 
 
 
-
-
-
 /********************
  * HELPER FUNCTIONS *
  ********************/
-
-async function doAuthenticatedFetch(url, options, fetch) {
-  let processedHeaders = {}
-  for (let header of options.header || []) {
-    let split = header.split(':')
-    processedHeaders[split[0].trim()] = split[1].trim()
-  }
-
-  const fetchOptions = {
-    method: options.method,
-    headers: processedHeaders,
-    body: options.body,
-    // mode: options.mode,
-    // cache: options.cache,
-    // credentials: options.credentials,
-    // redirect: options.redirect,
-    // referrerPolicy: options.referrerPolicy,
-  }
-
-  try {
-    const fetched = await fetch(url, fetchOptions)
-    const text = await fetched.text();
-    // Log to command line
-    console.log(text.trim())
-  } catch (e) {
-    throw new Erorr(`Fetch operation failed for ${url}: ${e.message}`)
-  }
-}
 
 async function authenticate(options) {
   let silent = options.silent || false;
