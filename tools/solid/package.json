@@ -1,0 +1,25 @@
+{
+  "name": "solid-tools",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/index.js",
+  "bin": {
+    "solid-tools": "bin/solid.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@inrupt/solid-client": "^1.21.0",
+    "chalk": "^4.1.2",
+    "cli-columns": "^4.0.0",
+    "commander": "^9.0.0",
+    "http-link-header": "^1.0.4",
+    "mime-types": "^2.1.35"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.22"
+  }
+}

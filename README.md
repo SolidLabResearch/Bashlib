@@ -2,20 +2,19 @@
 This repository contains a suite of functionality created for the Community Solid Server.
 These tools are developed for the Mellon project on Decentralized Scholarly Communication.
 
-## [css-login](https://github.com/MellonScholarlyCommunication/css-suite/tree/master/css-login)
-This tool enables you to login to your a Solid Pod (currently only CSS v2) from the CLI and NodeJS.
-It provides a CLI tool ```css-fetch``` that enables you to fetch authenticated resources from the command line by passing credentials as flags or using a config file.
+## [CSS](https://github.com/MellonScholarlyCommunication/css-suite/tree/master/tools/css)
+This tooling provides a set of basic commands for the Community Solid Server (v2.x.x).
+They are provided using a CLI tool `bin/css.js` that enables you to run the commands from the cli, or they can be imported in your own Node.js projects.
+
+## [Solid](https://github.com/MellonScholarlyCommunication/css-suite/tree/master/tools/solid)
+This tooling provides a set of basic commands that are reworked to work with the Solid ecosystem.
+They are provided using a CLI tool `bin/solid.js` that enables you to run the commands from the cli, or they can be imported in your own Node.js projects.
 
 
-## [css-pod-create](https://github.com/MellonScholarlyCommunication/css-suite/tree/master/css-pod-create)
-This tool enables the creation of Solid Pod instances from the command line or NodeJs (currently only tested for CSS v2).
-It provides a CLI tool ```css-pod-create``` enabling the creation of data pods from the command line.
 
-
-## [css-scp](https://github.com/MellonScholarlyCommunication/css-suite/tree/master/css-scp)
-This tool provides file copying functionality for Solid Pod instances.
-It enables you to copy resources from the local filesystem to a remote data pod, from a remote data pod to the local filesystem, or even between data pods.
-It provides a CLI tool ```css-scp``` enabling the copying of files to and form data pods from the command line.
+## [Solid-Shell](https://github.com/MellonScholarlyCommunication/css-suite/tree/master/tools/solid-shell)
+This is an in-development interactive shell environment for Solid where all created tools can be used in the interactive shell.
+Additional functionality such as `cd` for moving through the solid filesystem is also in early development.
 
 
 # Setup

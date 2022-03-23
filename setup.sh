@@ -1,16 +1,21 @@
 #!/bin/bash
 
-cd css-login;
+cd tools/
+
+cd css/
 npm install;
 npm run build;
+cd ../
 
-cd css-scp;
+cd solid/
 npm install;
 npm run build;
+cd ../
 
-cd ../css-pod-create
-npm install;
-npm run build;
+# cd solid-shell/
+# npm install;
+# npm run build;
+# cd ../
 
+# Exit packages folder
 cd ..
-
