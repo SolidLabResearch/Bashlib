@@ -48,12 +48,12 @@ export default async function authenticatedFetch(url: string, options: FetchOpti
 
     // Log to command line
     if (options.verbose) {
-      console.log(methodString)
-      console.log(requestHeaderString)
-      console.log(responseHeaderString)
+      console.error(methodString)
+      console.error(requestHeaderString)
+      console.error(responseHeaderString)
     } else if (options.onlyHeaders) {
-      console.log(requestHeaderString)
-      console.log(responseHeaderString)
+      console.error(requestHeaderString)
+      console.error(responseHeaderString)
     }
     if (!options.onlyHeaders) {
       console.log(text.trim())
