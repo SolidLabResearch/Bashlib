@@ -101,7 +101,6 @@ program
     .option('-l, --long', 'List in long format')
     .option('-v, --verbose', '')
     .action( async (url, options) => {
-      if (options.all) { console.log('The all option is still in development') }
       let programOpts = program.opts();
       const authenticationInfo = await authenticate(programOpts)
       
@@ -113,59 +112,9 @@ program
         console.error(`Could not provide listing for ${url}: ${e.message}`)
         process.exit(1)
       }
-      
 
-      if (!options.long) {
-        // Write short formatted
-        let values = listings.map((listingInfo) => {
-          let path = options.full
-          ? listingInfo.url
-          : listingInfo.localurl 
-          
-          return listingInfo.isDir
-          ? chalk.blue.bold(path)
-          : path
-        })
-        // Output to CLI
-        console.log(columns(values));
-      } else {
-        // Write long formatted
-        const fileNameLengths = listings.map(fileInfo => options.full ? fileInfo.url.length : fileInfo.localurl.length)
-        const fileNameFieldLength = Math.max(...[Math.max(...fileNameLengths), 8])
-
-        const mtimeLength = listings.map(listingInfo => listingInfo.mtime ? listingInfo.mtime.toString().length : '')
-        const mtimeFieldLength = Math.max(...[Math.max(...mtimeLength), 5])
-
-        const sizeLengths = listings.map(listingInfo => listingInfo.size ? listingInfo.size.toString().length : '')
-        const sizeFieldLength = Math.max(...[Math.max(...sizeLengths), 4])
-
-        const modifiedLengths = listings.map(listingInfo => listingInfo.modified ? listingInfo.modified.toISOString().length : '')
-        const modifiedFieldLength = Math.max(...[Math.max(...modifiedLengths), 8])
-
-
-        const titleFilenameString = "filename".padEnd(fileNameFieldLength)
-        const titleMTimeString = "mtime".padEnd(mtimeFieldLength)
-        const titleSizeString = "size".padEnd(sizeFieldLength)
-        const titleModifiedString = "modified".padEnd(modifiedFieldLength)
-
-        // SORT the listings
-        listings.sort((a, b) => a.url.localeCompare(b.url))
-
-        let output = ''
-        output += `${titleFilenameString} | ${titleMTimeString} | ${titleSizeString} | ${titleModifiedString}\n`
-        output += `${'-'.repeat(fileNameFieldLength + mtimeFieldLength + sizeFieldLength + modifiedFieldLength + 9)}\n`
-        for (let listingInfo of listings) {
-          const path = options.full
-          ? listingInfo.url
-          : listingInfo.localurl 
-          const pathString = listingInfo.isDir ? chalk.blue.bold(path.padEnd(fileNameFieldLength)) : path.padEnd(fileNameFieldLength)
-          const mtime = (listingInfo.mtime ? listingInfo.mtime.toString() : '').padEnd(mtimeFieldLength)         
-          const size = (listingInfo.size ? listingInfo.size.toString() : '').padEnd(sizeFieldLength)        
-          const modified = (listingInfo.modified ? listingInfo.modified.toISOString() : '').padEnd(modifiedFieldLength)
-          output += `${pathString} | ${mtime} | ${size} | ${modified}\n`
-        }
-        console.log(output)
-      }
+      // Output to command line
+      console.log(formatListing(listings, options))
       process.exit(0)
     })
 
@@ -191,3 +140,82 @@ program
 
 program
   .parse(process.argv);
+
+
+
+
+
+/**
+ * HELPER FUNCTIONS
+ */
+
+
+/**
+ * 
+ * @param {ResourceInfo[]} listings 
+ * @param {ListingOptions} options 
+ * @returns 
+ */
+function formatListing(listings, options) {
+  if (!options.long) {
+    // Write short formatted
+    let values = listings.map((listingInfo) => {
+      let path = options.full
+      ? listingInfo.url
+      : listingInfo.localurl 
+      
+      if (listingInfo.isDir) return chalk.blue.bold(path)
+      else if (path.endsWith('.acl')) return chalk.red(path)
+      else return path
+    })
+    return columns(values)
+    // console.log(columns(values));
+  } else {
+    // Write long formatted
+    const fileNameLengths = listings.map(fileInfo => options.full ? fileInfo.url.length : getResourceInfoLocalUrl(fileInfo).length)
+    const fileNameFieldLength = Math.max(...[Math.max(...fileNameLengths.map(x => x || 0)), 8])
+
+    const aclLengths = listings.map(fileInfo => fileInfo.acl ? (options.full ? fileInfo.acl.url.length : fileInfo.acl.localurl.length) : 0)
+    const aclFieldLength = Math.max(...[Math.max(...aclLengths.map(x => x || 0)), 3])
+
+    const mtimeLength = listings.map(listingInfo => listingInfo.mtime ? listingInfo.mtime.toString().length : 0)
+    const mtimeFieldLength = Math.max(...[Math.max(...mtimeLength), 5])
+
+    const sizeLengths = listings.map(listingInfo => listingInfo.size ? listingInfo.size.toString().length : 0)
+    const sizeFieldLength = Math.max(...[Math.max(...sizeLengths), 4])
+
+    const modifiedLengths = listings.map(listingInfo => listingInfo.modified ? listingInfo.modified.toISOString().length : 0)
+    const modifiedFieldLength = Math.max(...[Math.max(...modifiedLengths), 8])
+
+    const titleFilenameString = "filename".padEnd(fileNameFieldLength)
+    const titleMTimeString = "mtime".padEnd(mtimeFieldLength)
+    const titleSizeString = "size".padEnd(sizeFieldLength)
+    const titleModifiedString = "modified".padEnd(modifiedFieldLength)
+    const titleAclString = "acl".padEnd(aclFieldLength)
+
+    // SORT the listings
+    listings.sort((a, b) => (a.url).localeCompare(b.url))
+
+    let output = ''
+    output += `${titleFilenameString} | ${titleMTimeString} | ${titleSizeString} | ${titleModifiedString} | ${titleAclString}\n`
+    output += `${'-'.repeat(fileNameFieldLength + mtimeFieldLength + sizeFieldLength + modifiedFieldLength + aclFieldLength + 12)}\n`
+    for (let listingInfo of listings) {
+      const path = (options.full ? listingInfo.url : getResourceInfoLocalUrl(listingInfo)) || ''
+
+      let pathString = '';
+      if (listingInfo.isDir) pathString = chalk.blue.bold(path.padEnd(fileNameFieldLength))
+      else if (path.endsWith('.acl')) pathString = chalk.red(path.padEnd(fileNameFieldLength))
+      else pathString = path.padEnd(fileNameFieldLength)
+
+      const mtime = (listingInfo.mtime ? listingInfo.mtime.toString() : '').padEnd(mtimeFieldLength)         
+      const size = (listingInfo.size ? listingInfo.size.toString() : '').padEnd(sizeFieldLength)        
+      const modified = (listingInfo.modified ? listingInfo.modified.toISOString() : '').padEnd(modifiedFieldLength)
+      const aclPath = listingInfo.acl ? (options.full ? listingInfo.acl.url : getResourceInfoLocalUrl(listingInfo.acl)) : ''
+      const acl = aclPath.padEnd(aclFieldLength)
+      output += `${pathString} | ${mtime} | ${size} | ${modified} | ${acl}\n`
+    }
+    return(output)
+  }
+}
+
+function getResourceInfoLocalUrl(info) { return info.localurl ? info.localurl : info.url }

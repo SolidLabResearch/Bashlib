@@ -116,7 +116,9 @@ async function getLocalSourceFiles(source: srcOptions, verbose: boolean): Promis
 
 async function getRemoteSourceFiles(source: srcOptions, fetch: Function, verbose: boolean) : Promise<FileInfo[]> {
   if (source.isDir) {
-    let filePathInfos = (await readRemoteDirectoryRecursively(source.path, { fetch, verbose })).files
+    let dirInfo = await readRemoteDirectoryRecursively(source.path, { fetch, verbose })
+    let filePathInfos = dirInfo.files
+    console.log('dirInfo', dirInfo)
     
     return await Promise.all(filePathInfos.map(async fileInfo => {
       const fileData = await readRemoteFile(fileInfo.absolutePath, fetch, verbose) 
@@ -170,7 +172,7 @@ async function writeLocalFile(path: string, fileInfo: FileInfo, verbose: boolean
 }
 
 async function writeRemoteFile(path: string, fileInfo: FileInfo, fetch: any, verbose: boolean): Promise<any> {
-  if (verbose) console.log('Writing remote file:', path, fileInfo.contentType, fetch)
+  if (verbose) console.log('Writing remote file:', path)
 
   try {
     if (fileInfo.buffer) {

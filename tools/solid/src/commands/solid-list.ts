@@ -1,38 +1,52 @@
-import { getPodRoot, isDirectory } from "../utils/util";
-import { getContainedResourceUrlAll, getSolidDataset, getThing, getInteger, getDatetime, getUrlAll } from '@inrupt/solid-client';
+import { getPodRoot, isDirectory, checkHeadersForAclAndMetadata, getResourceInfoFromDataset, getResourceInfoFromHeaders, ResourceInfo } from '../utils/util';
+import { getContainedResourceUrlAll, getSolidDataset, getThing, getInteger, getDatetime, getUrlAll, SolidDataset } from '@inrupt/solid-client';
 
-export type ResourceInfo = {
-  url: string,
-  localurl: string,
-  isDir: boolean,
-  modified?: Date | null,
-  mtime?: number | null,
-  size?: number | null,
-  types?: string[],
+type ListingOptions = {
+  fetch: any,
+  all?: boolean,
+  full?: boolean,
+  long?: boolean,
+  verbose?: boolean,
 }
 
-export default async function list(url: string, options: any) {
+export default async function list(url: string, options: ListingOptions) {
   if (!isDirectory(url)) {
     console.error('List can only be called on containers. Please write containers with their trailing slash.')
   }
   let dataset = await getSolidDataset(url, { fetch: options.fetch })
-  let resourceInfos = []
-  for (let containedResourceUrl of getContainedResourceUrlAll(dataset)) {
-    const thing = getThing(dataset, containedResourceUrl)
-    if (thing) {
-      const modified = getDatetime(thing, 'http://purl.org/dc/terms/modified')
-      const mtime = getInteger(thing, 'http://www.w3.org/ns/posix/stat#mtime')
-      const size = getInteger(thing, 'http://www.w3.org/ns/posix/stat#size')
-      const types = getUrlAll(thing, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
-      const resourceInfo : ResourceInfo = {
-        url: containedResourceUrl,
-        localurl: containedResourceUrl.slice(url.length),
-        isDir: types.indexOf('http://www.w3.org/ns/ldp#Container') !== -1,
-        modified, mtime, size, types
-      }
-      resourceInfos.push(resourceInfo)
+  let containedResources = getContainedResourceUrlAll(dataset)
+  let resourceInfos : ResourceInfo[] = []
+
+  // Test original directory for acl file
+  if (options.all) {
+    let headerInfo = await checkHeadersForAclAndMetadata(url, options.fetch)
+    if (headerInfo.acl) {
+      let resourceInfo = await getResourceInfoFromHeaders(headerInfo.acl, url, options.fetch)
+      if(resourceInfo) resourceInfos.push(resourceInfo)
     }
-    
+  }
+  
+  for (let containedResourceUrl of containedResources) {
+    let resourceInfo = getResourceInfoFromDataset(dataset, containedResourceUrl, url);
+    if (resourceInfo && !resourceInfo.isDir && options.all) { //  We only want to show acl files in the current dir. Aka the ones of the current dir + the ones of contained files
+      const headerInfo = await checkHeadersForAclAndMetadata(containedResourceUrl, options.fetch)
+      let aclResourceInfo: ResourceInfo | undefined;
+      let metaResourceInfo: ResourceInfo | undefined;
+      if (headerInfo.meta) {
+        metaResourceInfo = await getResourceInfoFromHeaders(headerInfo.meta, url, options.fetch)
+        if(metaResourceInfo) {
+          resourceInfo.metadata = metaResourceInfo;
+        }
+      }
+      if (headerInfo.acl) {
+        aclResourceInfo = await getResourceInfoFromHeaders(headerInfo.acl, url, options.fetch)
+        if (aclResourceInfo) {
+          resourceInfo.acl = aclResourceInfo;
+          resourceInfos.push(aclResourceInfo)
+        }
+      }
+    }
+    if (resourceInfo) resourceInfos.push(resourceInfo)
   }
   return resourceInfos
 }
