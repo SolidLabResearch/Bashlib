@@ -76,17 +76,16 @@ program
   .version('0.1.0')
   .argument('<src>', 'file or directory to be copied')
   .argument('<dst>', 'destination to copy file or directory to')
+  .option('-a, --all', 'Copy .acl files in recursive directory copies')
   .option('-v, --verbose', 'Log all read and write operations')
 
   .action( async (src, dst, options) => {
     let programOpts = program.opts();
     const authenticationInfo = await authenticate(programOpts)
-
     let opts = { 
       fetch: authenticationInfo.fetch, 
-      verbose: options.verbose || false 
     }
-    await copyData(src, dst, opts)
+    await copyData(src, dst, { ...options, ...opts})
 
     process.exit(0)
   })

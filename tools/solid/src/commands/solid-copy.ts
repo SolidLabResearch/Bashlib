@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { getFile, overwriteFile, getContentType, getContainedResourceUrlAll, getSolidDataset } from "@inrupt/solid-client"
+import { getFile, overwriteFile, getContentType, getContainedResourceUrlAll, getSolidDataset, createContainerAt } from "@inrupt/solid-client"
 import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively } from '../utils/util';
 import Blob = require("fetch-blob")
 
@@ -18,12 +18,14 @@ type srcOptions = {
 
 type copyOptions = {
   fetch: Function,
-  verbose: boolean
+  verbose: boolean,
+  all: boolean,
 }
 
 export default async function copyData(src: string, dst: string, options: copyOptions) : Promise<void> {
   let fetch = options.fetch;
   let verbose = options.verbose || false;
+  let all = options.all || false;
   
   /*********************
    * Processing Source *
@@ -62,15 +64,38 @@ export default async function copyData(src: string, dst: string, options: copyOp
     process.exit(1);
   } 
 
-  let filesToTransfer : FileInfo[] = []
-  if (source.isRemote) {
-    filesToTransfer = await getRemoteSourceFiles(source, fetch, verbose)
+  let resourcesToTransfer : { files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[] };
+  if (source.isRemote) {all
+    resourcesToTransfer = await getRemoteSourceFiles(source, fetch, verbose, all)
   } else {
-    filesToTransfer = await getLocalSourceFiles(source, verbose)
+    resourcesToTransfer = await getLocalSourceFiles(source, verbose, all)
   }  
 
+  /**
+   * Copying Directories
+   */
+  for (let resourceInfo of resourcesToTransfer.directories) {
+    let relativePath = source.isDir
+    ? resourceInfo.relativePath
+    : resourceInfo.absolutePath.split('/').slice(-1)[0]; // FileName is filename.txt
 
-  for (let sourceFileInfo of filesToTransfer) {
+    if (destination.isRemote) {
+      let destinationPath = destination.isDir
+      ? combineURLs(destination.path, relativePath)
+      : destination.path;
+      await writeRemoteDirectory(destinationPath, resourceInfo, fetch, verbose)
+    } else {
+      let destinationPath = destination.isDir
+      ? path.join(destination.path, relativePath)
+      : destination.path;
+      await writeLocalDirectory(destinationPath, resourceInfo, verbose)
+    }
+  }
+
+  /**
+   * Copying Files
+   */
+  for (let sourceFileInfo of resourcesToTransfer.files) {
     let fileRelativePath = source.isDir
     ? sourceFileInfo.relativePath
     : sourceFileInfo.absolutePath.split('/').slice(-1)[0]; // FileName is filename.txt
@@ -87,6 +112,30 @@ export default async function copyData(src: string, dst: string, options: copyOp
       await writeLocalFile(destinationPath, sourceFileInfo, verbose)
     }
   }
+
+  /**
+   * opying ACL Files
+   */
+  if (options.all) {
+    resourcesToTransfer.aclfiles.sort((a, b) => a.absolutePath.split('/').length - b.absolutePath.split('/').length)
+    for (let sourceFileInfo of resourcesToTransfer.aclfiles) {
+      let fileRelativePath = source.isDir
+      ? sourceFileInfo.relativePath
+      : sourceFileInfo.absolutePath.split('/').slice(-1)[0]; // FileName is filename.txt
+  
+      if (destination.isRemote) {
+        let destinationPath = destination.isDir
+        ? combineURLs(destination.path, fileRelativePath)
+        : destination.path;
+        await writeRemoteFile(destinationPath, sourceFileInfo, fetch, verbose)
+      } else {
+        let destinationPath = destination.isDir
+        ? path.join(destination.path, fileRelativePath)
+        : destination.path;
+        await writeLocalFile(destinationPath, sourceFileInfo, verbose)
+      }
+    }
+  }
 }
 
 
@@ -94,46 +143,73 @@ export default async function copyData(src: string, dst: string, options: copyOp
  * UTILITY FUNCTIONS *
  *********************/
 
-async function getLocalSourceFiles(source: srcOptions, verbose: boolean): Promise<FileInfo[]> {
+async function getLocalSourceFiles(source: srcOptions, verbose: boolean, all: boolean): Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
   if (source.isDir) {
-    let filePathInfos = readLocalDirectoryRecursively(source.path, undefined, undefined, verbose)
-    return await Promise.all(filePathInfos.map(async fileInfo => {
+    let filePathInfos = readLocalDirectoryRecursively(source.path, undefined, {verbose, all} )
+    let files = await Promise.all(filePathInfos.files.map(async fileInfo => {
       let fileData = await readLocalFile(fileInfo.absolutePath, verbose) 
       fileInfo.buffer = fileData.buffer
       fileInfo.contentType = fileData.contentType
       return fileInfo
     }))
+    let aclfiles = await Promise.all(filePathInfos.aclfiles.map(async fileInfo => {
+      let fileData = await readLocalFile(fileInfo.absolutePath, verbose) 
+      fileInfo.buffer = fileData.buffer
+      fileInfo.contentType = fileData.contentType
+      return fileInfo
+    }))
+    return { files, aclfiles, directories: filePathInfos.directories }
   } else {
     let fileData = await readLocalFile(source.path, verbose) 
-    return [ {
+    return { files: [ {
       absolutePath: source.path,
       relativePath: '',
       contentType: fileData.contentType,
       buffer: fileData.buffer,
-    } ]
+    } ], aclfiles: [], directories: [] }
   }
 }
 
-async function getRemoteSourceFiles(source: srcOptions, fetch: Function, verbose: boolean) : Promise<FileInfo[]> {
+async function getRemoteSourceFiles(source: srcOptions, fetch: Function, verbose: boolean, all: boolean) : Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
   if (source.isDir) {
-    let dirInfo = await readRemoteDirectoryRecursively(source.path, { fetch, verbose })
-    let filePathInfos = dirInfo.files
-    console.log('dirInfo', dirInfo)
-    
-    return await Promise.all(filePathInfos.map(async fileInfo => {
-      const fileData = await readRemoteFile(fileInfo.absolutePath, fetch, verbose) 
-      fileInfo.blob = fileData.blob as any;
-      fileInfo.contentType = fileData.contentType
-      return fileInfo
-    }))
+    let discoveredResources = await readRemoteDirectoryRecursively(source.path, { fetch, verbose, all})
+
+    // Filter out files that return errors (e.g no authentication privileges)
+    let files = (await Promise.all(discoveredResources.files.map(async fileInfo => {
+      try {
+        const fileData = await readRemoteFile(fileInfo.absolutePath, fetch, verbose) 
+        fileInfo.blob = fileData.blob as any;
+        fileInfo.contentType = fileData.contentType
+        return fileInfo
+      } catch (e: any) {
+        if (verbose) console.error(`Could not read remote file: ${e.message}`)
+        return null;
+      }
+    }))).filter(f => f) as FileInfo[]
+
+    let aclfiles : FileInfo[] = []
+    if (all) {
+      aclfiles = (await Promise.all(discoveredResources.aclfiles.map(async fileInfo => {
+        try {
+          const fileData = await readRemoteFile(fileInfo.absolutePath, fetch, verbose) 
+          fileInfo.blob = fileData.blob as any;
+          fileInfo.contentType = fileData.contentType
+          return fileInfo
+        } catch (e: any) {
+          if (verbose) console.error(`Could not read remote file: ${e.message}`)
+          return null;
+        }
+      }))).filter(f => f) as FileInfo[]
+    }
+    return { files, aclfiles, directories: discoveredResources.directories }
   } else {
     let fileData = await readRemoteFile(source.path, fetch, verbose) 
-    return [ {
+    return { files: [ {
       absolutePath: source.path,
       relativePath: '',
       contentType: fileData.contentType,
       blob: fileData.blob as any,
-    } ]
+    }] , aclfiles: [], directories: [] }
   }
 
 }
@@ -141,7 +217,7 @@ async function getRemoteSourceFiles(source: srcOptions, fetch: Function, verbose
 function readLocalFile(path: string, verbose: boolean): { buffer: Buffer, contentType: string} {
   if (verbose) console.log('Reading local file:', path)
   const file = fs.readFileSync(path)
-  let contentType = mime.lookup(path)
+  let contentType = path.endsWith('.acl') || path.endsWith('.meta') ? 'text/turtle' : mime.lookup(path)
   return { buffer: file, contentType };
 }
 
@@ -153,17 +229,41 @@ async function readRemoteFile(path: string, fetch: any, verbose: boolean) : Prom
   
 }
 
-async function writeLocalFile(path: string, fileInfo: FileInfo, verbose: boolean): Promise<boolean> {
-  if (verbose) console.log('Writing local file:', path)
-  ensureDirectoryExistence(path);
+async function writeLocalDirectory(path: string, fileInfo: FileInfo, verbose: boolean): Promise<any> {
+  if (verbose) console.log('Writing local directory:', path)
+  fs.mkdirSync(path, { recursive: true })
+  return true;
+}
+
+async function writeRemoteDirectory(path: string, fileInfo: FileInfo, fetch: any, verbose: boolean): Promise<any> {
+  if (verbose) console.log('Writing remote directory:', path)
+  try {
+    await createContainerAt(path, { fetch })
+  } catch (e: any) {
+    console.error(`Could not write directory: ${path}: ${e.message}`)
+  }
+}
+
+async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, verbose: boolean): Promise<boolean> {
+  if (verbose) console.log('Writing local file:', resourcePath)
+  ensureDirectoryExistence(resourcePath);
+  let ext = path.extname(resourcePath) 
+  // Hardcode missing common extensions
+  if (resourcePath.endsWith('.acl')) ext = '.acl'
+  if (resourcePath.endsWith('.meta')) ext = '.meta'
+  if (!ext) {
+    const extension = mime.extension(fileInfo.contentType)
+    if (extension) resourcePath = `${resourcePath}.${extension}`
+  }
+
   try {
     if (fileInfo.buffer) {
-      fs.writeFileSync(path, fileInfo.buffer)
+      fs.writeFileSync(resourcePath, fileInfo.buffer)
     } else if (fileInfo.blob) {
       let buffer = Buffer.from(await fileInfo.blob.arrayBuffer())
-      fs.writeFileSync(path, buffer)
+      fs.writeFileSync(resourcePath, buffer)
     } else {
-      console.error('No content to write for:', path)
+      console.error('No content to write for:', resourcePath)
     }
     return true;
   } catch (_ignored) {
@@ -171,36 +271,60 @@ async function writeLocalFile(path: string, fileInfo: FileInfo, verbose: boolean
   }
 }
 
-async function writeRemoteFile(path: string, fileInfo: FileInfo, fetch: any, verbose: boolean): Promise<any> {
-  if (verbose) console.log('Writing remote file:', path)
-
+async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: any, verbose: boolean): Promise<any> {
+  if (verbose) console.log('Writing remote file:', resourcePath)
   try {
     if (fileInfo.buffer) {
       let blob = new Blob([toArrayBuffer(fileInfo.buffer)], {type: fileInfo.contentType})
-      await overwriteFile(
-        path,
-        blob as any, // some type inconsistency between the lib and the spec?
-        { contentType: fileInfo.contentType, fetch: fetch }
-      );
+      // await overwriteFile(
+      //   resourcePath,
+      //   blob as any, // some type inconsistency between the lib and the spec?
+      //   { contentType: fileInfo.contentType, fetch: fetch }
+      // );
+      await fetch(
+        resourcePath, 
+        {
+          method: 'PUT',
+          body: blob,
+          headers: { 
+            'Content-Type': fileInfo.contentType
+          }
+
+        }
+      )
 
     } else if (fileInfo.blob) {
-      await overwriteFile(
-        path,
-        fileInfo.blob,
-        { contentType: fileInfo.contentType, fetch: fetch }
-      );
+      // await overwriteFile(
+      //   resourcePath,
+      //   fileInfo.blob,
+      //   { contentType: fileInfo.contentType, fetch: fetch }
+      // );
+
+      await fetch(
+        resourcePath, 
+        {
+          method: 'PUT',
+          body: fileInfo.blob,
+          headers: { 
+            'Content-Type': fileInfo.contentType
+          }
+        }
+      )
     } else {
-      if (verbose) console.error('No content to write for:', path)
+      if (verbose) console.error('No content to write for:', resourcePath)
     }
     return true;
   } catch (e:any) {
-    console.error(`Could not write file: ${path}: ${e.message}`)
+    if (verbose) console.error(`Could not write file: ${resourcePath}: ${e.message}`)
     return false;
   }
 }
 
 
-function readLocalDirectoryRecursively(root_path: string, local_path: string = '', files: FileInfo[] = [], verbose: boolean): FileInfo[] {
+function readLocalDirectoryRecursively(
+  root_path: string, local_path: string = '', options: { verbose: boolean, all: boolean }, files: FileInfo[] = [], directories: FileInfo[] = [], aclfiles: FileInfo[] = [] 
+  ): { files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[] } {
+
   // Make sure directory path always ends with a /
   if (local_path && !local_path.endsWith('/')) local_path = local_path + '/'
   if (root_path && !root_path.endsWith('/')) root_path = root_path + '/'
@@ -213,16 +337,21 @@ function readLocalDirectoryRecursively(root_path: string, local_path: string = '
   dir.forEach(function(resource: any) {
     if (fs.statSync(resourcePath + "/" + resource).isDirectory()) {
       subdirLocalPaths.push(local_path + resource) // Push the updated local path
+      directories.push({ absolutePath: resourcePath + resource + '/', relativePath: local_path + resource + '/'});
+    } else if (resource.endsWith('.acl')) {
+      if (options.all) { aclfiles.push({ absolutePath: resourcePath + resource, relativePath: local_path + resource }) }
     } else {
       files.push({ absolutePath: resourcePath + resource, relativePath: local_path + resource });
     }
   })
 
   for (let subdirLocalPath of subdirLocalPaths) {
-    files = readLocalDirectoryRecursively(root_path, subdirLocalPath, files, verbose);
+    let dirInfo = readLocalDirectoryRecursively(root_path, subdirLocalPath, options, files, directories, aclfiles);
+    files = dirInfo.files
+    aclfiles = dirInfo.aclfiles
+    directories = dirInfo.directories
   }
-  
-  return files;
+  return { files, aclfiles, directories } ;
 }
 
 function combineURLs(baseURL: string, relativeURL: string) {

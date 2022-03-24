@@ -69,6 +69,7 @@ export type ReadOptions = {
   fetch: any,
   verbose?: boolean,
   listDirectories?: boolean,
+  all?: boolean,
 }
 
 export async function readRemoteDirectoryRecursively(
@@ -78,35 +79,55 @@ export async function readRemoteDirectoryRecursively(
   if (local_path && !local_path.endsWith('/')) local_path = local_path + '/'
   if (root_path && !root_path.endsWith('/')) root_path = root_path + '/'
   let resourcePath = root_path + local_path
-
-  let containerDataset = await getSolidDataset(resourcePath, { fetch: options.fetch })
-  let containedURIs = getContainedResourceUrlAll(containerDataset);
-
-  const subdirRemoteURIs: string[] = []
-  let rootResourceLinks = null
+  let containerDataset = null;
   try {
-    rootResourceLinks = await checkHeadersForAclAndMetadata(resourcePath, options.fetch);
-  } catch (_ignored) {}
-  if (rootResourceLinks && rootResourceLinks.acl) {
-    aclfiles.push({
-      absolutePath: rootResourceLinks.acl,
-      relativePath: rootResourceLinks.acl.startsWith(resourcePath) ? rootResourceLinks.acl.slice(resourcePath.length) : '',
-      directory: resourcePath,
-    })
+    containerDataset = await getSolidDataset(resourcePath, { fetch: options.fetch })
+  } catch (e: any) {
+    if (options.verbose) console.error(`Could not read directory at ${root_path}: ${e.message}`)
+
   }
-  for (let uri of containedURIs) {
-    let resourceLinks = null
+  if (!containerDataset) return {files: [], directories: [], aclfiles: []}
+
+  let containedURIs = getContainedResourceUrlAll(containerDataset);
+  const subdirRemoteURIs: string[] = []
+
+  // check for container .acl file
+  if (options.all) {
+    let containerLinks = null
     try {
-      resourceLinks = await checkHeadersForAclAndMetadata(uri, options.fetch)
+      containerLinks = await checkHeadersForAclAndMetadata(resourcePath, options.fetch);
     } catch (_ignored) {}
-    let localURI = uri.slice(root_path.length)
-    if (resourceLinks && resourceLinks.acl) {
-      aclfiles.push({ 
-        absolutePath: resourceLinks.acl, 
-        relativePath: resourceLinks.acl.startsWith(root_path) ? resourceLinks.acl.slice(root_path.length) : '',
-        directory: resourcePath,
-      });
+    if (containerLinks && containerLinks.acl) {
+      if (await checkFileExists(containerLinks.acl, options.fetch)) {
+        aclfiles.push({
+          absolutePath: containerLinks.acl,
+          relativePath: containerLinks.acl.startsWith(resourcePath) ? containerLinks.acl.slice(resourcePath.length) : '',
+          directory: resourcePath,
+        })
+      }
     }
+  }
+  
+  for (let uri of containedURIs) {
+    let localURI = uri.slice(root_path.length)
+
+    // check for file .acl file
+    if (options.all && !isDirectory(uri)) {
+      let resourceLinks = null
+      try {
+        resourceLinks = await checkHeadersForAclAndMetadata(uri, options.fetch)
+        if (resourceLinks && resourceLinks.acl) {
+          if (await checkFileExists(resourceLinks.acl, options.fetch)) {
+            aclfiles.push({ 
+              absolutePath: resourceLinks.acl, 
+              relativePath: resourceLinks.acl.startsWith(root_path) ? resourceLinks.acl.slice(root_path.length) : '',
+              directory: resourcePath,
+            });
+          }
+        }
+      } catch (_ignored) {}
+    }
+
     if (uri.endsWith('/')) {
       subdirRemoteURIs.push(localURI) // Push the updated local path
       directories.push({
@@ -197,3 +218,8 @@ export async function getResourceInfoFromHeaders(resourceUrl: string, containerU
   }
   return resourceInfo
 }
+
+async function checkFileExists(url: string, fetch: any){ 
+  const response = await fetch(url, {method: 'HEAD'})
+  return response.status && response.status >= 200 && response.status < 300
+ }
