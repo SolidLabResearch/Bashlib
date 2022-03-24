@@ -2,19 +2,29 @@ import copyData from '../../dist/commands/solid-copy';
 import { isDirectory } from '../utils/util';
 import remove from './solid-remove';
 
-export default async function move(source: string, destination: string, options: any) {
+export type MoveOptions = {
+  fetch: any
+  all: boolean,
+  verbose: boolean,
+}
+export default async function move(source: string, destination: string, options: MoveOptions) {
   let source_is_dir = isDirectory(source)
   let dest_is_dir = isDirectory(destination)
-  if (source_is_dir !== dest_is_dir) {
-    console.error('Please make sure both source and destination are either a file or a container (ending in [/])')
+  if (source_is_dir && !dest_is_dir) {
+    console.error('Cannot move directory to a file')
     return;
   } 
+
+  if (!source_is_dir && dest_is_dir) {
+    // Define the file to where the resource will be sent
+    const fileName = source.split('/').slice(-1)[0]
+    destination = destination + fileName
+  }
   
   // Copy from source to destination
   await copyData(source, destination, options)
 
   // Remove source recursively
-  options.recursive = true;
-  await remove(source, options);
+  await remove(source, { recursive: true, ...options });
 
 }

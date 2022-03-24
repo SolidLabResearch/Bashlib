@@ -84,7 +84,6 @@ export async function readRemoteDirectoryRecursively(
     containerDataset = await getSolidDataset(resourcePath, { fetch: options.fetch })
   } catch (e: any) {
     if (options.verbose) console.error(`Could not read directory at ${root_path}: ${e.message}`)
-
   }
   if (!containerDataset) return {files: [], directories: [], aclfiles: []}
 
@@ -220,6 +219,12 @@ export async function getResourceInfoFromHeaders(resourceUrl: string, containerU
 }
 
 async function checkFileExists(url: string, fetch: any){ 
-  const response = await fetch(url, {method: 'HEAD'})
-  return response.status && response.status >= 200 && response.status < 300
+  try {
+    const response = await fetch(url, {method: 'HEAD'})
+    return response.status && response.status >= 200 && response.status < 300
+  } catch (e) {
+    return false;
+  }
+  
+  
  }

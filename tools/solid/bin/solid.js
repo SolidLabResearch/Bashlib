@@ -4,6 +4,7 @@ const createAuthenticatedSession = require('../../css/').createAuthenticatedSess
 const copyData = require('../').copyData
 const list = require('../').list
 const remove = require('../').remove
+const move = require('../').move
 const authenticatedFetch = require('../').authenticatedFetch
 const authenticate = require('../dist/utils/authenticate').default
 
@@ -122,7 +123,7 @@ program
   .description('Utility to remove files or container on remote Solid pod.')
   .version('0.1.0')
   .argument('<url>', 'URL of container to be listed')
-  .option('-r, --recursive', 'Recursively removes all files in given container') // Should this be default?
+  .option('-r, --recursive', 'Recursively removes all files in given container (.acl files are removed on resource removal)') // Should this be default?
   .option('-v, --verbose', 'Log all operations') // Should this be default?
   .action( async (url, options) => {
     let programOpts = program.opts();
@@ -136,6 +137,28 @@ program
     }
     process.exit(0)
   })
+
+program
+.command('move')
+.description('Utility to move files or containers on remote Solid pod.')
+.version('0.1.0')
+.argument('<src>', 'file or directory to be moved')
+.argument('<dst>', 'destination of the move')
+.option('-a, --all', 'Move .acl files when moving directories recursively')
+.option('-v, --verbose', 'Log all operations') // Should this be default?
+.action( async (src, dst, options) => {
+  let programOpts = program.opts();
+  const authenticationInfo = await authenticate(programOpts)
+  options.fetch = authenticationInfo.fetch
+  try {
+    await move(src, dst, options)
+  } catch (e) {
+    console.error(`Could not move ${url}: ${e.message}`)
+    process.exit(1)
+  }
+  process.exit(0)
+})
+
 
 program
   .parse(process.argv);

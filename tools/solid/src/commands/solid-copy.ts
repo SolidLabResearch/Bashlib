@@ -6,6 +6,9 @@ import Blob = require("fetch-blob")
 
 const mime = require('mime-types');
 
+// TODO:: Make reads / writes happen 1 file at a time (1 pair at a time in a threaded loop maybe), instead of reading all files and then writing all files.
+// Also this can probably be made a tad shorter by removing some duplication and clearing some code
+
 export type CopyOptions = {
   fetch: Function,
 }
