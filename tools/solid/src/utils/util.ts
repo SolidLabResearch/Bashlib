@@ -1,11 +1,13 @@
-import { getSolidDataset, getContainedResourceUrlAll, getUrlAll, getThing, getThingAll, getDatetime, getInteger, SolidDataset } from '@inrupt/solid-client';
+import { getSolidDataset, getContainedResourceUrlAll, getUrl, getUrlAll, getThing, getThingAll, getDatetime, getInteger, SolidDataset } from '@inrupt/solid-client';
 const fs = require('fs')
 const path = require('path')
 var LinkHeader = require( 'http-link-header' )
+var Queue = require('tiny-queue');
+
 
 export type FileInfo = { 
   absolutePath: string, 
-  relativePath: string,
+  relativePath?: string,
   directory?: string, 
   contentType?: string,
   buffer?: Buffer,
@@ -14,7 +16,7 @@ export type FileInfo = {
 
 export type ResourceInfo = {
   url: string,
-  localurl?: string,
+  relativePath?: string,
   isDir: boolean,
   modified?: Date | null,
   mtime?: number | null,
@@ -152,6 +154,84 @@ export async function readRemoteDirectoryRecursively(
   return { files, directories, aclfiles };
 }
 
+export async function* generateRecursiveListing( baseContainerURI: string, options: ReadOptions ): AsyncGenerator<FileInfo, any, undefined> {
+  // Make sure directory path always ends with a /
+  if (!baseContainerURI.endsWith('/')) baseContainerURI += '/'
+
+  let containerQueue = new Queue();
+  containerQueue.push(baseContainerURI)
+
+  let containerURI = containerQueue.shift();
+  while(containerURI) {
+    // Process current directory
+    let containerDataset = null;
+    try {
+      containerDataset = await getSolidDataset(containerURI, { fetch: options.fetch })
+    } catch (e: any) {
+      if (options.verbose) console.error(`Could not read directory at ${containerURI}: ${e.message}`)
+      containerURI = containerQueue.shift();
+      continue;
+    }
+    
+    if (options.listDirectories) yield({
+      absolutePath: containerURI,
+      relativePath: getRelativePath(containerURI, baseContainerURI),
+    })
+
+    // Check for container .acl files
+    if (options.all) {
+      let linkInfos = await getResourceHeaderLinks(containerURI, options.fetch, baseContainerURI)
+      if (linkInfos?.acl) yield(linkInfos.acl)
+      if (linkInfos?.meta) yield(linkInfos.meta)
+    }
+
+    let containerResourceURIs = await getContainedResourceUrlAll(containerDataset)
+    containerResourceURIs.sort()
+    for (let containedResourceURI of containerResourceURIs) {
+      if (containedResourceURI.endsWith('/')) {
+        containerQueue.push(containedResourceURI)
+      } else {
+        let fileInfo : FileInfo = {
+          absolutePath: containedResourceURI,
+          relativePath: getRelativePath(containedResourceURI, baseContainerURI),
+          directory: containerURI,
+        }
+        yield(fileInfo)
+        if (fileInfo && options.all) {
+          let linkInfos = await getResourceHeaderLinks(containedResourceURI, options.fetch, baseContainerURI)
+          if (linkInfos?.acl) yield(linkInfos.acl)
+          if (linkInfos?.meta) yield(linkInfos.meta)
+        }
+      }
+    }
+    containerURI = containerQueue.shift();
+  }  
+}
+
+async function getResourceHeaderLinks(url: string, fetch: any, baseUrl?: string ) : Promise<{acl?: FileInfo, meta?: FileInfo} | undefined> {
+  let acl, meta;
+  try { 
+    let links = await checkHeadersForAclAndMetadata(url, fetch) 
+    if (links && links.acl && await checkFileExists(links.acl, fetch)) {
+      acl = {
+        absolutePath: links.acl,
+        relativePath: baseUrl && getRelativePath(links.acl, baseUrl),
+        directory: url,
+      }
+    }
+    if (links && links.meta && await checkFileExists(links.meta, fetch)) {
+      meta = {
+        absolutePath: links.meta,
+        relativePath: baseUrl && getRelativePath(links.meta, baseUrl),
+        directory: url,
+      }
+    }
+  } catch (_ignored) {}
+  if (acl || meta) {
+    return { acl, meta}
+  }
+}
+
 export async function checkHeadersForAclAndMetadata(url: any, fetch: Function, headers?: any) : Promise<{acl: string | null, meta: string | null}> {
   let foundHeaders = { acl: null, meta: null }
   // Fetch headers if not passed
@@ -173,7 +253,7 @@ export async function checkHeadersForAclAndMetadata(url: any, fetch: Function, h
   return foundHeaders;
 }
 
-export function getResourceInfoFromDataset(dataset: SolidDataset, resourceUrl: string, containerUrl?: string) {
+export function getResourceInfoFromDataset(dataset: SolidDataset, resourceUrl: string, baseUrl?: string) {
   const thing = getThing(dataset, resourceUrl)
   let resourceInfo: ResourceInfo | undefined;
   if (thing) {
@@ -181,10 +261,15 @@ export function getResourceInfoFromDataset(dataset: SolidDataset, resourceUrl: s
     const mtime = getInteger(thing, 'http://www.w3.org/ns/posix/stat#mtime')
     const size = getInteger(thing, 'http://www.w3.org/ns/posix/stat#size')
     const types = getUrlAll(thing, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
-    const acl = getUrlAll(thing, 'http://www.w3.org/ns/auth/acl#accessControl')
+    // const aclUrl = getUrl(thing, 'http://www.w3.org/ns/auth/acl#accessControl')
+    // const acl : FileInfo | undefined = aclUrl && {
+    //   url: aclUrl,
+    //   relativePath: baseUrl ? aclUrl.slice(baseUrl.length) : undefined,
+    //   isDir: false
+    // }
     resourceInfo = {
       url: resourceUrl,
-      localurl: containerUrl ? resourceUrl.slice(containerUrl.length) : undefined, 
+      relativePath: baseUrl ? resourceUrl.slice(baseUrl.length) : undefined, 
       isDir: types.indexOf('http://www.w3.org/ns/ldp#Container') !== -1,
       modified, mtime, size, types
     }
@@ -211,7 +296,7 @@ export async function getResourceInfoFromHeaders(resourceUrl: string, containerU
   const types = linkTypes.length ? linkTypes : undefined
   const resourceInfo : ResourceInfo = {
     url: resourceUrl,
-    localurl: containerUrl ? resourceUrl.slice(containerUrl.length) : undefined, 
+    relativePath: containerUrl ? resourceUrl.slice(containerUrl.length) : undefined, 
     isDir: isDirectory(resourceUrl),
     modified, types
   }
@@ -224,7 +309,10 @@ async function checkFileExists(url: string, fetch: any){
     return response.status && response.status >= 200 && response.status < 300
   } catch (e) {
     return false;
-  }
-  
-  
- }
+  } 
+}
+
+export function getRelativePath(path: string, basePath: string) {
+  if (!path.startsWith(basePath)) return undefined
+  return path.slice(basePath.length);
+}

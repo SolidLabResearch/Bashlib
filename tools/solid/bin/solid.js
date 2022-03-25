@@ -1,12 +1,14 @@
 const { program } = require('commander');
-const fs = require('fs')
-const createAuthenticatedSession = require('../../css/').createAuthenticatedSession
-const copyData = require('../').copyData
-const list = require('../').list
-const remove = require('../').remove
-const move = require('../').move
-const authenticatedFetch = require('../').authenticatedFetch
+
 const authenticate = require('../dist/utils/authenticate').default
+const commands = require('../')
+
+const copyData = commands.copyData
+const list = commands.list
+const find = commands.find
+const remove = commands.remove
+const move = commands.move
+const authenticatedFetch = commands.authenticatedFetch
 
 const columns = require('cli-columns');
 const chalk = require('chalk');
@@ -159,6 +161,33 @@ program
   process.exit(0)
 })
 
+program
+.command('find')
+.description('Utility to find resoures on your data pod.')
+.version('0.1.0')
+.argument('<url>', 'Container to start the search')
+.option('-n, --name <string>', 'Match file name with given regex')
+.option('-q, --query <string>', 'Query found file contents with given SPARQL query')
+.option('-a, --all', 'Match .acl and .meta files')
+.option('-f, --full', 'Match full filename.')
+.option('-v, --verbose', 'Log all operations') // Should this be default?
+.action( async (url, options) => {
+  let programOpts = program.opts();
+  const authenticationInfo = await authenticate(programOpts)
+  options.fetch = authenticationInfo.fetch
+  try {
+    for await (let fileInfo of await find(url, options)) {
+      const name = options.full ? fileInfo.absolutePath : (fileInfo.relativePath || fileInfo.absolutePath)
+      console.log(name)
+    }
+  } catch (e) {
+    console.error(`Could not find match in ${url}: ${e.message}`)
+    process.exit(1)
+  }
+  process.exit(0)
+})
+
+
 
 program
   .parse(process.argv);
@@ -184,7 +213,7 @@ function formatListing(listings, options) {
     let values = listings.map((listingInfo) => {
       let path = options.full
       ? listingInfo.url
-      : listingInfo.localurl 
+      : listingInfo.relativePath 
       
       if (listingInfo.isDir) return chalk.blue.bold(path)
       else if (path.endsWith('.acl')) return chalk.red(path)
@@ -194,10 +223,10 @@ function formatListing(listings, options) {
     // console.log(columns(values));
   } else {
     // Write long formatted
-    const fileNameLengths = listings.map(fileInfo => options.full ? fileInfo.url.length : getResourceInfoLocalUrl(fileInfo).length)
+    const fileNameLengths = listings.map(fileInfo => options.full ? fileInfo.url.length : getResourceInforelativePath(fileInfo).length)
     const fileNameFieldLength = Math.max(...[Math.max(...fileNameLengths.map(x => x || 0)), 8])
 
-    const aclLengths = listings.map(fileInfo => fileInfo.acl ? (options.full ? fileInfo.acl.url.length : fileInfo.acl.localurl.length) : 0)
+    const aclLengths = listings.map(fileInfo => fileInfo.acl ? (options.full ? fileInfo.acl.url.length : fileInfo.acl.relativePath.length) : 0)
     const aclFieldLength = Math.max(...[Math.max(...aclLengths.map(x => x || 0)), 3])
 
     const mtimeLength = listings.map(listingInfo => listingInfo.mtime ? listingInfo.mtime.toString().length : 0)
@@ -222,7 +251,7 @@ function formatListing(listings, options) {
     output += `${titleFilenameString} | ${titleMTimeString} | ${titleSizeString} | ${titleModifiedString} | ${titleAclString}\n`
     output += `${'-'.repeat(fileNameFieldLength + mtimeFieldLength + sizeFieldLength + modifiedFieldLength + aclFieldLength + 12)}\n`
     for (let listingInfo of listings) {
-      const path = (options.full ? listingInfo.url : getResourceInfoLocalUrl(listingInfo)) || ''
+      const path = (options.full ? listingInfo.url : getResourceInforelativePath(listingInfo)) || ''
 
       let pathString = '';
       if (listingInfo.isDir) pathString = chalk.blue.bold(path.padEnd(fileNameFieldLength))
@@ -232,7 +261,7 @@ function formatListing(listings, options) {
       const mtime = (listingInfo.mtime ? listingInfo.mtime.toString() : '').padEnd(mtimeFieldLength)         
       const size = (listingInfo.size ? listingInfo.size.toString() : '').padEnd(sizeFieldLength)        
       const modified = (listingInfo.modified ? listingInfo.modified.toISOString() : '').padEnd(modifiedFieldLength)
-      const aclPath = listingInfo.acl ? (options.full ? listingInfo.acl.url : getResourceInfoLocalUrl(listingInfo.acl)) : ''
+      const aclPath = listingInfo.acl ? (options.full ? listingInfo.acl.url : getResourceInforelativePath(listingInfo.acl)) : ''
       const acl = aclPath.padEnd(aclFieldLength)
       output += `${pathString} | ${mtime} | ${size} | ${modified} | ${acl}\n`
     }
@@ -240,4 +269,4 @@ function formatListing(listings, options) {
   }
 }
 
-function getResourceInfoLocalUrl(info) { return info.localurl ? info.localurl : info.url }
+function getResourceInforelativePath(info) { return info.relativePath ? info.relativePath : info.url }
