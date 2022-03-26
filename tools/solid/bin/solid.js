@@ -8,10 +8,13 @@ const list = commands.list
 const find = commands.find
 const remove = commands.remove
 const move = commands.move
+const query = commands.query
 const authenticatedFetch = commands.authenticatedFetch
 
 const columns = require('cli-columns');
 const chalk = require('chalk');
+const Table = require('cli-table3');
+const { writeErrorString } = require('../dist/utils/util');
 
 const arrayifyHeaders = (value, previous) => previous ? previous.concat(value) : [value]
 
@@ -166,17 +169,16 @@ program
 .description('Utility to find resoures on your data pod.')
 .version('0.1.0')
 .argument('<url>', 'Container to start the search')
-.option('-n, --name <string>', 'Match file name with given regex')
-.option('-q, --query <string>', 'Query found file contents with given SPARQL query')
+.argument('<filename>', 'Filename to match, processed as RegExp(filename)')
 .option('-a, --all', 'Match .acl and .meta files')
 .option('-f, --full', 'Match full filename.')
 .option('-v, --verbose', 'Log all operations') // Should this be default?
-.action( async (url, options) => {
+.action( async (url, filename, options) => {
   let programOpts = program.opts();
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
   try {
-    for await (let fileInfo of await find(url, options)) {
+    for await (let fileInfo of find(url, filename, options)) {
       const name = options.full ? fileInfo.absolutePath : (fileInfo.relativePath || fileInfo.absolutePath)
       console.log(name)
     }
@@ -187,6 +189,24 @@ program
   process.exit(0)
 })
 
+program
+.command('query')
+.description('Utility to query RDF resoures on your data pod.')
+.version('0.1.0')
+.argument('<url>', 'Resource to query. In case of container recursively queries all contained files.')
+.argument('<query>', 'SPARQL query string')
+.option('-a, --all', 'Match .acl and .meta files')
+.option('-f, --full', 'Return containing files using full filename.')
+.option('-v, --verbose', 'Log all operations') // Should this be default?
+.action( async (url, filename, options) => {
+  let programOpts = program.opts();
+  const authenticationInfo = await authenticate(programOpts)
+  options.fetch = authenticationInfo.fetch
+  for await (let result of query(url, filename, options)) {
+    formatBindings(result.fileName, result.bindings, {})
+  }
+  process.exit(0)
+})
 
 
 program
@@ -264,9 +284,31 @@ function formatListing(listings, options) {
       const aclPath = listingInfo.acl ? (options.full ? listingInfo.acl.url : getResourceInforelativePath(listingInfo.acl)) : ''
       const acl = aclPath.padEnd(aclFieldLength)
       output += `${pathString} | ${mtime} | ${size} | ${modified} | ${acl}\n`
-    }
+    } 
     return(output)
   }
+}
+
+
+function formatBindings(fileName, bindings, options) {
+  let table;
+  if (!bindings.length) {
+    console.log(chalk.bold(`> ${fileName}`))
+    writeErrorString(`No results for file ${fileName}`, '-')
+    return;
+  }
+  for (let binding of bindings) {
+    if (!table) {
+      table = new Table({
+        head: Array.from(bindings[0].entries.keys())
+      });
+    }
+    table.push(Array.from(binding.entries.values()).map(e => e.value || ''))
+  }
+  console.log(`
+${chalk.bold(`> ${fileName}`)}
+${table.toString()}
+  `)
 }
 
 function getResourceInforelativePath(info) { return info.relativePath ? info.relativePath : info.url }

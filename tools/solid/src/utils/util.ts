@@ -1,4 +1,5 @@
 import { getSolidDataset, getContainedResourceUrlAll, getUrl, getUrlAll, getThing, getThingAll, getDatetime, getInteger, SolidDataset } from '@inrupt/solid-client';
+import chalk from 'chalk';
 const fs = require('fs')
 const path = require('path')
 var LinkHeader = require( 'http-link-header' )
@@ -33,7 +34,6 @@ export function isRemote(resourcePath: string) {
 export function isDirectory(resourcePath: string) : boolean {
   return resourcePath.endsWith('/')
 }
-
 
 export function ensureDirectoryExistence(filePath: string) {
   var dirname = path.dirname(filePath);
@@ -315,4 +315,9 @@ async function checkFileExists(url: string, fetch: any){
 export function getRelativePath(path: string, basePath: string) {
   if (!path.startsWith(basePath)) return undefined
   return path.slice(basePath.length);
+}
+
+export function writeErrorString(explanation: string, e: unknown) {
+  console.error(`Error: ${chalk.red.bold(explanation)}: ${chalk.red((e as Error).message || e)}`)
+
 }
