@@ -9,6 +9,7 @@ const find = commands.find
 const remove = commands.remove
 const move = commands.move
 const query = commands.query
+const tree = commands.tree
 const authenticatedFetch = commands.authenticatedFetch
 
 const columns = require('cli-columns');
@@ -205,6 +206,22 @@ program
   for await (let result of query(url, filename, options)) {
     formatBindings(result.fileName, result.bindings, {})
   }
+  process.exit(0)
+})
+
+program
+.command('tree')
+.description('Utility to query RDF resoures on your data pod.')
+.version('0.1.0')
+.argument('<url>', 'Base container to construct tree over')
+.option('-a, --all', 'Match .acl and .meta files')
+.option('-f, --full', 'Return containing files using full filename.')
+.option('-v, --verbose', 'Log all operations') // Should this be default?
+.action( async (url, options) => {
+  let programOpts = program.opts();
+  const authenticationInfo = await authenticate(programOpts)
+  options.fetch = authenticationInfo.fetch
+  await tree(url, options)
   process.exit(0)
 })
 
