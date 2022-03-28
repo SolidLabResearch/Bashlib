@@ -17,6 +17,7 @@
     "@inrupt/solid-client": "^1.21.0",
     "chalk": "^4.1.2",
     "cli-columns": "^4.0.0",
+    "cli-table": "^0.3.11",
     "commander": "^9.0.0",
     "http-link-header": "^1.0.4",
     "mime-types": "^2.1.35",

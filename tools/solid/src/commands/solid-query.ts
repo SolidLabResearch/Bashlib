@@ -10,7 +10,6 @@ export type QueryOptions = {
 
 
 export default async function* query(resourceUrl: string, query: string, options: QueryOptions) {
-
   if (isDirectory(resourceUrl)) {
     for await (let fileInfo of find(resourceUrl, '.', options)) {
       try {
@@ -30,13 +29,10 @@ export default async function* query(resourceUrl: string, query: string, options
       return
     }
   }
- 
-
 }
 
 async function queryResource(query: string, sources: any, fetch: any) {
   const queryEngine = new QueryEngine();
-
   return new Promise(async (resolve, reject) => {
     try {
       const bindingsStream = await queryEngine.queryBindings(query, { sources, fetch });
