@@ -14,7 +14,6 @@ const authenticatedFetch = commands.authenticatedFetch
 
 const columns = require('cli-columns');
 const chalk = require('chalk');
-const Table = require('cli-table3');
 const { writeErrorString } = require('../dist/utils/util');
 
 const arrayifyHeaders = (value, previous) => previous ? previous.concat(value) : [value]
@@ -308,23 +307,21 @@ function formatListing(listings, options) {
 
 
 function formatBindings(fileName, bindings, options) {
-  let table;
+  let bindingsString = ""
   if (!bindings.length) {
     console.log(chalk.bold(`> ${fileName}`))
     writeErrorString(`No results for file ${fileName}`, '-')
     return;
   }
   for (let binding of bindings) {
-    if (!table) {
-      table = new Table({
-        head: Array.from(bindings[0].entries.keys())
-      });
+    for (let entry of Array.from(binding.entries.entries())) {
+      bindingsString += `${entry[0]}: ${entry[1].value}\n`
     }
-    table.push(Array.from(binding.entries.values()).map(e => e.value || ''))
+    bindingsString += `\n`
   }
   console.log(`
 ${chalk.bold(`> ${fileName}`)}
-${table.toString()}
+${bindingsString}
   `)
 }
 

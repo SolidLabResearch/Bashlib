@@ -7,6 +7,7 @@ export type FindOptions =  {
   all?: boolean,
   full?: boolean,
   verbose?: boolean,
+  listDirectories?: boolean,
 }
 
 export default async function* find (rootcontainer: string, filename: string, options: FindOptions) {

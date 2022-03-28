@@ -15,20 +15,21 @@ export default async function tree(url: string, options: TreeOptions) {
     throw new Error('Can only call tree with a container as argument.')
   }
   
-
   console.log(chalk.bold(url))
-  for await (let fileInfo of find(url, '.', options)) {
+  for await (let fileInfo of find(url, '.', { listDirectories: true, ...options } as any )) {
     const depth = getDepth(fileInfo)
+    let outputString = ''
     if (!depth) {
       if (options.verbose) writeErrorString('Could not construct a local path for file', fileInfo.absolutePath)
+    } else if (isDirectory(fileInfo.absolutePath)) {
+      for (let i = 0; i < depth-1; i++) outputString += `|${WHITESPACE}`
+      outputString += `|${chalk.blue(fileInfo.relativePath)}`
+
     } else {
-      let outputString = ''
-      for (let i = 0; i < depth-1; i++) {
-        outputString += `|${WHITESPACE}`
-      }
+      for (let i = 0; i < depth-1; i++) outputString += `|${WHITESPACE}`
       outputString += `|${DASHES} ${fileInfo.relativePath}`
-      console.log(outputString)
     }
+    console.log(outputString)
   }
 } 
 
