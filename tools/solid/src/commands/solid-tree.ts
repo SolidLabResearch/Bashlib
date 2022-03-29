@@ -23,11 +23,11 @@ export default async function tree(url: string, options: TreeOptions) {
       if (options.verbose) writeErrorString('Could not construct a local path for file', fileInfo.absolutePath)
     } else if (isDirectory(fileInfo.absolutePath)) {
       for (let i = 0; i < depth-1; i++) outputString += `|${WHITESPACE}`
-      outputString += `|${chalk.blue(fileInfo.relativePath)}`
+      outputString += `${chalk.blue.bold(getFileName(fileInfo))}`
 
     } else {
       for (let i = 0; i < depth-1; i++) outputString += `|${WHITESPACE}`
-      outputString += `|${DASHES} ${fileInfo.relativePath}`
+      outputString += `|${DASHES} ${getFileName(fileInfo)}`
     }
     console.log(outputString)
   }
@@ -36,4 +36,10 @@ export default async function tree(url: string, options: TreeOptions) {
 function getDepth(fileInfo: FileInfo) {
   if (!fileInfo.relativePath) return;
   return fileInfo.relativePath.split('/').length;
+}
+
+function getFileName(fileInfo: FileInfo) {
+  return isDirectory(fileInfo.absolutePath)
+  ? fileInfo.absolutePath.split('/').slice(-2)[0]
+  : fileInfo.absolutePath.split('/').slice(-1)[0]
 }
