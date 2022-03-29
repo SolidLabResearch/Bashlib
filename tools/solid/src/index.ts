@@ -6,6 +6,6 @@ import move from "./commands/solid-move"
 import find from "./commands/solid-find"
 import query from './commands/solid-query'
 import tree from './commands/solid-tree'
-import { listPermissions } from './commands/solid-perms'
+import { listPermissions, changePermissions, deletePermissions } from './commands/solid-perms'
 
-export { copyData, list, remove, authenticatedFetch, move, find, query, tree, listPermissions }
+export { copyData, list, remove, authenticatedFetch, move, find, query, tree, listPermissions, changePermissions, deletePermissions }

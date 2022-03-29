@@ -11,6 +11,8 @@ const move = commands.move
 const query = commands.query
 const tree = commands.tree
 const listPermissions = commands.listPermissions
+const changePermissions = commands.changePermissions
+const deletePermissions = commands.deletePermissions
 const authenticatedFetch = commands.authenticatedFetch
 
 const columns = require('cli-columns');
@@ -232,15 +234,69 @@ program
 .command('perms')
 .description('Utility to list and edit resource permissions on a data pod. Only supports operations on ACL and not ACP.')
 .version('0.1.0')
+.argument('<operation>', 'list, edit, delete')
 .argument('<url>', 'Resource URL')
+.argument('[permissions...]', `Permission operations to edit resource permissions. 
+Formatted according to <id>=[d][g][a][c][r][w]. 
+For public permissions please set <id> to "p". 
+For the current authenticated user please set <id> to "u".
+To set updated permissions as default, please add the [d] option as follows: <id>=d[g][a][c][r][w]
+To indicate the id as a group id, please add the [g] option as follows: <id>=g[d][a][c][r][w]
+`)
 .option('-p, --pretty', 'Pretty format') 
 .option('-v, --verbose', 'Log all operations') // Should this be default?
-.action( async (url, options) => {
+.action( async (operation, url, permissions, options) => {
   let programOpts = program.opts();
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
-  let listings = await listPermissions(url, options)
-  if (listings) formatPermissionListing(url, listings, options)
+
+  if (operation === 'list') {
+    let listings = await listPermissions(url, options)
+    if (listings) formatPermissionListing(url, listings, options)
+  } else if (operation === 'edit') {
+    let parsedPermissions = permissions.map(permission => {
+      const splitPerm = permission.split('=')
+      if (!splitPerm.length === 2) { 
+        writeErrorString('Incorrect permission format.', 'Please format your permissions as <id>=[d][a][c][r][w].') 
+        process.exit(0)
+      }
+      let id = splitPerm[0]
+      const permissionOptions = splitPerm[1].split('')
+      let type;
+      if (id === 'p') {
+        type = 'public'
+      } else if (id === 'u') {
+        if (!authenticationInfo.webId) { 
+          writeErrorString('Could not autmatically fill in webId of authenticated user.', 'Please make sure you have an authenticated session to auto-fill your webId');
+          process.exit(0)
+        }
+        type = 'agent'
+        id = authenticationInfo.webId
+      } else {
+        type = permissionOptions.indexOf('g') === -1 ? 'agent' : 'group'
+      }
+      const read = permissionOptions.indexOf('r') !== -1
+      const write = permissionOptions.indexOf('w') !== -1
+      const append = permissionOptions.indexOf('a') !== -1
+      const control = permissionOptions.indexOf('c') !== -1
+      const def = permissionOptions.indexOf('d') !== -1
+      return ({ type, id, read, write, append, control, default: def })
+    })
+    try {
+      await changePermissions(url, parsedPermissions, options)
+    } catch (e) {
+      console.log(e)
+      if (options.verbose) writeErrorString(`Could not update permissions for resource at ${url}`, e)
+    }
+  } else if (operation === 'delete') {
+    try {
+      await deletePermissions(url, options)
+    } catch (e) {
+      if (options.verbose) writeErrorString(`Could not delete permissions for resource at ${url}`, e)
+    }
+  } else {
+    writeErrorString('Invalid operation.')
+  }
   process.exit(0)
 })
 
@@ -465,12 +521,7 @@ function formatPermissionListing(url, permissions, options) {
     console.log(formattedString)
   } else {
 
-    let formattedString = ``
-    console.log(permissions)
-    console.log()
-    console.log()
-    console.log(formattedPerms)
-    
+    let formattedString = ``    
     formattedString += `> ${chalk.bold(url)}\n`
     if (!isEmpty(formattedPerms.agent)) {
       formattedString += `${chalk.bold('Agent')}\n`
