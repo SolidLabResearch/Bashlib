@@ -14,11 +14,11 @@ npm install;
 npm run build;
 cd ../
 
-cd solid-shell/
-echo "building /tools/solid-shell/"
-npm install;
-npm run build;
-cd ../
+# cd solid-shell/
+# echo "building /tools/solid-shell/"
+# npm install;
+# npm run build;
+# cd ../
 
 # Exit packages folder
 cd ..
