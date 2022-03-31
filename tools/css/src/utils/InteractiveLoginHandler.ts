@@ -4,15 +4,10 @@ import fs from 'fs';
 var CryptoJS = require("crypto-js");
 import getMAC from 'getmac'
 import LoginHandler from './LoginHandler';
-const EventEmitter = require('events');
 const open = require('open')
 
 const express = require('express')
 const homedir = require('os').homedir();
-
-
-
-const IDENTITY_PROVIDER_INRUPT_PROD = "https://broker.pod.inrupt.com";
 
 const SOLIDDIR = `${homedir}/.solid/`
 const CREDENTIALSFILE = `${SOLIDDIR}.solid-cli-credentials`
@@ -32,7 +27,7 @@ export default class InteractiveLoginHandler extends LoginHandler {
     this.storageHandler = new StorageHandler();
   }
 
-  async login(oidcIssuer = IDENTITY_PROVIDER_INRUPT_PROD, appName="node_solid_login_handler", port = 3434) : Promise<Session> {
+  async login(oidcIssuer: string, appName="Solid tooling", port = 3434, storageLocation: string = CREDENTIALSFILE) : Promise<Session> {
     return new Promise( async (resolve, reject) => {
       const app = express();
       const redirectUrl = `http://localhost:${port}`;
@@ -40,8 +35,8 @@ export default class InteractiveLoginHandler extends LoginHandler {
 
       let clientId: string | undefined, clientSecret: string | undefined, retrievedOidcIssuer: string | undefined, refreshToken: string | undefined, sessionId: string | undefined;
 
-      if (fs.existsSync(CREDENTIALSFILE)) {
-        storage.loadFromFile(CREDENTIALSFILE)
+      if (fs.existsSync(storageLocation)) {
+        storage.loadFromFile(storageLocation)
         let sessionInfo = await getSessionInfoFromStorage(storage, true)
         if (sessionInfo) {
           clientId = sessionInfo.clientId
@@ -127,7 +122,7 @@ export default class InteractiveLoginHandler extends LoginHandler {
           );
         }
         server.close();
-        this.storageHandler.writeToFile(CREDENTIALSFILE)
+        this.storageHandler.writeToFile(storageLocation)
         resolve(session)
       });
     })

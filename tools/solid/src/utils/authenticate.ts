@@ -9,42 +9,25 @@ export type LoginOptions = {
   password?: string,
   interactive?: boolean,
   identityprovider?: string,
-  config?: string,
-}
-
-type authenticateFuncParams = {
   idp?: string,
-  email?: string,
-  password?: string,
-  interactive?: boolean,
+  config?: string,
+  storage?: string,
 }
-
 
 export default async function authenticate(options: LoginOptions) {
-  let loginOptions : authenticateFuncParams = {};
-  if ( options.config || (options.identityprovider && options.email && options.password) ) {
-    loginOptions = {
-      idp: options.identityprovider,
-      email: options.email,
-      password: options.password,
+  let loginOptions = options;
+  loginOptions.idp = loginOptions.identityprovider;
+  if (options.config) {
+    try {
+      let configObj = JSON.parse(fs.readFileSync(options.config, 'utf8'));
+      if (configObj.email && !loginOptions.email) loginOptions.email = configObj.email;
+      if (configObj.password && !loginOptions.password) loginOptions.password = configObj.password;
+      if (configObj.idp && !loginOptions.idp) loginOptions.idp = configObj.idp;
+      if (configObj.storage && !loginOptions.storage) loginOptions.storage = configObj.storage;
+    } catch (e) {
+      throw new Error(`Error parsing config file. Please make sure it is valid JSON: ${(<Error>e).message}`);
     }
-    if (options.config) {
-      try {
-        let configObj = JSON.parse(fs.readFileSync(options.config, 'utf8'));
-        if (configObj.email) loginOptions.email = configObj.email
-        if (configObj.password) loginOptions.password = configObj.password
-        if (configObj.idp) loginOptions.idp = configObj.idp
-      } catch (e) {
-        throw new Error(`Error parsing config file. Please make sure it is valid JSON: ${(<Error>e).message}`);
-      }
-    }
-  } if (options.interactive) {
-    loginOptions = { 
-      ...loginOptions,
-      interactive: true,
-    }
-    if (options.identityprovider) loginOptions.idp = options.identityprovider
-  } 
+  }
 
   if (loginOptions.interactive) {
     if (!loginOptions.idp) console.error('Cannot authenticate: Please provide a valid identity provider value to login interactively, Continuing unauthenticated')
@@ -65,14 +48,20 @@ export default async function authenticate(options: LoginOptions) {
   }
   let loginInfo : loginInfo = {};
   if (loginOptions) {      
-    // Login to the session provider
-    let session = await createAuthenticatedSession(loginOptions)
-    // if (!silent) console.log(`Continuing as: ${session.info.webId}`)
-    loginInfo.session = session;
-    loginInfo.webId = session.info.webId;
-    loginInfo.fetch = session.fetch;
+    try {
+      // Login to the session provider
+      let session = await createAuthenticatedSession(loginOptions)
+      // if (!silent) console.log(`Continuing as: ${session.info.webId}`)
+      loginInfo.session = session;
+      loginInfo.webId = session.info.webId;
+      loginInfo.fetch = session.fetch;
+    } catch (e) {
+      if (!options.silent) writeErrorString('Login failed', e)
+      if (!options.silent) console.error(`Continuing unauthenticated`)
+      loginInfo.fetch = nodeFetch;
+    }
   } else {
-    if (!options.silent) console.log(`Continuing unauthenticated`)
+    if (!options.silent) console.error(`Continuing unauthenticated`)
     loginInfo.fetch = nodeFetch;
   }
   return loginInfo;

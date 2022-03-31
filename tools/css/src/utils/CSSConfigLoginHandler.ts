@@ -2,13 +2,9 @@ import { Session, InMemoryStorage } from '@inrupt/solid-client-authn-node';
 import LoginHandler from './LoginHandler';
 const express = require('express')
 
-const IDENTITY_PROVIDER_INRUPT_PROD = "https://broker.pod.inrupt.com";
-
-const CREDENTIALSFILE = 'credentials.json'
-
 export default class CSSConfigLoginHandler extends LoginHandler {
 
-  async login(oidcIssuer = IDENTITY_PROVIDER_INRUPT_PROD, appName="node_solid_login_handler", port = 3434) {
+  async login(oidcIssuer: string, appName="Solid tooling", port = 3434, storageLocation=undefined) {
     // console.log(`Logging in to identity provider ${idp} for application ${appName} on port ${port}`)
     return new Promise((resolve, reject) => {
       const app = express();

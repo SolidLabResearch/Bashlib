@@ -14,6 +14,7 @@ export type LoginOptions = {
   email?: string,
   password?: string,
   interactive?: boolean,
+  storage?: string,
 }
 
 export default async function createAuthenticatedSession(options: LoginOptions) {
@@ -38,7 +39,7 @@ class NodeSolidSessionProvider {
 
   async login() : Promise<Session> {
     if (!this.options.idp) throw new Error('Cannot login: no identity provider option given.')
-    let session = await this.loginHandler.login(this.options.idp) as Session;
+    let session = await this.loginHandler.login(this.options.idp, undefined, undefined, this.options.storage) as Session;
     this.session = session;
     return session;
   }

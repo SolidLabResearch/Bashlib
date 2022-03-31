@@ -19,7 +19,6 @@ const columns = require('cli-columns');
 const Table = require('cli-table');
 const chalk = require('chalk');
 const { writeErrorString } = require('../dist/utils/util');
-const { table } = require('console');
 
 const arrayifyHeaders = (value, previous) => previous ? previous.concat(value) : [value]
 
@@ -31,6 +30,14 @@ console.error = function(errorString){
   }
 };
 
+function addEnvOptions(options) {
+  const envStorage = process.env['SOLID_SUITE_SESSION_STORAGE']
+  const envConfig = process.env['SOLID_SUITE_CONFIG']
+  if (envStorage && !options.storage) options.storage = envStorage
+  if (envConfig && !options.config) options.config = envConfig
+  return options
+}
+
 program
   .name('solid')
   .description('Utility toolings for interacting with a Solid server.')
@@ -41,7 +48,8 @@ program
   .option('-p, --password <string>', 'User password. Default to <uname>')
   .option('-c, --config <string>', 'Config file containing user email, password and idp in format: {email: <email>, password: <password>, idp: <idp>}')
   .option('-i, --interactive', 'Flag to login interactively. Requires the idp value to be set as a flag or via a passed config file.')
-  .option('-s, --silent', 'Silence authentication errors')
+  .option('-s, --storage <string>', 'Local file to store session information for consequent uses')
+  .option('--silent', 'Silence authentication errors')
 
 /*********
  * FETCH *
@@ -66,7 +74,7 @@ program
   // .option('-rp, --refferer-policy <string>', 'no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url')
 
   .action( async (url, options) => {
-    let programOpts = program.opts();
+    let programOpts = addEnvOptions(program.opts() || {});
     const authenticationInfo = await authenticate(programOpts)
     options.fetch = authenticationInfo.fetch
     try {
@@ -92,7 +100,7 @@ program
   .option('-v, --verbose', 'Log all read and write operations')
 
   .action( async (src, dst, options) => {
-    let programOpts = program.opts();
+    let programOpts = addEnvOptions(program.opts() || {});
     const authenticationInfo = await authenticate(programOpts)
     let opts = { 
       fetch: authenticationInfo.fetch, 
@@ -112,7 +120,7 @@ program
     .option('-l, --long', 'List in long format')
     .option('-v, --verbose', '')
     .action( async (url, options) => {
-      let programOpts = program.opts();
+      let programOpts = addEnvOptions(program.opts() || {});
       const authenticationInfo = await authenticate(programOpts)
       
       options.fetch = authenticationInfo.fetch
@@ -137,7 +145,7 @@ program
   .option('-r, --recursive', 'Recursively removes all files in given container (.acl files are removed on resource removal)') // Should this be default?
   .option('-v, --verbose', 'Log all operations') // Should this be default?
   .action( async (url, options) => {
-    let programOpts = program.opts();
+    let programOpts = addEnvOptions(program.opts() || {});
     const authenticationInfo = await authenticate(programOpts)
     options.fetch = authenticationInfo.fetch
     try {
@@ -158,7 +166,7 @@ program
 .option('-a, --all', 'Move .acl files when moving directories recursively')
 .option('-v, --verbose', 'Log all operations') // Should this be default?
 .action( async (src, dst, options) => {
-  let programOpts = program.opts();
+  let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
   try {
@@ -180,7 +188,7 @@ program
 .option('-f, --full', 'Match full filename.')
 .option('-v, --verbose', 'Log all operations') // Should this be default?
 .action( async (url, filename, options) => {
-  let programOpts = program.opts();
+  let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
   try {
@@ -206,7 +214,7 @@ program
 .option('-f, --full', 'Return containing files using full filename.')
 .option('-v, --verbose', 'Log all operations') // Should this be default?
 .action( async (url, filename, options) => {
-  let programOpts = program.opts();
+  let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
   for await (let result of query(url, filename, options)) {
@@ -224,7 +232,7 @@ program
 .option('-f, --full', 'Return containing files using full filename.')
 .option('-v, --verbose', 'Log all operations') // Should this be default?
 .action( async (url, options) => {
-  let programOpts = program.opts();
+  let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
   await tree(url, options)
@@ -247,7 +255,7 @@ To indicate the id as a group id, please add the [g] option as follows: <id>=g[d
 .option('-p, --pretty', 'Pretty format') 
 .option('-v, --verbose', 'Log all operations') // Should this be default?
 .action( async (operation, url, permissions, options) => {
-  let programOpts = program.opts();
+  let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
 
