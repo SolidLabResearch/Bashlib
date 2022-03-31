@@ -15,7 +15,11 @@
   "dependencies": {
     "@inrupt/solid-client-authn-node": "^1.11.7",
     "commander": "^9.0.0",
+    "cookie-session": "^2.0.0",
+    "crypto-js": "^4.1.1",
     "express": "^4.17.3",
+    "getmac": "^5.20.0",
+    "open": "^8.4.0",
     "set-cookie-parser": "^2.4.8"
   },
   "devDependencies": {

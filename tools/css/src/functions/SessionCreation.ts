@@ -1,16 +1,19 @@
 import { stringify } from 'querystring';
-import LoginHandler from '../utils/LoginHandler';
 import { Session } from '@inrupt/solid-client-authn-node';
 import type { Cookie } from 'set-cookie-parser';
 import { parse, splitCookiesString } from 'set-cookie-parser';
+import LoginHandler from '../utils/LoginHandler'
+import InteractiveLoginHandler from '../utils/InteractiveLoginHandler';
+import CSSConfigLoginHandler from '../utils/CSSConfigLoginHandler';
 const fetch = require("node-fetch")
 
 const APPLICATION_X_WWW_FORM_URLENCODED = 'application/x-www-form-urlencoded';
 
 export type LoginOptions = {
-  idp: string,
-  email: string,
-  password: string,
+  idp?: string,
+  email?: string,
+  password?: string,
+  interactive?: boolean,
 }
 
 export default async function createAuthenticatedSession(options: LoginOptions) {
@@ -20,32 +23,33 @@ export default async function createAuthenticatedSession(options: LoginOptions) 
 
 class NodeSolidSessionProvider {
   options: LoginOptions
-  loginHandler: LoginHandler;
+  loginHandler: LoginHandler 
 
-  public readonly session: Session;
+  public session?: Session;
   private readonly cookies: Map<string, Cookie>;
   private cookie?: string;
 
   constructor(options: LoginOptions) {
-   this.loginHandler = new LoginHandler();
+   this.loginHandler = options.interactive ? new InteractiveLoginHandler() : new CSSConfigLoginHandler();
    this.loginHandler.on('redirect', (url: string) => this.handleRedirect(url));
    this.options = options;
-
-   this.session = new Session();
    this.cookies = new Map();
   }
 
   async login() : Promise<Session> {
-    let session = await this.loginHandler.login(this.options.idp) ;
-    return session as Session;
+    if (!this.options.idp) throw new Error('Cannot login: no identity provider option given.')
+    let session = await this.loginHandler.login(this.options.idp) as Session;
+    this.session = session;
+    return session;
   }
 
   async handleRedirect(url: string) {
-    
+    if (!this.options.email || !this.options.password || !this.options.idp) {
+      throw new Error("Cannot authenticate without full credentials. Please provide a user email, password and IDP to authenticate.")
+    }
     // Get redirect URL and extract the received cookies.
     let res = await this.fetchIdp(url)
     let nextUrl = res.headers.get('location')
-
     // Follow the extracted location to the idp page to login with new cookies
     if (!nextUrl) {
       throw new Error('Could not login. No redirect given.')
@@ -56,7 +60,6 @@ class NodeSolidSessionProvider {
     // Final ack to the auth that everything is in order
     let finalRes = await this.fetchIdp(redirect)
   }
-
 
 
   /**

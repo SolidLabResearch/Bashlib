@@ -40,6 +40,7 @@ program
   .option('-e, --email <string>', 'Email adres for the user. Default to <uname>@test.edu')
   .option('-p, --password <string>', 'User password. Default to <uname>')
   .option('-c, --config <string>', 'Config file containing user email, password and idp in format: {email: <email>, password: <password>, idp: <idp>}')
+  .option('-i, --interactive', 'Flag to login interactively. Requires the idp value to be set as a flag or via a passed config file.')
   .option('-s, --silent', 'Silence authentication errors')
 
 /*********

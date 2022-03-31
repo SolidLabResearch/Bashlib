@@ -35,6 +35,7 @@ export default async function createPods(accountData: AccountData[], options: Po
       createPod: true,
       createWebId: true
     }
+    console.log('pod_server_register_url', pod_server_register_url)
   
     
     const res = await fetch(pod_server_register_url, {
@@ -45,7 +46,7 @@ export default async function createPods(accountData: AccountData[], options: Po
   
     // See server response or error text
     let jsonResponse = await res.json()
-  
+    console.log(jsonResponse)
     if (jsonResponse.name && jsonResponse.name.includes('Error')) {
       console.error(`${jsonResponse.name} - Creating pod for ${settings.podName} failed: ${jsonResponse.message}`)
     } else {
