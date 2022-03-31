@@ -84,8 +84,8 @@ export async function readRemoteDirectoryRecursively(
   let containerDataset = null;
   try {
     containerDataset = await getSolidDataset(resourcePath, { fetch: options.fetch })
-  } catch (e: any) {
-    if (options.verbose) console.error(`Could not read directory at ${root_path}: ${e.message}`)
+  } catch (e) {
+    if (options.verbose) console.error(`Could not read directory at ${root_path}: ${(<Error>e).message}`)
   }
   if (!containerDataset) return {files: [], directories: [], aclfiles: []}
 
@@ -167,8 +167,8 @@ export async function* generateRecursiveListing( baseContainerURI: string, optio
     let containerDataset = null;
     try {
       containerDataset = await getSolidDataset(containerURI, { fetch: options.fetch })
-    } catch (e: any) {
-      if (options.verbose) console.error(`Could not read directory at ${containerURI}: ${e.message}`)
+    } catch (e) {
+      if (options.verbose) console.error(`Could not read directory at ${containerURI}: ${(<Error>e).message}`)
       containerURI = containerQueue.shift();
       continue;
     }
@@ -317,7 +317,7 @@ export function getRelativePath(path: string, basePath: string) {
   return path.slice(basePath.length);
 }
 
-export function writeErrorString(explanation: string, e: unknown) {
+export function writeErrorString(explanation: string, e: any) {
   console.error(`Error: ${chalk.red.bold(explanation)}: ${chalk.red((e as Error).message || e)}`)
 
 }

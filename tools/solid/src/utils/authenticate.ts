@@ -34,8 +34,8 @@ export default async function authenticate(options: LoginOptions) {
         if (configObj.email) loginOptions.email = configObj.email
         if (configObj.password) loginOptions.password = configObj.password
         if (configObj.idp) loginOptions.idp = configObj.idp
-      } catch (error: any) {
-        throw new Error(`Error parsing config file. Please make sure it is valid JSON: ${error.message}`);
+      } catch (e) {
+        throw new Error(`Error parsing config file. Please make sure it is valid JSON: ${(<Error>e).message}`);
       }
     }
   } if (options.interactive) {

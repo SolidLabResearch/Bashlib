@@ -1,4 +1,4 @@
-import copyData from '../../dist/commands/solid-copy';
+import copyData from './solid-copy';
 import { isDirectory } from '../utils/util';
 import remove from './solid-remove';
 

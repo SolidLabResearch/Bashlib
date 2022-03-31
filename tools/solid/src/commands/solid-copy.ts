@@ -84,12 +84,12 @@ export default async function copyData(src: string, dst: string, options: copyOp
 
     if (destination.isRemote) {
       let destinationPath = destination.isDir
-      ? combineURLs(destination.path, relativePath)
+      ? (relativePath ? combineURLs(destination.path, relativePath) : destination.path)
       : destination.path;
       await writeRemoteDirectory(destinationPath, resourceInfo, fetch, verbose)
     } else {
       let destinationPath = destination.isDir
-      ? path.join(destination.path, relativePath)
+      ? (relativePath ? path.join(destination.path, relativePath) : destination.path)
       : destination.path;
       await writeLocalDirectory(destinationPath, resourceInfo, verbose)
     }
@@ -105,12 +105,12 @@ export default async function copyData(src: string, dst: string, options: copyOp
 
     if (destination.isRemote) {
       let destinationPath = destination.isDir
-      ? combineURLs(destination.path, fileRelativePath)
+      ? (fileRelativePath ? combineURLs(destination.path, fileRelativePath) : destination.path)
       : destination.path;
       await writeRemoteFile(destinationPath, sourceFileInfo, fetch, verbose)
     } else {
       let destinationPath = destination.isDir
-      ? path.join(destination.path, fileRelativePath)
+      ? (fileRelativePath ? path.join(destination.path, fileRelativePath) : destination.path)
       : destination.path;
       await writeLocalFile(destinationPath, sourceFileInfo, verbose)
     }
@@ -128,12 +128,12 @@ export default async function copyData(src: string, dst: string, options: copyOp
   
       if (destination.isRemote) {
         let destinationPath = destination.isDir
-        ? combineURLs(destination.path, fileRelativePath)
+        ? (fileRelativePath ? combineURLs(destination.path, fileRelativePath) : destination.path)
         : destination.path;
         await writeRemoteFile(destinationPath, sourceFileInfo, fetch, verbose)
       } else {
         let destinationPath = destination.isDir
-        ? path.join(destination.path, fileRelativePath)
+        ? (fileRelativePath ? path.join(destination.path, fileRelativePath) : destination.path)
         : destination.path;
         await writeLocalFile(destinationPath, sourceFileInfo, verbose)
       }

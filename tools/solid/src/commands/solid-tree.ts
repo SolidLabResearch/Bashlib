@@ -1,4 +1,4 @@
-import { find } from '../../';
+import find from './solid-find'
 import { isDirectory, FileInfo, writeErrorString } from '../utils/util';
 import chalk from 'chalk';
 

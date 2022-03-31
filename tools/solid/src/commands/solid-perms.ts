@@ -111,8 +111,8 @@ export async function changePermissions(resourceUrl: string, operations: Permiss
       } else {
         throw new Error('No acl found in path to root. This tool requires at least a root acl to be set.2');
       }
-    } catch (e: any) {
-      throw new Error(`Could not find fallback ACL file to initialize permissions for ${resourceUrl}: ${e.message}`)
+    } catch (e) {
+      throw new Error(`Could not find fallback ACL file to initialize permissions for ${resourceUrl}: ${(<Error>e).message}`)
     }
   }
   if (!aclDataset) {
