@@ -270,7 +270,7 @@ export function getResourceInfoFromDataset(dataset: SolidDataset, resourceUrl: s
     resourceInfo = {
       url: resourceUrl,
       relativePath: baseUrl ? resourceUrl.slice(baseUrl.length) : undefined, 
-      isDir: types.indexOf('http://www.w3.org/ns/ldp#Container') !== -1,
+      isDir: types.indexOf('http://www.w3.org/ns/ldp#Container') !== -1 || types.indexOf('http://www.w3.org/ns/ldp#BasicContainer') !== -1,
       modified, mtime, size, types
     }
   }
@@ -291,7 +291,7 @@ export async function getResourceInfoFromHeaders(resourceUrl: string, containerU
       }
     }
   }
-  let last_modified_header = response.headers.get('last-modified') || response.headers.get('date') // TODO:: Is this correct???? Double check!
+  let last_modified_header = response.headers.get('last-modified')
   const modified = last_modified_header ? new Date(last_modified_header) : undefined
   const types = linkTypes.length ? linkTypes : undefined
   const resourceInfo : ResourceInfo = {
