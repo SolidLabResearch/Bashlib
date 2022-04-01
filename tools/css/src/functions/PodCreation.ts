@@ -21,7 +21,15 @@ export type PodOptions = {
  * @param {String} options.registryUrl datapod server registry API url
  */
 export default async function createPods(accountData: AccountData[], options: PodOptions) {
-  const pod_server_register_url = options.registryUrl || `${options.baseUrl}/idp/register/`
+  if (!options.baseUrl && !options.registryUrl) {
+    throw new Error('Please pass a value for one of the options: base-url, registry-url');
+  }
+  let pod_server_register_url = options.registryUrl;
+  if (!pod_server_register_url && options.baseUrl) {
+    pod_server_register_url = options.baseUrl?.endsWith('/')
+      ? `${options.baseUrl}idp/register/`
+      : `${options.baseUrl}/idp/register/`
+  }
 
   const responses = []
   

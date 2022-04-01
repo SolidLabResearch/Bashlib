@@ -15,16 +15,18 @@ program
   .option('-e, --email <string>', 'Email adres for the user. Default to <uname>@test.edu')
   .option('-c, --config <string>', 'Config file containing user email, password and idp in format: {email: <email>, password: <password>, idp: <idp>}')
   .action( async (userName, options) => {
-    if (!options.baseUrl && !options.registryUrl) {
-      console.error('Please pass a value for one of the options: base-url, registry-url')
-    }
     options.name = userName;
     let accountDataArray = [{
       name: options.name,
       email: options.email,
       password: options.password,
     }]
-    await createPods(accountDataArray, options)
+    try {
+      await createPods(accountDataArray, options)
+    } catch (e) {
+      console.error(`Could not create pod: ${e.message}`)
+    }
+    
   })
 
 program
