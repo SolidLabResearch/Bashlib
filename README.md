@@ -12,9 +12,9 @@ They are provided using a CLI tool `bin/solid.js` that enables you to run the co
 
 
 
-## [Solid-Shell](https://github.com/MellonScholarlyCommunication/css-suite/tree/master/tools/solid-shell)
+<!-- ## [Solid-Shell](https://github.com/MellonScholarlyCommunication/css-suite/tree/master/tools/solid-shell)
 This is an in-development interactive shell environment for Solid where all created tools can be used in the interactive shell.
-Additional functionality such as `cd` for moving through the solid filesystem is also in early development.
+Additional functionality such as `cd` for moving through the solid filesystem is also in early development. -->
 
 
 # Setup
