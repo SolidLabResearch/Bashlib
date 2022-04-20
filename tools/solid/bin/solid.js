@@ -164,7 +164,7 @@ program
 .argument('<src>', 'file or directory to be moved')
 .argument('<dst>', 'destination of the move')
 .option('-a, --all', 'Move .acl files when moving directories recursively')
-.option('-v, --verbose', 'Log all operations') // Should this be default?
+.option('-v, --verbose', 'Log all operations') 
 .action( async (src, dst, options) => {
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
@@ -186,7 +186,7 @@ program
 .argument('<filename>', 'Filename to match, processed as RegExp(filename)')
 .option('-a, --all', 'Match .acl and .meta files')
 .option('-f, --full', 'Match full filename.')
-.option('-v, --verbose', 'Log all operations') // Should this be default?
+.option('-v, --verbose', 'Log all operations') 
 .action( async (url, filename, options) => {
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
@@ -198,6 +198,25 @@ program
     }
   } catch (e) {
     console.error(`Could not find match in ${url}: ${e.message}`)
+    process.exit(1)
+  }
+  process.exit(0)
+})
+
+program
+.command('mkdir')
+.description('Utility to add an empty container to your pod.')
+.version('0.1.0')
+.argument('<url>', 'Container to start the search')
+.option('-v, --verbose', 'Log all operations')
+.action( async (url, options) => {
+  let programOpts = addEnvOptions(program.opts() || {});
+  const authenticationInfo = await authenticate(programOpts)
+  options.fetch = authenticationInfo.fetch
+  try {
+    await commands.makeDirectory(url, options)
+  } catch (e) {
+    console.error(`Could not create container at ${url}: ${e.message}`)
     process.exit(1)
   }
   process.exit(0)
