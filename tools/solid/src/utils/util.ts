@@ -158,10 +158,10 @@ export async function* generateRecursiveListing( baseContainerURI: string, optio
   // Make sure directory path always ends with a /
   if (!baseContainerURI.endsWith('/')) baseContainerURI += '/'
 
-  let containerQueue = new Queue();
-  containerQueue.push(baseContainerURI)
+  let containers : string[] = [];
+  containers.push(baseContainerURI)
 
-  let containerURI = containerQueue.shift();
+  let containerURI = containers.pop();
   while(containerURI) {
     // Process current directory
     let containerDataset = null;
@@ -169,7 +169,7 @@ export async function* generateRecursiveListing( baseContainerURI: string, optio
       containerDataset = await getSolidDataset(containerURI, { fetch: options.fetch })
     } catch (e) {
       if (options.verbose) console.error(`Could not read directory at ${containerURI}: ${(<Error>e).message}`)
-      containerURI = containerQueue.shift();
+      containerURI = containers.pop();
       continue;
     }
     
@@ -186,25 +186,31 @@ export async function* generateRecursiveListing( baseContainerURI: string, optio
     }
 
     let containerResourceURIs = await getContainedResourceUrlAll(containerDataset)
-    containerResourceURIs.sort()
-    for (let containedResourceURI of containerResourceURIs) {
-      if (containedResourceURI.endsWith('/')) {
-        containerQueue.push(containedResourceURI)
-      } else {
-        let fileInfo : FileInfo = {
-          absolutePath: containedResourceURI,
-          relativePath: getRelativePath(containedResourceURI, baseContainerURI),
-          directory: containerURI,
-        }
-        yield(fileInfo)
-        if (fileInfo && options.all) {
-          let linkInfos = await getResourceHeaderLinks(containedResourceURI, options.fetch, baseContainerURI)
-          if (linkInfos?.acl) yield(linkInfos.acl)
-          if (linkInfos?.meta) yield(linkInfos.meta)
-        }
+    let resourceURIs = containerResourceURIs.filter(uri => !uri.endsWith('/'));
+    let containerURIs = containerResourceURIs.filter(uri => uri.endsWith('/'));
+    resourceURIs.sort()
+    containerURIs.sort().reverse();
+    
+    for (let containedResourceURI of resourceURIs) {
+      let fileInfo : FileInfo = {
+        absolutePath: containedResourceURI,
+        relativePath: getRelativePath(containedResourceURI, baseContainerURI),
+        directory: containerURI,
+      }
+      yield(fileInfo)
+      if (fileInfo && options.all) {
+        let linkInfos = await getResourceHeaderLinks(containedResourceURI, options.fetch, baseContainerURI)
+        if (linkInfos?.acl) yield(linkInfos.acl)
+        if (linkInfos?.meta) yield(linkInfos.meta)
       }
     }
-    containerURI = containerQueue.shift();
+
+    // We add them to the array in reverse, so we pop them in the right sorted orientation!
+    for (let containedResourceURI of containerURIs) {
+      containers.push(containedResourceURI)
+    }
+
+    containerURI = containers.pop();
   }  
 }
 
