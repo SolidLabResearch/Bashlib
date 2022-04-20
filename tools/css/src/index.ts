@@ -1,5 +1,5 @@
-import createAuthenticatedSession from "./functions/SessionCreation"
+import createAuthenticatedSessionInfoCSSv2 from "./functions/SessionCreationCSSv2"
 import createPods from "./functions/PodCreation"
-import { createAuthenticatedSessionInfoCSSv4, generateCSSv4Token } from "./functions/sessionCreationCSSv4"
+import { createAuthenticatedSessionInfoCSSv4, generateCSSv4Token } from "./functions/SessionCreationCSSv4"
 
-export { createAuthenticatedSession, createPods, createAuthenticatedSessionInfoCSSv4, generateCSSv4Token }
+export { createAuthenticatedSessionInfoCSSv2, createPods, createAuthenticatedSessionInfoCSSv4, generateCSSv4Token }

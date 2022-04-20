@@ -39,6 +39,7 @@ export async function generateCSSv4Token(options: TokenAuthOptions){
     throw new Error(`Error retrieving token from server: ${token.name}`)
   }
   token.webId = options.webId;
+  token.idp = options.idp;
 
   const tokenStorageLocation = options.tokenFile || CREDENTIALSFILE;
   fs.writeFileSync(tokenStorageLocation, JSON.stringify(token, null, 2))
@@ -55,21 +56,24 @@ type SessionInfo = {
   webId?: string
 }
 
-export async function createAuthenticatedSessionInfoCSSv4(options: TokenStorageOptions) : Promise<SessionInfo>{
-  let tokenStorageLocation = options.tokenFile || CREDENTIALSFILE;
+export async function createAuthenticatedSessionInfoCSSv4(options?: TokenStorageOptions) : Promise<SessionInfo>{
+  let tokenStorageLocation = options?.tokenFile || CREDENTIALSFILE;
   if (!tokenStorageLocation) throw new Error('Could not discover existing token location.');
   let parsed = JSON.parse(fs.readFileSync(tokenStorageLocation));
   let id = parsed.id;
   let secret = parsed.secret;
   let webId = parsed.webId;
+  let idp = parsed.idp; // We stored this cheekily in the token file
   if (!id || !secret) throw new Error('Could not discover valid authentication token.')
   
   // A key pair is needed for encryption.
   // This function from `solid-client-authn` generates such a pair for you.
   const dpopKey = await generateDpopKeyPair();
 
+  if (!options) { options = { idp }}
+  else if (!options.idp) options.idp = idp;
+
   let accessToken = await requestAccessToken(id, secret, dpopKey, options);
-  console.log(accessToken, dpopKey)
   let fetch = await buildFetch(accessToken, dpopKey);
 
   return { fetch, webId }

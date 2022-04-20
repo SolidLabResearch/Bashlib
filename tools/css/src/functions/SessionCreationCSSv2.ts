@@ -18,9 +18,18 @@ export type LoginOptions = {
   storage?: string,
 }
 
-export default async function createAuthenticatedSession(options: LoginOptions) {
+type SessionInfo = {
+  fetch: (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
+  webId?: string
+}
+
+export default async function createAuthenticatedSessionInfoCSSv2(options: LoginOptions) : Promise<SessionInfo> {
   const sessionProvider = new NodeSolidSessionProvider(options);
-  return sessionProvider.login()
+  const session = await sessionProvider.login()
+  return {
+    fetch: session.fetch,
+    webId: session.info.webId
+  }
 }
 
 class NodeSolidSessionProvider {

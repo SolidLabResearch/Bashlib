@@ -25,9 +25,12 @@ currently available commands:
 All available commands are exposed as functions from this lib.
 
 ```
-include { createAuthenticatedSession, createPods, ... } from '/install/location'
+include { createAuthenticatedSessionInfoCSSv2, createPods, ... } from '/install/location'
 ```
 
 currently available functions:
 - createPods (Create new pod on the given CSS server)
-- createAuthenticatedSession (Create an authenticated session from a given configuration)
+- createAuthenticatedSessionInfoCSSv2 (Create an authenticated session from a given configuration)
+
+- generateCSSv4Token 
+- createAuthenticatedSessionInfoCSSv4 

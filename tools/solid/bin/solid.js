@@ -51,6 +51,8 @@ program
   .description('Utility toolings for interacting with a Solid server.')
   .version('0.1.0')
   .enablePositionalOptions()
+  .option('-a, --auth <string>', 'CSSv2 | CSSv4 | interactive - Authentication type, defaults to cssv4')
+  .option('-t, --tokenFile <string>', 'Location of generated token of CSSv4. Defaults to ~/.solid/.solid-cli-credentials')
   .option('-idp, --identityprovider <string>', 'URI of the IDP')
   .option('-e, --email <string>', 'Email adres for the user. Default to <uname>@test.edu')
   .option('-p, --password <string>', 'User password. Default to <uname>')
