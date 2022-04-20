@@ -12,6 +12,7 @@ export type FindOptions =  {
 
 export default async function* find (rootcontainer: string, filename: string, options: FindOptions) {
   if (!filename || !rootcontainer) return;
+  if (filename === '*') filename = '.'; // Add conversion for much used bash regex to indicate all files
   for await (let fileInfo of generateRecursiveListing(rootcontainer, options)) {
     const match = processFileNameMatching(filename, fileInfo, options)
     if (match) yield fileInfo
