@@ -1,5 +1,5 @@
 {
-  "name": "css-tools",
+  "name": "css-toolsv2",
   "version": "0.1.0",
   "description": "Tooling for the Community Solid Server",
   "main": "dist/index.js",
@@ -19,6 +19,7 @@
     "crypto-js": "^4.1.1",
     "express": "^4.17.3",
     "getmac": "^5.20.0",
+    "inquirer": "^8.2.2",
     "open": "^8.4.0",
     "set-cookie-parser": "^2.4.8"
   },

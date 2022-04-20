@@ -1,5 +1,6 @@
 const { program } = require('commander');
-const { createPods } = require('../');
+const { createPods, generateCSSv4Token } = require('../');
+var inquirer = require('inquirer');
 
 program
   .name('css')
@@ -28,6 +29,40 @@ program
     }
     
   })
+
+
+program
+.command('create-token')
+.option('-i, --idp <string>', 'BaseURI of your CSS v4 pod')
+.option('-n, --name <string>', 'Token name')
+.option('-e, --email <string>', 'User email')
+.option('-p, --password <string>', 'User password')
+.option('-w, --webId <string>', 'User webId (optional)')
+.option('-o, --out <string>', 'Token file location. Defaults to ~/.solid/.solid-cli-credentials')
+.option('-v, --verbose', 'Log actions')
+.action( async (options) => {
+
+  let questions = []
+  if (!options.name) questions.push({ type: 'input', name: 'name',  message: 'Token name'})
+  if (!options.idp) questions.push({ type: 'input', name: 'idp',  message: 'Pod baseuri'})
+  if (!options.email) questions.push({ type: 'input', name: 'email',  message: 'User email'})
+  if (!options.password) questions.push({ type: 'password', name: 'password',  message: 'User password'})
+
+  if (questions.length) {
+    questions.push({ type: 'input', name: 'webId',  message: 'User WebId'})
+    questions.push({ type: 'input', name: 'out',  message: 'Token location (default: ~/.solid/.solid-cli-credentials)'})
+    let answers = await inquirer.prompt(questions)
+    options = { ...options, ...answers }
+  }
+  
+  try {
+    let storageLocation = await generateCSSv4Token(options);
+    if(options.verbose) console.log(`Successfullly created token file at ${storageLocation}`)
+  } catch (e) {
+    throw new Error(`Could not create token: ${e.message}`)
+  }
+  
+})
 
 program
   .parse(process.argv);

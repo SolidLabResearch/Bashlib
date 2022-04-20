@@ -10,6 +10,7 @@ const fetch = require("node-fetch")
 const APPLICATION_X_WWW_FORM_URLENCODED = 'application/x-www-form-urlencoded';
 
 export type LoginOptions = {
+  version?: string,
   idp?: string,
   email?: string,
   password?: string,
@@ -125,3 +126,4 @@ class NodeSolidSessionProvider {
 //   }
 
 }
+
