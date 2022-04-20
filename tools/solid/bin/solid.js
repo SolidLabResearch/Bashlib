@@ -1,4 +1,11 @@
 const { program } = require('commander');
+const os = require("os");
+const pth = require('path');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+const child_process = require('child_process')
+var editor = process.env.EDITOR || 'vi';
+
 
 const authenticate = require('../dist/utils/authenticate').default
 const commands = require('../')
@@ -18,7 +25,8 @@ const authenticatedFetch = commands.authenticatedFetch
 const columns = require('cli-columns');
 const Table = require('cli-table');
 const chalk = require('chalk');
-const { writeErrorString } = require('../dist/utils/util');
+const { writeErrorString, getFileContentsAndInfo, isDirectory } = require('../dist/utils/util');
+const fs = require('fs');
 
 const arrayifyHeaders = (value, previous) => previous ? previous.concat(value) : [value]
 
@@ -328,6 +336,67 @@ To indicate the id as a group id, please add the [g] option as follows: <id>=g[d
   process.exit(0)
 })
 
+program
+.command('edit')
+.description('Edit a remote file using your default editor')
+.version('0.1.0')
+.argument('<url>', 'Resource URL')
+.option('-h, --header <string>', 'The request header. Multiple headers can be added separately. These follow the style of CURL. e.g. --header "Content-Type: application/json" ', arrayifyHeaders)
+.option('-e, --editor <path_to_editor_executable>', 'Use custom editor') 
+.option('-w, --wait', 'Wait for user confirmation of file update before continuing') 
+.option('-v, --verbose', 'Log all operations') // Should this be default?
+.action( async (url, options) => {
+  let programOpts = addEnvOptions(program.opts() || {});
+  const authenticationInfo = await authenticate(programOpts)
+  options.fetch = authenticationInfo.fetch;
+  if (isDirectory(url)) {
+    console.error('Cannot edit containers, only single files.')
+    process.exit(1);
+  }
+
+  const tmpDir = os.tmpdir()
+  const fileName = url.split('/').slice(-1)[0]
+  const tmpPath = pth.join(tmpDir, '.solid', fileName)
+  let copiedFileLocalUrl;
+  try {
+    let copiedData = await copyData(url, tmpPath, options);
+    let copiedFileContentType = copiedData.source.files[0].contentType;
+    let copiedFileUrl = copiedData.source.files[0].absolutePath;
+    copiedFileLocalUrl = copiedData.destination.files[0].absolutePath;
+
+    await new Promise((resolve, reject) => {
+      var child = child_process.spawn(options.editor || editor, [copiedFileLocalUrl], {
+        stdio: 'inherit'
+      });
+  
+      child.on('exit', function (e, code) {
+        console.log("finished");
+        resolve();
+      });
+  
+    })
+
+    if (options.wait){    
+      console.log('Press any key to update remote file with changes');
+      await new Promise((resolve, reject) => {
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+        process.stdin.on('data', () => resolve());
+      })
+    }
+
+    await copyData(copiedFileLocalUrl, copiedFileUrl, options)
+    if (options.verbose) console.log('Remote file updated!');
+    
+
+  } catch (e) {
+    console.error(`Could not edit resource at ${url}: ${e.message}`)
+    process.exit(1)
+  } finally {
+    if(copiedFileLocalUrl) fs.unlinkSync(copiedFileLocalUrl);
+  }
+  process.exit(0)
+})
 
 
 program

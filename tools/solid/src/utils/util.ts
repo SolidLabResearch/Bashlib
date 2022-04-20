@@ -303,6 +303,30 @@ export async function getResourceInfoFromHeaders(resourceUrl: string, containerU
   return resourceInfo
 }
 
+
+export async function getFileContentsAndInfo(url: string, options: {fetch: any, header: string[]}) : Promise<{url: string, contentType: string | undefined, text: string | undefined}> {
+  let processedHeaders : any = {}
+  for (let header of options.header || []) {
+    let split = header.split(':')
+    processedHeaders[split[0].trim()] = split[1].trim()
+  }
+  
+  const fetchOptions = {
+    method: "GET",
+    headers: processedHeaders,
+  }
+
+  const fetched = await fetch(url, fetchOptions)
+  const contentType = getContentTypeHeader(fetched);
+  const text = await fetched.text()
+
+  return {url, contentType, text}
+}
+
+function getContentTypeHeader(reply: any) {
+  return reply.headers.get('Content-type')
+}
+
 async function checkFileExists(url: string, fetch: any){ 
   try {
     const response = await fetch(url, {method: 'HEAD'})

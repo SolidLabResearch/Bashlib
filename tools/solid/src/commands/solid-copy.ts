@@ -25,7 +25,10 @@ type copyOptions = {
   all: boolean,
 }
 
-export default async function copyData(src: string, dst: string, options: copyOptions) : Promise<void> {
+export default async function copyData(src: string, dst: string, options: copyOptions) : Promise<{
+  source: {files: FileInfo[]; directories: FileInfo[]; aclfiles: FileInfo[];}
+  destination: {files: FileInfo[]; directories: FileInfo[]; aclfiles: FileInfo[];}
+}> {
   let fetch = options.fetch;
   let verbose = options.verbose || false;
   let all = options.all || false;
@@ -74,6 +77,12 @@ export default async function copyData(src: string, dst: string, options: copyOp
     resourcesToTransfer = await getLocalSourceFiles(source, verbose, all)
   }  
 
+  let destinationInfo: { files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[] } = {
+    files: [],
+    directories: [],
+    aclfiles: [],
+  }
+  
   /**
    * Copying Directories
    */
@@ -82,17 +91,19 @@ export default async function copyData(src: string, dst: string, options: copyOp
     ? resourceInfo.relativePath
     : resourceInfo.absolutePath.split('/').slice(-1)[0]; // FileName is filename.txt
 
+    let destinationPath;
     if (destination.isRemote) {
-      let destinationPath = destination.isDir
+      destinationPath = destination.isDir
       ? (relativePath ? combineURLs(destination.path, relativePath) : destination.path)
       : destination.path;
       await writeRemoteDirectory(destinationPath, resourceInfo, fetch, verbose)
     } else {
-      let destinationPath = destination.isDir
+      destinationPath = destination.isDir
       ? (relativePath ? path.join(destination.path, relativePath) : destination.path)
       : destination.path;
       await writeLocalDirectory(destinationPath, resourceInfo, verbose)
     }
+    destinationInfo.directories.push({absolutePath: destinationPath})
   }
 
   /**
@@ -103,17 +114,21 @@ export default async function copyData(src: string, dst: string, options: copyOp
     ? sourceFileInfo.relativePath
     : sourceFileInfo.absolutePath.split('/').slice(-1)[0]; // FileName is filename.txt
 
+    let destinationPath;
     if (destination.isRemote) {
-      let destinationPath = destination.isDir
+      destinationPath = destination.isDir
       ? (fileRelativePath ? combineURLs(destination.path, fileRelativePath) : destination.path)
       : destination.path;
       await writeRemoteFile(destinationPath, sourceFileInfo, fetch, verbose)
     } else {
-      let destinationPath = destination.isDir
+      destinationPath = destination.isDir
       ? (fileRelativePath ? path.join(destination.path, fileRelativePath) : destination.path)
       : destination.path;
-      await writeLocalFile(destinationPath, sourceFileInfo, verbose)
+      let fileName = await writeLocalFile(destinationPath, sourceFileInfo, verbose)
+      // fileName can change in function
+      if(fileName) destinationPath = fileName
     }
+    destinationInfo.files.push({absolutePath: destinationPath || ''})
   }
 
   /**
@@ -126,19 +141,24 @@ export default async function copyData(src: string, dst: string, options: copyOp
       ? sourceFileInfo.relativePath
       : sourceFileInfo.absolutePath.split('/').slice(-1)[0]; // FileName is filename.txt
   
+      let destinationPath;
       if (destination.isRemote) {
-        let destinationPath = destination.isDir
+        destinationPath = destination.isDir
         ? (fileRelativePath ? combineURLs(destination.path, fileRelativePath) : destination.path)
         : destination.path;
         await writeRemoteFile(destinationPath, sourceFileInfo, fetch, verbose)
       } else {
-        let destinationPath = destination.isDir
+        destinationPath = destination.isDir
         ? (fileRelativePath ? path.join(destination.path, fileRelativePath) : destination.path)
         : destination.path;
-        await writeLocalFile(destinationPath, sourceFileInfo, verbose)
+        let fileName = await writeLocalFile(destinationPath, sourceFileInfo, verbose)
+        // fileName can change in function
+        if(fileName) destinationPath = fileName
       }
+      destinationInfo.files.push({absolutePath: destinationPath || ''})
     }
   }
+  return { source: resourcesToTransfer, destination: destinationInfo }
 }
 
 
@@ -247,8 +267,7 @@ async function writeRemoteDirectory(path: string, fileInfo: FileInfo, fetch: any
   }
 }
 
-async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, verbose: boolean): Promise<boolean> {
-  if (verbose) console.log('Writing local file:', resourcePath)
+async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, verbose: boolean): Promise<string | undefined> {
   ensureDirectoryExistence(resourcePath);
   let ext = path.extname(resourcePath) 
   // Hardcode missing common extensions
@@ -258,6 +277,7 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, verbose:
     const extension = mime.extension(fileInfo.contentType)
     if (extension) resourcePath = `${resourcePath}.${extension}`
   }
+  if (verbose) console.log('Writing local file:', resourcePath)
 
   try {
     if (fileInfo.buffer) {
@@ -268,9 +288,10 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, verbose:
     } else {
       console.error('No content to write for:', resourcePath)
     }
-    return true;
-  } catch (_ignored) {
-    return false;
+    return resourcePath;
+  } catch (e: any) {
+    if (verbose) console.error(`Could not save local file ${resourcePath} : ${e.message}`)
+    return undefined;
   }
 }
 
