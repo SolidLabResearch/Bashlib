@@ -1,8 +1,11 @@
 import { KeyPair } from '@inrupt/solid-client-authn-core';
 import { createDpopHeader, generateDpopKeyPair, buildAuthenticatedFetch } from '@inrupt/solid-client-authn-core';
-import authenticatedFetch from '../../../solid/dist/commands/solid-fetch';
-const fetch = require('node-fetch')
+import { exportJWK, generateKeyPair, importJWK, JWK, KeyLike } from "jose";
+
+const nodefetch = require('node-fetch')
 const fs = require('fs')
+
+const JWTALG = 'ES256';
 
 type TokenAuthOptions = {
   name: string,
@@ -15,7 +18,8 @@ type TokenAuthOptions = {
 
 const homedir = require('os').homedir();
 const SOLIDDIR = `${homedir}/.solid/`
-const CREDENTIALSFILE = `${SOLIDDIR}.solid-cli-credentials`
+const TOKENFILE = `${SOLIDDIR}.solid-cli-credentials`
+const SESSIONFILE = `${SOLIDDIR}.solid-session-info`
 
 export async function generateCSSv4Token(options: TokenAuthOptions){
   if (!options.idp.endsWith('/')) options.idp += '/';
@@ -23,7 +27,7 @@ export async function generateCSSv4Token(options: TokenAuthOptions){
   // This assumes your server is started under http://localhost:3000/.
   // This URL can also be found by checking the controls in JSON responses when interacting with the IDP API,
   // as described in the Identity Provider section.
-  const response = await fetch(`${options.idp}idp/credentials/`, {
+  const response = await nodefetch(`${options.idp}idp/credentials/`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     // The email/password fields are those of your account.
@@ -41,14 +45,16 @@ export async function generateCSSv4Token(options: TokenAuthOptions){
   token.webId = options.webId;
   token.idp = options.idp;
 
-  const tokenStorageLocation = options.tokenFile || CREDENTIALSFILE;
+  const tokenStorageLocation = options.tokenFile || TOKENFILE;
   fs.writeFileSync(tokenStorageLocation, JSON.stringify(token, null, 2))
   return tokenStorageLocation;
 }
 
 type TokenStorageOptions = {
-  idp: string,
+  idp?: string,
   tokenFile?: string,
+  sessionFile?: string,
+  verbose?: boolean,
 }
 
 type SessionInfo = {
@@ -57,7 +63,29 @@ type SessionInfo = {
 }
 
 export async function createAuthenticatedSessionInfoCSSv4(options?: TokenStorageOptions) : Promise<SessionInfo>{
-  let tokenStorageLocation = options?.tokenFile || CREDENTIALSFILE;
+  let sessionFile = options?.sessionFile || SESSIONFILE;
+
+  try {
+    if (fs.existsSync(sessionFile)) {
+      let sessionInfo = await readSessionTokenInfo(sessionFile);
+      if (sessionInfo) {
+        var tokenTimeLeftInSeconds = (sessionInfo.expirationDate.getTime() - new Date().getTime()) / 1000;
+        if (tokenTimeLeftInSeconds > 60) {
+          // Only reuse previous session tokens if we have enough time to work with, else continue to create a new access token.
+          let fetch = await buildAuthenticatedFetch(nodefetch, sessionInfo.accessToken, { dpopKey: sessionInfo.dpopKey });
+          let webId = sessionInfo.webId;
+          return { fetch, webId }
+        }
+      }
+    }
+  } catch (e:any) {
+    if (options?.verbose) console.error(`Could not load existing session ${e.message}`)
+  }
+  return createFetchWithNewAccessToken(options);
+}
+
+async function createFetchWithNewAccessToken(options?: TokenStorageOptions): Promise<SessionInfo>{
+ let tokenStorageLocation = options?.tokenFile || TOKENFILE;
   if (!tokenStorageLocation) throw new Error('Could not discover existing token location.');
   let parsed = JSON.parse(fs.readFileSync(tokenStorageLocation));
   let id = parsed.id;
@@ -73,8 +101,11 @@ export async function createAuthenticatedSessionInfoCSSv4(options?: TokenStorage
   if (!options) { options = { idp }}
   else if (!options.idp) options.idp = idp;
 
-  let accessToken = await requestAccessToken(id, secret, dpopKey, options);
-  let fetch = await buildFetch(accessToken, dpopKey);
+  let { accessToken, expirationDate } = await requestAccessToken(id, secret, dpopKey, options);
+
+  let sessionFile = options?.sessionFile || SESSIONFILE;
+  storeSessionTokenInfo(sessionFile, accessToken, dpopKey, expirationDate, webId, idp)
+  let fetch = await buildAuthenticatedFetch(nodefetch, accessToken, { dpopKey });
 
   return { fetch, webId }
 }
@@ -102,12 +133,54 @@ async function requestAccessToken(id: string, secret: string, dpopKey: KeyPair, 
   // This is the Access token that will be used to do an authenticated request to the server.
   // The JSON also contains an "expires_in" field in seconds, 
   // which you can use to know when you need request a new Access token.
-  const { access_token: accessToken } = await response.json();
-  return accessToken;
+  let json = await response.json();
+  let accessToken = json.access_token;
+  let tokenExpiratationInSeconds = json.expires_in;
+  
+  let currentDate = new Date();
+  let expirationDate = new Date(currentDate.getTime() + (1000 * tokenExpiratationInSeconds))
+  return { accessToken, expirationDate } ;
 }
 
-async function buildFetch(accessToken: string, dpopKey: KeyPair) {
-  // The DPoP key needs to be the same key as the one used in the previous step.
-  // The Access token is the one generated in the previous step.
-  return await buildAuthenticatedFetch(fetch, accessToken, { dpopKey });
+type SessionTokenInfo = {
+  accessToken: string,
+  expirationDate: Date,
+  dpopKey: KeyPair
+  webId?: string,
+  idp?: string,
+}
+
+async function storeSessionTokenInfo(sessionDataLocation: string, accessToken: Date, dpopKey: KeyPair, expirationDate: Date, webId?: string, idp?: string ) {
+  let privateKeyJWK = await exportJWK(dpopKey.privateKey)
+  let expirationDateString = expirationDate.toISOString();
+  let exportedObject = { accessToken, dpopKey : { privateKey: privateKeyJWK, publicKey: dpopKey.publicKey }, expirationDate: expirationDateString, webId, idp }
+  fs.writeFileSync(sessionDataLocation, JSON.stringify(exportedObject, null, 2))  
+ return; 
+}
+
+async function readSessionTokenInfo(sessionDataLocation: string) : Promise<SessionTokenInfo> {
+  let sessionInfo : SessionTokenInfo = JSON.parse(fs.readFileSync(sessionDataLocation))
+  sessionInfo.expirationDate = new Date(sessionInfo.expirationDate);
+  sessionInfo.dpopKey = await fixKeyPairType(sessionInfo.dpopKey);
+  return sessionInfo;
+}
+
+
+async function fixKeyPairType(key: any) : Promise<KeyPair> {
+  let publicKeyJWK : JWK;
+  let privateKeyKeyLike : KeyLike;
+  try {
+    const publicKeyKeyLike = await importJWK(key.publicKey, JWTALG);
+    publicKeyJWK = await exportJWK(publicKeyKeyLike);
+    privateKeyKeyLike = await importJWK(key.privateKey, JWTALG) as KeyLike;
+  } catch (e: any) {
+    throw new Error(`Cannot restore session keys: ${e.message}`)
+  }
+  let dpopKey = {
+    privateKey: privateKeyKeyLike,
+    publicKey: publicKeyJWK
+  };
+  dpopKey.publicKey.alg = JWTALG;
+  return dpopKey;
+
 }
