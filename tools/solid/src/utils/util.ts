@@ -1,10 +1,16 @@
 import { getSolidDataset, getContainedResourceUrlAll, getUrl, getUrlAll, getThing, getThingAll, getDatetime, getInteger, SolidDataset } from '@inrupt/solid-client';
 import chalk from 'chalk';
+import { resolve } from 'path';
 const fs = require('fs')
 const path = require('path')
 var LinkHeader = require( 'http-link-header' )
 var Queue = require('tiny-queue');
 
+export type DirInfo = {
+  files: FileInfo[], 
+  directories: FileInfo[], 
+  aclfiles: FileInfo[]
+}
 
 export type FileInfo = { 
   absolutePath: string, 
@@ -76,7 +82,7 @@ export type ReadOptions = {
 
 export async function readRemoteDirectoryRecursively(
   root_path: string, options: ReadOptions, local_path: string = '', files: FileInfo[] = [], directories: FileInfo[] = [], aclfiles: FileInfo[] = []
-  ): Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
+  ): Promise<DirInfo> {
   // Make sure directory path always ends with a /
   if (local_path && !local_path.endsWith('/')) local_path = local_path + '/'
   if (root_path && !root_path.endsWith('/')) root_path = root_path + '/'
@@ -143,9 +149,18 @@ export async function readRemoteDirectoryRecursively(
       });
     }
   }
+  
+  let recursiveReads = subdirRemoteURIs.map(subDirURI => {
+    return new Promise((resolve, reject) => {
+      readRemoteDirectoryRecursively(
+        root_path, options, subDirURI, files, directories, aclfiles
+      ).then(subDirInfo => resolve(subDirInfo))
+    })
+  })
 
-  for (let subDirURI of subdirRemoteURIs) {
-    const subDirInfo = await readRemoteDirectoryRecursively(root_path, options, subDirURI, files, directories, aclfiles)
+  let subDirInfos = await Promise.all(recursiveReads) as DirInfo[];
+
+  for (let subDirInfo of subDirInfos) {
     files = subDirInfo.files;
     directories = subDirInfo.directories
     aclfiles = subDirInfo.aclfiles
