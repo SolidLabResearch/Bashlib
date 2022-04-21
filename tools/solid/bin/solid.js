@@ -514,9 +514,7 @@ ${table.toString()}
       }
       bindingsString += `\n`
     }
-    console.log(`
-  ${chalk.bold(`> ${fileName}`)}
-  ${bindingsString}`)
+    console.log(`${chalk.bold(`> ${fileName}`)}\n${bindingsString}`)
   }
 }
 
