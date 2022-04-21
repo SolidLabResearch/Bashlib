@@ -275,7 +275,7 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, verbose:
   if (resourcePath.endsWith('.meta')) ext = '.meta'
   if (!ext) {
     const extension = mime.extension(fileInfo.contentType)
-    if (extension) resourcePath = `${resourcePath}.${extension}`
+    if (extension) resourcePath = `${resourcePath}$.${extension}`
   }
   if (verbose) console.log('Writing local file:', resourcePath)
 
@@ -295,16 +295,11 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, verbose:
   }
 }
 
-async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: any, verbose: boolean): Promise<any> {
-  if (verbose) console.log('Writing remote file:', resourcePath)
+async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: any, verbose: boolean): Promise<string | undefined> {
+  resourcePath = resourcePath.split('$.')[0];
   try {
     if (fileInfo.buffer) {
       let blob = new Blob([toArrayBuffer(fileInfo.buffer)], {type: fileInfo.contentType})
-      // await overwriteFile(
-      //   resourcePath,
-      //   blob as any, // some type inconsistency between the lib and the spec?
-      //   { contentType: fileInfo.contentType, fetch: fetch }
-      // );
       await fetch(
         resourcePath, 
         {
@@ -318,12 +313,6 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
       )
 
     } else if (fileInfo.blob) {
-      // await overwriteFile(
-      //   resourcePath,
-      //   fileInfo.blob,
-      //   { contentType: fileInfo.contentType, fetch: fetch }
-      // );
-
       await fetch(
         resourcePath, 
         {
@@ -337,10 +326,10 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
     } else {
       if (verbose) console.error('No content to write for:', resourcePath)
     }
-    return true;
+    return resourcePath;
   } catch (e:any) {
     if (verbose) console.error(`Could not write file: ${resourcePath}: ${e.message}`)
-    return false;
+    return;
   }
 }
 
