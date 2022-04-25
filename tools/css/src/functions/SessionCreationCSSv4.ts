@@ -1,11 +1,10 @@
 import { KeyPair } from '@inrupt/solid-client-authn-core';
 import { createDpopHeader, generateDpopKeyPair, buildAuthenticatedFetch } from '@inrupt/solid-client-authn-core';
-import { exportJWK, generateKeyPair, importJWK, JWK, KeyLike } from "jose";
+import { getOIDCConfig, readSessionTokenInfo, storeSessionTokenInfo } from '../utils/util';
 
 const nodefetch = require('node-fetch')
 const fs = require('fs')
 
-const JWTALG = 'ES256';
 
 type TokenAuthOptions = {
   name: string,
@@ -19,7 +18,7 @@ type TokenAuthOptions = {
 const homedir = require('os').homedir();
 const SOLIDDIR = `${homedir}/.solid/`
 const TOKENFILE = `${SOLIDDIR}.solid-cli-credentials`
-const SESSIONFILE = `${SOLIDDIR}.solid-session-info`
+const SESSIONFILE = `${SOLIDDIR}.solid-session-info-cssv4`
 
 export async function generateCSSv4Token(options: TokenAuthOptions){
   if (!options.idp.endsWith('/')) options.idp += '/';
@@ -104,7 +103,7 @@ async function createFetchWithNewAccessToken(options?: TokenStorageOptions): Pro
   let { accessToken, expirationDate } = await requestAccessToken(id, secret, dpopKey, options);
 
   let sessionFile = options?.sessionFile || SESSIONFILE;
-  storeSessionTokenInfo(sessionFile, accessToken, dpopKey, expirationDate, webId, idp)
+  await storeSessionTokenInfo(sessionFile, accessToken, dpopKey, expirationDate, webId, idp)
   let fetch = await buildAuthenticatedFetch(nodefetch, accessToken, { dpopKey });
 
   return { fetch, webId }
@@ -112,13 +111,18 @@ async function createFetchWithNewAccessToken(options?: TokenStorageOptions): Pro
 
 async function requestAccessToken(id: string, secret: string, dpopKey: KeyPair, options: TokenStorageOptions) {
 
+  // TODO:: other possibility to pass idp here not only store in session obj
+  let tokenUrl = options.idp
+    ? (await getOIDCConfig(options.idp)).token_endpoint
+    : `${options.idp}.oidc/token`;
+
   // These are the ID and secret generated in the previous step.
   // Both the ID and the secret need to be form-encoded.
   const authString = `${encodeURIComponent(id)}:${encodeURIComponent(secret)}`;
   // This URL can be found by looking at the "token_endpoint" field at
   // http://localhost:3000/.well-known/openid-configuration
   // if your server is hosted at http://localhost:3000/.
-  const tokenUrl = `${options.idp}.oidc/token`;
+
   const response = await fetch(tokenUrl, {
     method: 'POST',
     headers: {
@@ -140,47 +144,4 @@ async function requestAccessToken(id: string, secret: string, dpopKey: KeyPair, 
   let currentDate = new Date();
   let expirationDate = new Date(currentDate.getTime() + (1000 * tokenExpiratationInSeconds))
   return { accessToken, expirationDate } ;
-}
-
-type SessionTokenInfo = {
-  accessToken: string,
-  expirationDate: Date,
-  dpopKey: KeyPair
-  webId?: string,
-  idp?: string,
-}
-
-async function storeSessionTokenInfo(sessionDataLocation: string, accessToken: Date, dpopKey: KeyPair, expirationDate: Date, webId?: string, idp?: string ) {
-  let privateKeyJWK = await exportJWK(dpopKey.privateKey)
-  let expirationDateString = expirationDate.toISOString();
-  let exportedObject = { accessToken, dpopKey : { privateKey: privateKeyJWK, publicKey: dpopKey.publicKey }, expirationDate: expirationDateString, webId, idp }
-  fs.writeFileSync(sessionDataLocation, JSON.stringify(exportedObject, null, 2))  
- return; 
-}
-
-async function readSessionTokenInfo(sessionDataLocation: string) : Promise<SessionTokenInfo> {
-  let sessionInfo : SessionTokenInfo = JSON.parse(fs.readFileSync(sessionDataLocation))
-  sessionInfo.expirationDate = new Date(sessionInfo.expirationDate);
-  sessionInfo.dpopKey = await fixKeyPairType(sessionInfo.dpopKey);
-  return sessionInfo;
-}
-
-
-async function fixKeyPairType(key: any) : Promise<KeyPair> {
-  let publicKeyJWK : JWK;
-  let privateKeyKeyLike : KeyLike;
-  try {
-    const publicKeyKeyLike = await importJWK(key.publicKey, JWTALG);
-    publicKeyJWK = await exportJWK(publicKeyKeyLike);
-    privateKeyKeyLike = await importJWK(key.privateKey, JWTALG) as KeyLike;
-  } catch (e: any) {
-    throw new Error(`Cannot restore session keys: ${e.message}`)
-  }
-  let dpopKey = {
-    privateKey: privateKeyKeyLike,
-    publicKey: publicKeyJWK
-  };
-  dpopKey.publicKey.alg = JWTALG;
-  return dpopKey;
-
 }

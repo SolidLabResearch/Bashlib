@@ -3,7 +3,6 @@ import { Session } from '@inrupt/solid-client-authn-node';
 import type { Cookie } from 'set-cookie-parser';
 import { parse, splitCookiesString } from 'set-cookie-parser';
 import LoginHandler from '../utils/LoginHandler'
-import InteractiveLoginHandler from '../utils/InteractiveLoginHandler';
 import CSSConfigLoginHandler from '../utils/CSSConfigLoginHandler';
 const fetch = require("node-fetch")
 
@@ -14,7 +13,6 @@ export type LoginOptions = {
   idp?: string,
   email?: string,
   password?: string,
-  interactive?: boolean,
   storage?: string,
 }
 
@@ -41,7 +39,7 @@ class NodeSolidSessionProvider {
   private cookie?: string;
 
   constructor(options: LoginOptions) {
-   this.loginHandler = options.interactive ? new InteractiveLoginHandler() : new CSSConfigLoginHandler();
+   this.loginHandler = new CSSConfigLoginHandler();
    this.loginHandler.on('redirect', (url: string) => this.handleRedirect(url));
    this.options = options;
    this.cookies = new Map();

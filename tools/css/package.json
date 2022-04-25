@@ -16,15 +16,17 @@
     "@inrupt/solid-client-authn-node": "^1.11.7",
     "commander": "^9.0.0",
     "cookie-session": "^2.0.0",
-    "crypto-js": "^4.1.1",
     "express": "^4.17.3",
+    "form-urlencoded": "^6.0.6",
     "getmac": "^5.20.0",
     "inquirer": "^8.2.2",
     "jose": "^4.7.0",
+    "jwt-decode": "^3.1.2",
     "open": "^8.4.0",
     "set-cookie-parser": "^2.4.8"
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.1.1",
     "@types/set-cookie-parser": "^2.4.2"
   }
 }

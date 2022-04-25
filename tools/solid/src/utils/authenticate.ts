@@ -1,6 +1,7 @@
 import { writeErrorString } from './util';
 const createAuthenticatedSessionInfoCSSv2 = require('../../../css/').createAuthenticatedSessionInfoCSSv2;
 const createAuthenticatedSessionInfoCSSv4 = require('../../../css/').createAuthenticatedSessionInfoCSSv4;
+const createAuthenticatedSessionInteractive = require('../../../css/').createAuthenticatedSessionInteractive;
 const fs = require('fs')
 const nodeFetch = require('node-fetch')
 
@@ -147,7 +148,7 @@ async function authenticateInteractive(options: ILoginOptionsInteractive) : Prom
   if (loginOptions) {      
     try {
       // Login to the session provider
-      sessionInfo = await createAuthenticatedSessionInfoCSSv2({ ...loginOptions, interactive: true })
+      sessionInfo = await createAuthenticatedSessionInteractive({ ...loginOptions })
     } catch (e) {
       if (!options.silent) writeErrorString('Login failed', e)
       if (!options.silent) console.error(`Continuing unauthenticated`)
