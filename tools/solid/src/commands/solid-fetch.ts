@@ -25,40 +25,37 @@ export default async function authenticatedFetch(url: string, options: FetchOpti
     // referrerPolicy: options.referrerPolicy,
   }
   
-  try {
-    const fetched = await fetch(url, fetchOptions)
-    const text = await fetched.text();
-    let methodString = ''
-    let requestHeaderString = ''
-    let responseHeaderString = ''
+  const response = await fetch(url, fetchOptions)
+  if (!response.ok) throw new Error(`HTTP Error Response: ${response.status} ${response.statusText}`);
+  const text = await response.text();
+  let methodString = ''
+  let requestHeaderString = ''
+  let responseHeaderString = ''
 
-    // Create method string
-    methodString = `${options.method || 'GET'} ${url}\n`
-    
-    // Create request header string
-    for (let header of options.header || []) {
-      let splitHeader = header.split(':')
-      requestHeaderString += `> ${splitHeader[0]} ${splitHeader[1]}\n`
-    }
+  // Create method string
+  methodString = `${options.method || 'GET'} ${url}\n`
+  
+  // Create request header string
+  for (let header of options.header || []) {
+    let splitHeader = header.split(':')
+    requestHeaderString += `> ${splitHeader[0]} ${splitHeader[1]}\n`
+  }
 
-    // Create response header string
-    for (let header of Array.from(fetched.headers) as any[]) {
-      responseHeaderString += `< ${header[0]} ${header[1]}\n`
-    }
+  // Create response header string
+  for (let header of Array.from(response.headers) as any[]) {
+    responseHeaderString += `< ${header[0]} ${header[1]}\n`
+  }
 
-    // Log to command line
-    if (options.verbose) {
-      console.error(methodString)
-      console.error(requestHeaderString)
-      console.error(responseHeaderString)
-    } else if (options.onlyHeaders) {
-      console.error(requestHeaderString)
-      console.error(responseHeaderString)
-    }
-    if (!options.onlyHeaders) {
-      console.log(text.trim())
-    }
-  } catch (e: any) {
-    throw new Error(`Fetch operation failed for ${url}: ${e.message}`)
+  // Log to command line
+  if (options.verbose) {
+    console.error(methodString)
+    console.error(requestHeaderString)
+    console.error(responseHeaderString)
+  } else if (options.onlyHeaders) {
+    console.error(requestHeaderString)
+    console.error(responseHeaderString)
+  }
+  if (!options.onlyHeaders) {
+    console.log(text.trim())
   }
 }

@@ -60,8 +60,9 @@ export async function getPodRoot(url: string, fetch: Function) : Promise<string 
   let splitUrl = url.split('/')
   for (let index = splitUrl.length-1; index > 2; --index) {
     let currentUrl = splitUrl.slice(0, index).join('/') + '/'
-    let result = await fetch(currentUrl)
-    let linkHeaders = result.headers.get('Link')
+    let res = await fetch(currentUrl)
+    if (!res.ok) throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`);
+    let linkHeaders = res.headers.get('Link')
     if (!linkHeaders) return null;
     let headers = LinkHeader.parse(linkHeaders)
     for (let header of headers.refs) {
@@ -257,10 +258,11 @@ export async function checkHeadersForAclAndMetadata(url: any, fetch: Function, h
   let foundHeaders = { acl: null, meta: null }
   // Fetch headers if not passed
   if (!headers) {
-    const response = await fetch(url, {
+    const res = await fetch(url, {
       method: "HEAD"
     })
-    let linkHeaders = response.headers.get('Link')
+    if (!res.ok) throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`);
+    let linkHeaders = res.headers.get('Link')
     if (!linkHeaders) return foundHeaders;
     headers = LinkHeader.parse(linkHeaders)
   }
@@ -299,9 +301,9 @@ export function getResourceInfoFromDataset(dataset: SolidDataset, resourceUrl: s
 }
 
 export async function getResourceInfoFromHeaders(resourceUrl: string, containerUrl: string, fetch: any) : Promise<ResourceInfo | undefined> {
-  let response = await fetch(resourceUrl, {method: "HEAD"})
-  if (!response) return;
-  let headers = response.headers;
+  let res = await fetch(resourceUrl, {method: "HEAD"})
+  if (!res.ok) throw new Error(`HTTP Error Response requesting ${resourceUrl}: ${res.status} ${res.statusText}`);
+  let headers = res.headers;
   let linkHeaders = headers.get('Link')
   let linkTypes = [];
   if (linkHeaders)  {
@@ -312,7 +314,7 @@ export async function getResourceInfoFromHeaders(resourceUrl: string, containerU
       }
     }
   }
-  let last_modified_header = response.headers.get('last-modified')
+  let last_modified_header = res.headers.get('last-modified')
   const modified = last_modified_header ? new Date(last_modified_header) : undefined
   const types = linkTypes.length ? linkTypes : undefined
   const resourceInfo : ResourceInfo = {
@@ -337,9 +339,10 @@ export async function getFileContentsAndInfo(url: string, options: {fetch: any, 
     headers: processedHeaders,
   }
 
-  const fetched = await fetch(url, fetchOptions)
-  const contentType = getContentTypeHeader(fetched);
-  const text = await fetched.text()
+  const res = await fetch(url, fetchOptions)
+  if (!res.ok) throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`);
+  const contentType = getContentTypeHeader(res);
+  const text = await res.text()
 
   return {url, contentType, text}
 }
@@ -350,8 +353,9 @@ function getContentTypeHeader(reply: any) {
 
 async function checkFileExists(url: string, fetch: any){ 
   try {
-    const response = await fetch(url, {method: 'HEAD'})
-    return response.status && response.status >= 200 && response.status < 300
+    const res = await fetch(url, {method: 'HEAD'})
+    if (!res.ok) return false
+    return res.status && res.status >= 200 && res.status < 300
   } catch (e) {
     return false;
   } 

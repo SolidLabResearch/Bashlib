@@ -51,10 +51,10 @@ export default async function createPods(accountData: AccountData[], options: Po
       headers: { 'content-type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify(settings),
     });
+    if (!res.ok) throw new Error(`HTTP Error Response requesting ${pod_server_register_url}: ${res.status} ${res.statusText}`);
   
     // See server response or error text
     let jsonResponse = await res.json()
-    console.log(jsonResponse)
     if (jsonResponse.name && jsonResponse.name.includes('Error')) {
       console.error(`${jsonResponse.name} - Creating pod for ${settings.podName} failed: ${jsonResponse.message}`)
     } else {

@@ -300,7 +300,7 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
   try {
     if (fileInfo.buffer) {
       let blob = new Blob([toArrayBuffer(fileInfo.buffer)], {type: fileInfo.contentType})
-      await fetch(
+      let res = await fetch(
         resourcePath, 
         {
           method: 'PUT',
@@ -311,9 +311,10 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
 
         }
       )
+      if (!res.ok) throw new Error(`HTTP Error Response requesting ${resourcePath}: ${res.status} ${res.statusText}`);
 
     } else if (fileInfo.blob) {
-      await fetch(
+      let res = await fetch(
         resourcePath, 
         {
           method: 'PUT',
@@ -323,6 +324,7 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
           }
         }
       )
+      if (!res.ok) throw new Error(`HTTP Error Response requesting ${resourcePath}: ${res.status} ${res.statusText}`);
     } else {
       if (verbose) console.error('No content to write for:', resourcePath)
     }

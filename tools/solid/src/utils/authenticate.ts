@@ -15,6 +15,7 @@ export type ILoginOptions = {
   config?: string, 
   storage?: string, 
   silent?: boolean, 
+  unauthenticated?: boolean,
 }
 
 export type ILoginOptionsCSSv2 = {
@@ -43,6 +44,15 @@ type SessionInfo = {
 }
 
 export default async function authenticate(options: ILoginOptions) {
+  let unauth = options.unauthenticated;
+  if (unauth) {
+    return {
+      fetch: nodeFetch
+
+      // fetch: () => { throw new Error('test') }
+    }
+  }
+
   let idp = options.idp || options.identityprovider; // TODO:: make this not necessary :p
   let authType = (options.auth || 'cssv4').trim().toLowerCase();
 

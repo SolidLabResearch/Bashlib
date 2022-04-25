@@ -1,11 +1,8 @@
 const { program } = require('commander');
 const os = require("os");
 const pth = require('path');
-const util = require('util');
-const exec = util.promisify(require('child_process').exec);
 const child_process = require('child_process')
 var editor = process.env.EDITOR || 'vi';
-
 
 const authenticate = require('../dist/utils/authenticate').default
 const commands = require('../')
@@ -25,7 +22,7 @@ const authenticatedFetch = commands.authenticatedFetch
 const columns = require('cli-columns');
 const Table = require('cli-table');
 const chalk = require('chalk');
-const { writeErrorString, getFileContentsAndInfo, isDirectory } = require('../dist/utils/util');
+const { writeErrorString, isDirectory } = require('../dist/utils/util');
 const fs = require('fs');
 
 const arrayifyHeaders = (value, previous) => previous ? previous.concat(value) : [value]
@@ -52,6 +49,7 @@ program
   .version('0.1.0')
   .enablePositionalOptions()
   .option('-a, --auth <string>', 'CSSv2 | CSSv4 | interactive - Authentication type, defaults to cssv4')
+  .option('-U, --unauthenticated', 'Continue unauthenticated')
   .option('-t, --tokenFile <string>', 'Location of generated token of CSSv4. Defaults to ~/.solid/.solid-cli-credentials')
   .option('-idp, --identityprovider <string>', 'URI of the IDP')
   .option('-e, --email <string>', 'Email adres for the user. Default to <uname>@test.edu')

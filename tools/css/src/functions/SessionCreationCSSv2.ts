@@ -84,6 +84,7 @@ class NodeSolidSessionProvider {
       options.headers['content-type'] = contentType;
     }
     const res = await fetch(url, options);
+    if (!res.ok) throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`);
 
     // Parse the cookies that need to be set and convert them to the corresponding header value
     // Make sure we don't overwrite cookies that were already present

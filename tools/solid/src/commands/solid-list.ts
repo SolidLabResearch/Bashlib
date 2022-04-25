@@ -1,5 +1,5 @@
-import { getPodRoot, isDirectory, checkHeadersForAclAndMetadata, getResourceInfoFromDataset, getResourceInfoFromHeaders, ResourceInfo } from '../utils/util';
-import { getContainedResourceUrlAll, getSolidDataset, getThing, getInteger, getDatetime, getUrlAll, SolidDataset } from '@inrupt/solid-client';
+import { isDirectory, checkHeadersForAclAndMetadata, getResourceInfoFromDataset, getResourceInfoFromHeaders, ResourceInfo } from '../utils/util';
+import { getContainedResourceUrlAll, getSolidDataset } from '@inrupt/solid-client';
 
 type ListingOptions = {
   fetch: any,

@@ -45,6 +45,7 @@ export async function getOIDCConfig(idp: string): Promise<OIDCConfig> {
     idp = idp.endsWith('/') ? idp : idp + '/';
     let oidclocation = idp + '.well-known/openid-configuration'
     let res = await nodefetch(oidclocation)
+    if (!res.ok) throw new Error(`HTTP Error Response requesting ${oidclocation}: ${res.status} ${res.statusText}`);
     let json = await res.json();
     return json;
   } catch (e: any) {

@@ -40,13 +40,20 @@ export default async function createAuthenticatedSessionInteractive(options: Log
       }
     }
   } catch (e:any) {
-    if (options?.verbose) console.error(`Could not load existing session ${e.message}`)
+    if (options?.verbose) console.error(`Could not load existing session: ${e.message}`)
   }
   
   if (!options.idp) throw new Error('Cannot login: no identity provider value given.')
   let appName = "Solid-cli"
   let port = 3435
-  return await createFetchWithNewAccessToken(options.idp, appName, port, sessionFile)
+
+  try {
+    return await createFetchWithNewAccessToken(options.idp, appName, port, sessionFile)
+  } catch (e: any) {
+    if (options?.verbose) console.error(`Error creating new session: ${e.message}`)
+    return { fetch: nodefetch }
+  }
+  
 
 }
 
