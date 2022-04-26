@@ -235,16 +235,20 @@ program
 .description('Utility to query RDF resoures on your data pod.')
 .version('0.1.0')
 .argument('<url>', 'Resource to query. In case of container recursively queries all contained files.')
-.argument('<query>', 'SPARQL query string')
+.argument('<query>', 'SPARQL query string | file path containing SPARQL query when -q flag is active')
 .option('-a, --all', 'Match .acl and .meta files')
+.option('-q, --queryfile', 'Process query parameter as file path of SPARQL query')
 .option('-p, --pretty', 'Pretty format') 
 .option('-f, --full', 'Return containing files using full filename.')
 .option('-v, --verbose', 'Log all operations') // Should this be default?
-.action( async (url, filename, options) => {
+.action( async (url, queryString, options) => {
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
-  for await (let result of query(url, filename, options)) {
+  if (options.queryfile) {
+    queryString = fs.readFileSync(queryString, {encoding: "utf-8"})
+  }
+  for await (let result of query(url, queryString, options)) {
     formatBindings(result.fileName, result.bindings, options)
   }
   process.exit(0)
