@@ -22,7 +22,7 @@ const authenticatedFetch = commands.authenticatedFetch
 const columns = require('cli-columns');
 const Table = require('cli-table');
 const chalk = require('chalk');
-const { writeErrorString, isDirectory } = require('../dist/utils/util');
+const { writeErrorString, isDirectory, getPodRoot } = require('../dist/utils/util');
 const fs = require('fs');
 
 const arrayifyHeaders = (value, previous) => previous ? previous.concat(value) : [value]
@@ -85,6 +85,7 @@ program
     let programOpts = addEnvOptions(program.opts() || {});
     const authenticationInfo = await authenticate(programOpts)
     options.fetch = authenticationInfo.fetch
+    url = await changeUrlPrefixes(authenticationInfo, url)
     try {
       await authenticatedFetch(url, options)
     } catch (e) {
@@ -113,6 +114,8 @@ program
     let opts = { 
       fetch: authenticationInfo.fetch, 
     }
+    src = await changeUrlPrefixes(authenticationInfo, src)
+    dst = await changeUrlPrefixes(authenticationInfo, dst)
     await copyData(src, dst, { ...options, ...opts})
 
     process.exit(0)
@@ -132,6 +135,7 @@ program
       const authenticationInfo = await authenticate(programOpts)
       
       options.fetch = authenticationInfo.fetch
+      url = await changeUrlPrefixes(authenticationInfo, url)
       let listings = []
       try {
         listings = await list(url, options)
@@ -156,6 +160,7 @@ program
     let programOpts = addEnvOptions(program.opts() || {});
     const authenticationInfo = await authenticate(programOpts)
     options.fetch = authenticationInfo.fetch
+    url = await changeUrlPrefixes(authenticationInfo, url)
     try {
       await remove(url, options)
     } catch (e) {
@@ -177,6 +182,8 @@ program
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
+  src = await changeUrlPrefixes(authenticationInfo, src)
+  dst = await changeUrlPrefixes(authenticationInfo, dst)
   try {
     await move(src, dst, options)
   } catch (e) {
@@ -199,6 +206,7 @@ program
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
+  url = await changeUrlPrefixes(authenticationInfo, url)
   try {
     for await (let fileInfo of find(url, filename, options)) {
       const name = options.full ? fileInfo.absolutePath : (fileInfo.relativePath || fileInfo.absolutePath)
@@ -221,6 +229,7 @@ program
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
+  url = await changeUrlPrefixes(authenticationInfo, url)
   try {
     await commands.makeDirectory(url, options)
   } catch (e) {
@@ -245,6 +254,7 @@ program
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
+  url = await changeUrlPrefixes(authenticationInfo, url)
   if (options.queryfile) {
     queryString = fs.readFileSync(queryString, {encoding: "utf-8"})
   }
@@ -266,6 +276,7 @@ program
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
+  url = await changeUrlPrefixes(authenticationInfo, url)
   await tree(url, options)
   process.exit(0)
 })
@@ -289,6 +300,7 @@ To indicate the id as a group id, please add the [g] option as follows: <id>=g[d
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
+  url = await changeUrlPrefixes(authenticationInfo, url)
 
   if (operation === 'list') {
     let listings = await listPermissions(url, options)
@@ -353,6 +365,7 @@ program
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch;
+  url = await changeUrlPrefixes(authenticationInfo, url)
   if (isDirectory(url)) {
     console.error('Cannot edit containers, only single files.')
     process.exit(1);
@@ -412,6 +425,20 @@ program
 /**********************************************************************************
  *                                HELPER FUNCTIONS                                *
  **********************************************************************************/
+
+async function changeUrlPrefixes(authenticationInfo, url) {
+  if (!url) return url;
+  if (url.startsWith('webid:')) {
+    if (!authenticationInfo.webId) throw new Error('Cannot process URL with "webid:" prefix, not WebID value currently known.')
+    return url.replace('webid:', authenticationInfo.webId)
+  } else if (url.startsWith('base:')) {
+    if (!authenticationInfo.webId) throw new Error('Cannot process URL with "base:" prefix, not WebID value currently known.')
+    let podRoot = await getPodRoot(authenticationInfo.webId, authenticationInfo.fetch);
+    return url.replace('base:', podRoot)
+  } else {
+    return url;
+  }
+}
 
 
 /**

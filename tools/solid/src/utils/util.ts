@@ -67,7 +67,7 @@ export async function getPodRoot(url: string, fetch: Function) : Promise<string 
     let headers = LinkHeader.parse(linkHeaders)
     for (let header of headers.refs) {
       if (header.uri === 'http://www.w3.org/ns/pim/space#Storage' && header.rel === 'type') {
-        return currentUrl;
+        return currentUrl.endsWith('/') ? currentUrl : currentUrl + '/';
       }
     }
   }
