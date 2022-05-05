@@ -37,7 +37,7 @@ The following options are available for authentication on the CLI interface. *Th
 - `-e, --email <string>`                                USer email address.
 - `-p, --password <string>`                             User password.
 - `-c, --config <string>`                               Config file location.
-- `-s, --storage <string>`                              Credentials storage location (*only for interactive login,* **defaults to `~/.solid/.solid-cli-credentials`)**
+- `-s, --storage <string>`                              Credentials storage location (*only for interactive login,* **defaults to `~/.solid/.css-auth-token`)**
 - `--silent`                                            Silence authentication errors
 
 #### config file

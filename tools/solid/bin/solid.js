@@ -40,6 +40,8 @@ function addEnvOptions(options) {
   const envConfig = process.env['SOLID_SUITE_CONFIG']
   if (envStorage && !options.storage) options.storage = envStorage
   if (envConfig && !options.config) options.config = envConfig
+
+  if (!options.silent) options.verbose = true // setting verbose setting for authentication
   return options
 }
 
@@ -48,14 +50,13 @@ program
   .description('Utility toolings for interacting with a Solid server.')
   .version('0.1.0')
   .enablePositionalOptions()
-  .option('-a, --auth <string>', 'CSSv2 | CSSv4 | interactive - Authentication type, defaults to cssv4')
+  .option('-a, --auth <string>', 'token | credentials | interactive - Authentication type, defaults to cssv4')
   .option('-U, --unauthenticated', 'Continue unauthenticated')
-  .option('-t, --tokenFile <string>', 'Location of generated token of CSSv4. Defaults to ~/.solid/.solid-cli-credentials')
-  .option('-idp, --identityprovider <string>', 'URI of the IDP')
+  .option('-t, --tokenFile <string>', 'Location of generated token of CSSv4. Defaults to ~/.solid/.css-auth-token')
+  .option('-i, --idp <string>', 'URI of the IDP')
   .option('-e, --email <string>', 'Email adres for the user. Default to <uname>@test.edu')
   .option('-p, --password <string>', 'User password. Default to <uname>')
   .option('-c, --config <string>', 'Config file containing user email, password and idp in format: {email: <email>, password: <password>, idp: <idp>}')
-  .option('-i, --interactive', 'Flag to login interactively. Requires the idp value to be set as a flag or via a passed config file.')
   .option('-s, --storage <string>', 'Local file to store session information for consequent uses')
   .option('--silent', 'Silence authentication errors')
 
@@ -85,8 +86,8 @@ program
     let programOpts = addEnvOptions(program.opts() || {});
     const authenticationInfo = await authenticate(programOpts)
     options.fetch = authenticationInfo.fetch
-    url = await changeUrlPrefixes(authenticationInfo, url)
     try {
+      url = await changeUrlPrefixes(authenticationInfo, url)
       await authenticatedFetch(url, options)
     } catch (e) {
       console.error(`Could not fetch resource at ${url}: ${e.message}`)
@@ -114,10 +115,15 @@ program
     let opts = { 
       fetch: authenticationInfo.fetch, 
     }
-    src = await changeUrlPrefixes(authenticationInfo, src)
-    dst = await changeUrlPrefixes(authenticationInfo, dst)
-    await copyData(src, dst, { ...options, ...opts})
-
+    try {
+      src = await changeUrlPrefixes(authenticationInfo, src)
+      dst = await changeUrlPrefixes(authenticationInfo, dst)
+      await copyData(src, dst, { ...options, ...opts})  
+    } catch (e) {
+      console.error(`Could not copy requested resources from ${src} to ${dst}: ${e.message}`)
+      process.exit(1)
+    }
+    
     process.exit(0)
   })
 
@@ -135,12 +141,13 @@ program
       const authenticationInfo = await authenticate(programOpts)
       
       options.fetch = authenticationInfo.fetch
-      url = await changeUrlPrefixes(authenticationInfo, url)
       let listings = []
       try {
+        url = await changeUrlPrefixes(authenticationInfo, url)
         listings = await list(url, options)
       } catch (e) {
-        console.error(`Could not provide listing for ${url}: ${e.message}`)
+        console.error(`Could not provide listing for ${url}:
+        url = await changeUrlPrefixes(authenticationInfo, url) ${e.message}`)
         process.exit(1)
       }
 
@@ -160,8 +167,8 @@ program
     let programOpts = addEnvOptions(program.opts() || {});
     const authenticationInfo = await authenticate(programOpts)
     options.fetch = authenticationInfo.fetch
-    url = await changeUrlPrefixes(authenticationInfo, url)
     try {
+      url = await changeUrlPrefixes(authenticationInfo, url)
       await remove(url, options)
     } catch (e) {
       console.error(`Could not remove ${url}: ${e.message}`)
@@ -182,12 +189,12 @@ program
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
-  src = await changeUrlPrefixes(authenticationInfo, src)
-  dst = await changeUrlPrefixes(authenticationInfo, dst)
   try {
+    src = await changeUrlPrefixes(authenticationInfo, src)
+    dst = await changeUrlPrefixes(authenticationInfo, dst)
     await move(src, dst, options)
   } catch (e) {
-    console.error(`Could not move ${url}: ${e.message}`)
+    console.error(`Could not move requested resources from ${src} to ${dst}: ${e.message}`)
     process.exit(1)
   }
   process.exit(0)
@@ -206,8 +213,8 @@ program
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
-  url = await changeUrlPrefixes(authenticationInfo, url)
   try {
+    url = await changeUrlPrefixes(authenticationInfo, url)
     for await (let fileInfo of find(url, filename, options)) {
       const name = options.full ? fileInfo.absolutePath : (fileInfo.relativePath || fileInfo.absolutePath)
       console.log(name)
@@ -229,8 +236,8 @@ program
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
-  url = await changeUrlPrefixes(authenticationInfo, url)
   try {
+    url = await changeUrlPrefixes(authenticationInfo, url)
     await commands.makeDirectory(url, options)
   } catch (e) {
     console.error(`Could not create container at ${url}: ${e.message}`)
@@ -254,12 +261,17 @@ program
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
-  url = await changeUrlPrefixes(authenticationInfo, url)
-  if (options.queryfile) {
-    queryString = fs.readFileSync(queryString, {encoding: "utf-8"})
-  }
-  for await (let result of query(url, queryString, options)) {
-    formatBindings(result.fileName, result.bindings, options)
+  try {
+    url = await changeUrlPrefixes(authenticationInfo, url)
+    if (options.queryfile) {
+      queryString = fs.readFileSync(queryString, {encoding: "utf-8"})
+    }
+    for await (let result of query(url, queryString, options)) {
+      formatBindings(result.fileName, result.bindings, options)
+    }
+  } catch (e) {
+    console.error(`Could not query resource at ${url}: ${e.message}`)
+    process.exit(1)
   }
   process.exit(0)
 })
@@ -300,54 +312,58 @@ To indicate the id as a group id, please add the [g] option as follows: <id>=g[d
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
-  url = await changeUrlPrefixes(authenticationInfo, url)
+  try {
+    url = await changeUrlPrefixes(authenticationInfo, url)
 
-  if (operation === 'list') {
-    let listings = await listPermissions(url, options)
-    if (listings) formatPermissionListing(url, listings, options)
-  } else if (operation === 'edit') {
-    let parsedPermissions = permissions.map(permission => {
-      const splitPerm = permission.split('=')
-      if (!splitPerm.length === 2) { 
-        writeErrorString('Incorrect permission format.', 'Please format your permissions as <id>=[d][a][c][r][w].') 
-        process.exit(0)
-      }
-      let id = splitPerm[0]
-      const permissionOptions = splitPerm[1].split('')
-      let type;
-      if (id === 'p') {
-        type = 'public'
-      } else if (id === 'u') {
-        if (!authenticationInfo.webId) { 
-          writeErrorString('Could not autmatically fill in webId of authenticated user.', 'Please make sure you have an authenticated session to auto-fill your webId');
+    if (operation === 'list') {
+      let listings = await listPermissions(url, options)
+      if (listings) formatPermissionListing(url, listings, options)
+    } else if (operation === 'edit') {
+      let parsedPermissions = permissions.map(permission => {
+        const splitPerm = permission.split('=')
+        if (!splitPerm.length === 2) { 
+          writeErrorString('Incorrect permission format.', 'Please format your permissions as <id>=[d][a][c][r][w].') 
           process.exit(0)
         }
-        type = 'agent'
-        id = authenticationInfo.webId
-      } else {
-        type = permissionOptions.indexOf('g') === -1 ? 'agent' : 'group'
+        let id = splitPerm[0]
+        const permissionOptions = splitPerm[1].split('')
+        let type;
+        if (id === 'p') {
+          type = 'public'
+        } else if (id === 'u') {
+          if (!authenticationInfo.webId) { 
+            writeErrorString('Could not autmatically fill in webId of authenticated user.', 'Please make sure you have an authenticated session to auto-fill your webId');
+            process.exit(0)
+          }
+          type = 'agent'
+          id = authenticationInfo.webId
+        } else {
+          type = permissionOptions.indexOf('g') === -1 ? 'agent' : 'group'
+        }
+        const read = permissionOptions.indexOf('r') !== -1
+        const write = permissionOptions.indexOf('w') !== -1
+        const append = permissionOptions.indexOf('a') !== -1
+        const control = permissionOptions.indexOf('c') !== -1
+        const def = permissionOptions.indexOf('d') !== -1
+        return ({ type, id, read, write, append, control, default: def })
+      })
+      try {
+        await changePermissions(url, parsedPermissions, options)
+      } catch (e) {
+        if (options.verbose) writeErrorString(`Could not update permissions for resource at ${url}`, e)
       }
-      const read = permissionOptions.indexOf('r') !== -1
-      const write = permissionOptions.indexOf('w') !== -1
-      const append = permissionOptions.indexOf('a') !== -1
-      const control = permissionOptions.indexOf('c') !== -1
-      const def = permissionOptions.indexOf('d') !== -1
-      return ({ type, id, read, write, append, control, default: def })
-    })
-    try {
-      await changePermissions(url, parsedPermissions, options)
-    } catch (e) {
-      console.log(e)
-      if (options.verbose) writeErrorString(`Could not update permissions for resource at ${url}`, e)
+    } else if (operation === 'delete') {
+      try {
+        await deletePermissions(url, options)
+      } catch (e) {
+        if (options.verbose) writeErrorString(`Could not delete permissions for resource at ${url}`, e)
+      }
+    } else {
+      writeErrorString('Invalid operation.')
     }
-  } else if (operation === 'delete') {
-    try {
-      await deletePermissions(url, options)
-    } catch (e) {
-      if (options.verbose) writeErrorString(`Could not delete permissions for resource at ${url}`, e)
-    }
-  } else {
-    writeErrorString('Invalid operation.')
+  }
+  catch (e) {
+    console.error(`Could not evaluate permissions for ${url}: ${e.message}`)
   }
   process.exit(0)
 })
@@ -365,17 +381,18 @@ program
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch;
-  url = await changeUrlPrefixes(authenticationInfo, url)
-  if (isDirectory(url)) {
-    console.error('Cannot edit containers, only single files.')
-    process.exit(1);
-  }
-
-  const tmpDir = os.tmpdir()
-  const fileName = url.split('/').slice(-1)[0]
-  const tmpPath = pth.join(tmpDir, '.solid', fileName)
-  let copiedFileLocalUrl;
   try {
+    url = await changeUrlPrefixes(authenticationInfo, url)
+    if (isDirectory(url)) {
+      console.error('Cannot edit containers, only single files.')
+      process.exit(1);
+    }
+
+    const tmpDir = os.tmpdir()
+    const fileName = url.split('/').slice(-1)[0]
+    const tmpPath = pth.join(tmpDir, '.solid', fileName)
+    let copiedFileLocalUrl;
+
     let copiedData = await copyData(url, tmpPath, options);
     let copiedFileContentType = copiedData.source.files[0].contentType;
     let copiedFileUrl = copiedData.source.files[0].absolutePath;
@@ -429,10 +446,10 @@ program
 async function changeUrlPrefixes(authenticationInfo, url) {
   if (!url) return url;
   if (url.startsWith('webid:')) {
-    if (!authenticationInfo.webId) throw new Error('Cannot process URL with "webid:" prefix, not WebID value currently known.')
+    if (!authenticationInfo.webId) throw new Error('Cannot process URL with "webid:" prefix, no WebID value currently known.')
     return url.replace('webid:', authenticationInfo.webId)
   } else if (url.startsWith('base:')) {
-    if (!authenticationInfo.webId) throw new Error('Cannot process URL with "base:" prefix, not WebID value currently known.')
+    if (!authenticationInfo.webId) throw new Error('Cannot process URL with "base:" prefix, no WebID value currently known.')
     let podRoot = await getPodRoot(authenticationInfo.webId, authenticationInfo.fetch);
     return url.replace('base:', podRoot)
   } else {

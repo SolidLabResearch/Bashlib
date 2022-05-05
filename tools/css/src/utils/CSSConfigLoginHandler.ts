@@ -4,7 +4,7 @@ const express = require('express')
 
 export default class CSSConfigLoginHandler extends LoginHandler {
 
-  async login(oidcIssuer: string, appName="Solid tooling", port = 3434, storageLocation=undefined) {
+  async login(oidcIssuer: string, appName="Solid tooling", port = 3434) {
     // console.log(`Logging in to identity provider ${idp} for application ${appName} on port ${port}`)
     return new Promise((resolve, reject) => {
       const app = express();

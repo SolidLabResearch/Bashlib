@@ -4,24 +4,12 @@ import type { Cookie } from 'set-cookie-parser';
 import { parse, splitCookiesString } from 'set-cookie-parser';
 import LoginHandler from '../utils/LoginHandler'
 import CSSConfigLoginHandler from '../utils/CSSConfigLoginHandler';
+import { SessionInfo, IClientCredentialsAuthOptions, APPNAME, DEFAULTPORT } from './CreateFetch';
 const fetch = require("node-fetch")
 
 const APPLICATION_X_WWW_FORM_URLENCODED = 'application/x-www-form-urlencoded';
 
-export type LoginOptions = {
-  version?: string,
-  idp?: string,
-  email?: string,
-  password?: string,
-  storage?: string,
-}
-
-type SessionInfo = {
-  fetch: (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
-  webId?: string
-}
-
-export default async function createAuthenticatedSessionInfoCSSv2(options: LoginOptions) : Promise<SessionInfo> {
+export default async function createAuthenticatedSessionInfoCSSv2(options: IClientCredentialsAuthOptions) : Promise<SessionInfo> {
   const sessionProvider = new NodeSolidSessionProvider(options);
   const session = await sessionProvider.login()
   return {
@@ -31,14 +19,14 @@ export default async function createAuthenticatedSessionInfoCSSv2(options: Login
 }
 
 class NodeSolidSessionProvider {
-  options: LoginOptions
+  options: IClientCredentialsAuthOptions
   loginHandler: LoginHandler 
 
   public session?: Session;
   private readonly cookies: Map<string, Cookie>;
   private cookie?: string;
 
-  constructor(options: LoginOptions) {
+  constructor(options: IClientCredentialsAuthOptions) {
    this.loginHandler = new CSSConfigLoginHandler();
    this.loginHandler.on('redirect', (url: string) => this.handleRedirect(url));
    this.options = options;
@@ -47,7 +35,7 @@ class NodeSolidSessionProvider {
 
   async login() : Promise<Session> {
     if (!this.options.idp) throw new Error('Cannot login: no identity provider option given.')
-    let session = await this.loginHandler.login(this.options.idp, undefined, undefined, this.options.storage) as Session;
+    let session = await this.loginHandler.login(this.options.idp, APPNAME, this.options.port || DEFAULTPORT) as Session;
     this.session = session;
     return session;
   }

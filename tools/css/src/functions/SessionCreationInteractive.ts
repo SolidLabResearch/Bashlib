@@ -4,30 +4,19 @@ import formurlencoded from 'form-urlencoded';
 import { Session } from '@inrupt/solid-client-authn-node';
 import open from 'open';
 import fs from 'fs';
+import { SessionInfo, IInteractiveAuthOptions, DEFAULTPORT, APPNAME } from './CreateFetch';
 const nodefetch = require("node-fetch")
 const express = require('express')
 const homedir = require('os').homedir();
 const SOLIDDIR = `${homedir}/.solid/`
-const SESSIONFILE = `${SOLIDDIR}.solid-session-info-interactive`
+const SESSIONINFOSTORAGELOCATION = `${SOLIDDIR}.session-info-interactive`
 
-export type LoginOptions = {
-  idp?: string,
-  storage?: string,
-  sessionFile?: string,
-  verbose?: boolean,
-}
-
-type SessionInfo = {
-  fetch: (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
-  webId?: string
-}
-
-export default async function createAuthenticatedSessionInteractive(options: LoginOptions) : Promise<SessionInfo> {
-  let sessionFile = options?.sessionFile || SESSIONFILE;
+export default async function createAuthenticatedSessionInteractive(options: IInteractiveAuthOptions) : Promise<SessionInfo> {
+  let sessionInfoStorageLocation = options?.sessionInfoStorageLocation || SESSIONINFOSTORAGELOCATION;
 
   try {
-    if (fs.existsSync(sessionFile)) {
-      let sessionInfo = await readSessionTokenInfo(sessionFile);
+    if (fs.existsSync(sessionInfoStorageLocation)) {
+      let sessionInfo = await readSessionTokenInfo(sessionInfoStorageLocation);
       if (options.idp && (!sessionInfo.idp || sessionInfo.idp !== options.idp )) throw new Error('Falling back on interactive login as stored session idp does not match current value')
       if (sessionInfo) {
         var tokenTimeLeftInSeconds = (sessionInfo.expirationDate.getTime() - new Date().getTime()) / 1000;
@@ -44,11 +33,11 @@ export default async function createAuthenticatedSessionInteractive(options: Log
   }
   
   if (!options.idp) throw new Error('Cannot login: no identity provider value given.')
-  let appName = "Solid-cli"
-  let port = 3435
+  let appName = APPNAME
+  let port = options.port || DEFAULTPORT
 
   try {
-    return await createFetchWithNewAccessToken(options.idp, appName, port, sessionFile)
+    return await createFetchWithNewAccessToken(options.idp, appName, port, sessionInfoStorageLocation)
   } catch (e: any) {
     if (options?.verbose) console.error(`Error creating new session: ${e.message}`)
     return { fetch: nodefetch }
@@ -65,7 +54,7 @@ export default async function createAuthenticatedSessionInteractive(options: Log
  * @param storageLocation 
  * @returns 
  */
-async function createFetchWithNewAccessToken(oidcIssuer: string, appName: string, port: number, sessionFile: string) : Promise<SessionInfo> {
+async function createFetchWithNewAccessToken(oidcIssuer: string, appName: string, port: number, sessionInfoStorageLocation: string) : Promise<SessionInfo> {
   return new Promise( async (resolve, reject) => {
     const config = await getOIDCConfig(oidcIssuer);
     if (!config) reject(new Error("Could not read oidc config"));
@@ -98,7 +87,7 @@ async function createFetchWithNewAccessToken(oidcIssuer: string, appName: string
       let { accessToken, expirationDate, dpopKey, webId } = await handleIncomingRedirect(oidcIssuer, redirectUrl, code, storage)
 
 
-      storeSessionTokenInfo(sessionFile, accessToken, dpopKey, expirationDate, webId, oidcIssuer)
+      storeSessionTokenInfo(sessionInfoStorageLocation, accessToken, dpopKey, expirationDate, webId, oidcIssuer)
       let fetch = await buildAuthenticatedFetch(nodefetch, accessToken, { dpopKey });
 
       server.close();

@@ -7,32 +7,19 @@ export type AccountData = {
   password?: string,
 }
 
-export type PodOptions = {
-  baseUrl?: string,
-  registryUrl?: string,
-}
-
 /**
  * @description
- * Function to create a data pod on the server
- *
- * @param {Object} options
- * @param {String} options.baseUrl datapod server base url
- * @param {String} options.registryUrl datapod server registry API url
+ * Function to initialize an array of data pods on a CSS instance.
  */
-export default async function createPods(accountData: AccountData[], options: PodOptions) {
-  if (!options.baseUrl && !options.registryUrl) {
-    throw new Error('Please pass a value for one of the options: base-url, registry-url');
-  }
-  let pod_server_register_url = options.registryUrl;
-  if (!pod_server_register_url && options.baseUrl) {
-    pod_server_register_url = options.baseUrl?.endsWith('/')
-      ? `${options.baseUrl}idp/register/`
-      : `${options.baseUrl}/idp/register/`
-  }
+export default async function createPods(baseUrl: string, accountData: AccountData[]) {
+  if (!baseUrl) throw new Error('Please pass a value for the CSS baseUrl');
+
+  // Uses hardcoded URL. Not sure if this URL can be discovered dynamically?
+  let pod_server_register_url = baseUrl?.endsWith('/')
+    ? `${baseUrl}idp/register/`
+    : `${baseUrl}/idp/register/`
 
   const responses = []
-  
   for (let account of accountData) {
     const settings =  {
       podName: account.name,
@@ -43,16 +30,12 @@ export default async function createPods(accountData: AccountData[], options: Po
       createPod: true,
       createWebId: true
     }
-    console.log('pod_server_register_url', pod_server_register_url)
-  
     
     const res = await fetch(pod_server_register_url, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify(settings),
     });
-    if (!res.ok) throw new Error(`HTTP Error Response requesting ${pod_server_register_url}: ${res.status} ${res.statusText}`);
-  
     // See server response or error text
     let jsonResponse = await res.json()
     if (jsonResponse.name && jsonResponse.name.includes('Error')) {

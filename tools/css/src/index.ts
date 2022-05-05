@@ -1,6 +1,5 @@
 import createPods from "./functions/PodCreation"
-import createAuthenticatedSessionInfoCSSv2 from "./functions/SessionCreationCSSv2"
-import { createAuthenticatedSessionInfoCSSv4, generateCSSv4Token } from "./functions/SessionCreationCSSv4"
-import createAuthenticatedSessionInteractive from "./functions/SessionCreationInteractive"
+import SolidFetchBuilder from "./functions/CreateFetch"
+import { generateCSSv4Token } from "./functions/SessionCreationCSSv4"
 
-export { createAuthenticatedSessionInteractive, createAuthenticatedSessionInfoCSSv2, createPods, createAuthenticatedSessionInfoCSSv4, generateCSSv4Token }
+export { createPods, SolidFetchBuilder, generateCSSv4Token as generateClientCredentialsToken }

@@ -1,26 +1,18 @@
 import { KeyPair } from '@inrupt/solid-client-authn-core';
 import { createDpopHeader, generateDpopKeyPair, buildAuthenticatedFetch } from '@inrupt/solid-client-authn-core';
-import { getOIDCConfig, readSessionTokenInfo, storeSessionTokenInfo } from '../utils/util';
+import { decodeIdToken, getOIDCConfig, readSessionTokenInfo, storeSessionTokenInfo, ensureDirectoryExistence } from '../utils/util';
+import { IClientCredentialsTokenGenerationOptions, SessionInfo, IClientCredentialsTokenAuthOptions } from './CreateFetch';
 
 const nodefetch = require('node-fetch')
 const fs = require('fs')
 
 
-type TokenAuthOptions = {
-  name: string,
-  email: string,
-  password: string,
-  webId: string,
-  idp: string,
-  tokenFile?: string,
-}
-
 const homedir = require('os').homedir();
 const SOLIDDIR = `${homedir}/.solid/`
-const TOKENFILE = `${SOLIDDIR}.solid-cli-credentials`
-const SESSIONFILE = `${SOLIDDIR}.solid-session-info-cssv4`
+const CLIENTCREDENTIALSTOKENSTORAGELOCATION = `${SOLIDDIR}.css-auth-token`
+const SESSIONINFOSTORAGELOCATION = `${SOLIDDIR}.session-info-token`
 
-export async function generateCSSv4Token(options: TokenAuthOptions){
+export async function generateCSSv4Token(options: IClientCredentialsTokenGenerationOptions){
   if (!options.idp.endsWith('/')) options.idp += '/';
 
   // This assumes your server is started under http://localhost:3000/.
@@ -43,32 +35,20 @@ export async function generateCSSv4Token(options: TokenAuthOptions){
   if (token.errorCode) {
     throw new Error(`Error retrieving token from server: ${token.name}`)
   }
-  token.webId = options.webId;
   token.idp = options.idp;
 
-  const tokenStorageLocation = options.tokenFile || TOKENFILE;
+  const tokenStorageLocation = options.clientCredentialsTokenStorageLocation || CLIENTCREDENTIALSTOKENSTORAGELOCATION;
+  await ensureDirectoryExistence(tokenStorageLocation)
   fs.writeFileSync(tokenStorageLocation, JSON.stringify(token, null, 2))
   return tokenStorageLocation;
 }
 
-type TokenStorageOptions = {
-  idp?: string,
-  tokenFile?: string,
-  sessionFile?: string,
-  verbose?: boolean,
-}
-
-type SessionInfo = {
-  fetch: (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
-  webId?: string
-}
-
-export async function createAuthenticatedSessionInfoCSSv4(options?: TokenStorageOptions) : Promise<SessionInfo>{
-  let sessionFile = options?.sessionFile || SESSIONFILE;
+export async function createAuthenticatedSessionInfoCSSv4(options?: IClientCredentialsTokenAuthOptions) : Promise<SessionInfo>{
+  let sessionInfoStorageLocation = options?.sessionInfoStorageLocation || SESSIONINFOSTORAGELOCATION;
 
   try {
-    if (fs.existsSync(sessionFile)) {
-      let sessionInfo = await readSessionTokenInfo(sessionFile);
+    if (fs.existsSync(sessionInfoStorageLocation)) {
+      let sessionInfo = await readSessionTokenInfo(sessionInfoStorageLocation);
       if (sessionInfo) {
         var tokenTimeLeftInSeconds = (sessionInfo.expirationDate.getTime() - new Date().getTime()) / 1000;
         if (tokenTimeLeftInSeconds > 60) {
@@ -90,13 +70,12 @@ export async function createAuthenticatedSessionInfoCSSv4(options?: TokenStorage
   }
 }
 
-async function createFetchWithNewAccessToken(options?: TokenStorageOptions): Promise<SessionInfo>{
- let tokenStorageLocation = options?.tokenFile || TOKENFILE;
+async function createFetchWithNewAccessToken(options?: IClientCredentialsTokenAuthOptions): Promise<SessionInfo>{
+ let tokenStorageLocation = options?.clientCredentialsTokenStorageLocation || CLIENTCREDENTIALSTOKENSTORAGELOCATION;
   if (!tokenStorageLocation) throw new Error('Could not discover existing token location.');
   let parsed = JSON.parse(fs.readFileSync(tokenStorageLocation));
   let id = parsed.id;
   let secret = parsed.secret;
-  let webId = parsed.webId;
   let idp = parsed.idp; // We stored this cheekily in the token file
   if (!id || !secret) throw new Error('Could not discover valid authentication token.')
   
@@ -107,16 +86,16 @@ async function createFetchWithNewAccessToken(options?: TokenStorageOptions): Pro
   if (!options) { options = { idp }}
   else if (!options.idp) options.idp = idp;
 
-  let { accessToken, expirationDate } = await requestAccessToken(id, secret, dpopKey, options);
+  let { accessToken, expirationDate, webId } = await requestAccessToken(id, secret, dpopKey, options);
 
-  let sessionFile = options?.sessionFile || SESSIONFILE;
-  await storeSessionTokenInfo(sessionFile, accessToken, dpopKey, expirationDate, webId, idp)
+  let sessionInfoStorageLocation = options?.sessionInfoStorageLocation || SESSIONINFOSTORAGELOCATION;
+  await storeSessionTokenInfo(sessionInfoStorageLocation, accessToken, dpopKey, expirationDate, webId, idp)
   let fetch = await buildAuthenticatedFetch(nodefetch, accessToken, { dpopKey });
 
   return { fetch, webId }
 }
 
-async function requestAccessToken(id: string, secret: string, dpopKey: KeyPair, options: TokenStorageOptions) {
+async function requestAccessToken(id: string, secret: string, dpopKey: KeyPair, options: IClientCredentialsTokenAuthOptions) {
 
   // TODO:: other possibility to pass idp here not only store in session obj
   let tokenUrl = options.idp
@@ -151,5 +130,10 @@ async function requestAccessToken(id: string, secret: string, dpopKey: KeyPair, 
   
   let currentDate = new Date();
   let expirationDate = new Date(currentDate.getTime() + (1000 * tokenExpiratationInSeconds))
-  return { accessToken, expirationDate } ;
+
+  let idTokenInfo = decodeIdToken(json.access_token);
+  let webId = idTokenInfo.webid;
+  if (!idTokenInfo || !webId) throw new Error('Invalid id token received')
+  
+  return { accessToken, expirationDate, webId } ;
 }
