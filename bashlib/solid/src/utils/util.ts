@@ -74,6 +74,15 @@ export async function getPodRoot(url: string, fetch: Function) : Promise<string 
   return null;
 }
 
+export async function getInbox(webId: string, fetch: Function) : Promise<string | null> {
+  let dataset = await getSolidDataset(webId);
+  if (!dataset) throw new Error('Could not retrieve profile document.')
+  let thing = getThing(dataset, webId);
+  if (!thing) throw new Error('Could not retrieve profile document.')
+  let inbox = getUrl(thing, "http://www.w3.org/ns/ldp#inbox")
+  return inbox;
+}
+
 export type ReadOptions = {
   fetch: any,
   verbose?: boolean,

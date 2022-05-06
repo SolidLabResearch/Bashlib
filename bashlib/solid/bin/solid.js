@@ -22,7 +22,7 @@ const tree = require('../dist/commands/solid-tree').default
 const columns = require('cli-columns');
 const Table = require('cli-table');
 const chalk = require('chalk');
-const { writeErrorString, isDirectory, getPodRoot } = require('../dist/utils/util');
+const { writeErrorString, isDirectory, getPodRoot, getInbox } = require('../dist/utils/util');
 const fs = require('fs');
 
 const arrayifyHeaders = (value, previous) => previous ? previous.concat(value) : [value]
@@ -481,10 +481,16 @@ async function changeUrlPrefixes(authenticationInfo, url) {
   if (url.startsWith('webid:')) {
     if (!authenticationInfo.webId) throw new Error('Cannot process URL with "webid:" prefix, no WebID value currently known.')
     return url.replace('webid:', authenticationInfo.webId)
-  } else if (url.startsWith('base:')) {
-    if (!authenticationInfo.webId) throw new Error('Cannot process URL with "base:" prefix, no WebID value currently known.')
+  } else if (url.startsWith('root:')) {
+    if (!authenticationInfo.webId) throw new Error('Cannot process URL with "root:" prefix, no WebID value currently known.')
     let podRoot = await getPodRoot(authenticationInfo.webId, authenticationInfo.fetch);
-    return url.replace('base:', podRoot)
+    if (!podRoot) throw new Erorr('No pod root container found')
+    return url.replace('root:', podRoot)
+  } else if (url.startsWith('inbox:')) {
+    if (!authenticationInfo.webId) throw new Error('Cannot process URL with "inbox:" prefix, no WebID value currently known.')
+    let inbox = await getInbox(authenticationInfo.webId, authenticationInfo.fetch);
+    if (!inbox) throw new Erorr('No inbox value found')
+    return url.replace('inbox:', inbox)
   } else {
     return url;
   }

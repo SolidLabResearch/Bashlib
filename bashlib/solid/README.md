@@ -85,7 +85,7 @@ The CLI interface provides some default prefixes you can use in all URL values f
 
 ```
 webid: (The user WebID)
-base: (The base storage location of your data pod -might not be found when WebId is outside of pod domain.)
+root: (The root of your data pod - will not be found when you have a custom WebID that is not in the domain of your Solid pod!)
 inbox: (The user inbox - when available)
 
 example usage:
