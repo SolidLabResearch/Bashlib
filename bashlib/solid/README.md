@@ -256,6 +256,7 @@ node bin/solid.js [auth_options] query [options] <url> <query>
 
 #### perms
 This command enables the listing, editing and removing of resource permisssions. This command only supports `Web Access Controls resources (.acl)`, and does not support `Access Control Policies resources (.acp)`. Editing permissions can be done by supplying a set of permissions. These permissions must be formatted according to the description below.
+**note: Editing permissions for a specific WebID or public permissions will remove all prior assigned permissions.** E.g. editing permissions to assign read permissions to a WebID will remove prior assigned write permissions!
 
 The `--pretty` flag can be set to display the results in a table format when listing resource permissions and is ignored for other options.
 
@@ -349,7 +350,7 @@ let options = {
   verbose?: boolean,  // log all operations
 } 
 
-await fetch(url, options)
+await list(url, options)
 ```
 
 *returns*
@@ -372,6 +373,215 @@ ResourceInfo: {
 *usage*
 ```
 import { copy } from "/install/location"
+
+let src = ...
+let dst = ...
+
+let options = {
+  fetch: any,         // an (authenticated) fetch function
+  all?: boolean,      // include .acl resources in the listing
+  verbose?: boolean,  // log all operations
+} 
+
+await copy(src, dst, options)
 ```
 
-.. TODO
+*returns*
+```
+TODO::
+```
+
+
+#### move
+
+*usage*
+```
+import { move } from "/install/location"
+
+let src = ...
+let dst = ...
+
+let options = {
+  fetch: any,         // an (authenticated) fetch function
+  all?: boolean,      // include .acl resources in the listing
+  verbose?: boolean,  // log all operations
+} 
+
+await move(src, dst, options)
+```
+
+*returns*
+```
+TODO::
+```
+
+
+#### remove
+
+*usage*
+```
+import { remove } from "/install/location"
+
+let url = ...
+
+let options = {
+  fetch: any,          // an (authenticated) fetch function
+  recursive?: boolean, // include .acl resources in the listing
+  verbose?: boolean,   // log all operations
+} 
+
+await remove(url, options)
+```
+
+*returns*
+```
+TODO::
+```
+
+
+#### mkdir (makeDirectory)
+
+*usage*
+```
+import { makeDirectory } from "/install/location"
+
+let url = ...
+
+let options = {
+  fetch: any,         // an (authenticated) fetch function
+  verbose?: boolean,  // log all operations
+} 
+
+await makeDirectory(url, options)
+```
+
+*returns*
+```
+TODO::
+```
+
+#### find
+
+*usage*
+```
+import { find } from "/install/location"
+
+let container = ...
+let filename = ... (string that is converted into a regex internally to match filenames)
+
+let options = {
+  fetch: any,                 // an (authenticated) fetch function
+  all?: boolean,              // include .acl resource in search
+  full?: boolean,             // look for name matches in the full resource URL instead of relative
+  listDirectories?: boolean,  // include container resources in search
+  verbose?: boolean,          // log all operations
+} 
+
+await find(url, options)
+```
+
+*returns*
+```
+TODO::
+```
+
+
+#### query
+
+*usage*
+```
+import { query } from "/install/location"
+
+let url = ...
+
+let options = {
+  fetch: any,         // an (authenticated) fetch function
+  all?: boolean,      // include .acl resources in querying
+  verbose?: boolean,  // log all operations
+} 
+
+await query(url, options)
+```
+
+*returns*
+```
+TODO::
+```
+
+
+#### perms
+
+##### listPermissions
+
+*usage*
+```
+import { listPermissions } from "/install/location"
+
+let url = ...
+
+let options = {
+  fetch: any,         // an (authenticated) fetch function
+  verbose?: boolean,  // log all operations
+} 
+
+await listPermissions(url, options)
+```
+
+*returns*
+```
+TODO::
+```
+
+##### changePermissions
+
+*usage*
+```
+import { changePermissions } from "/install/location"
+
+let url = ...
+
+let options = {
+  fetch: any,         // an (authenticated) fetch function
+  verbose?: boolean,  // log all operations
+} 
+
+let operations = [ 
+  {
+    type: "agent" | 'group' | 'public', // type of permission to change
+    id?: string,                        // (type: agent | group) WebID to change permissions for 
+    read?: boolean,                     // assign read permissions
+    write?: boolean,                    // assign write permissions
+    append?: boolean,                   // assign append permissions
+    control?: boolean,                  // assign control permissions
+    default?: boolean,                  // set permissions as default
+  }, ...
+]
+
+await changePermissions(url, operations, options)
+```
+
+*returns*
+```
+TODO::
+```
+
+##### deletePermissions
+List user permissions
+*usage*
+```
+import { deletePermissions } from "/install/location"
+
+let url = ...
+
+let options = {
+  fetch: any,         // an (authenticated) fetch function
+  verbose?: boolean,  // log all operations
+} 
+
+await deletePermissions(url, options)
+```
+
+*returns*
+```
+TODO::
+```

@@ -2,8 +2,6 @@ import { generateRecursiveListing, FileInfo } from '../utils/util';
 
 export type FindOptions =  {
   fetch: any,
-  name?: string,
-  query?: string,
   all?: boolean,
   full?: boolean,
   verbose?: boolean,
