@@ -28,7 +28,7 @@ export default async function authenticate(options: ILoginOptions) {
     
   } else if (authType === 'credentials') {
     try {
-      options = createClientCredentialsAuthOptions(options);
+      options = checkClientCredentialsAuthOptions(options);
       await builder.buildFromClientCredentials(options)
     } catch (e: any) {
       if (options.verbose) console.error(`Could not authenticate using client credentials: ${e.message}`)
@@ -43,7 +43,7 @@ export default async function authenticate(options: ILoginOptions) {
 
   } else if (authType === 'interactive') {
     try {
-      options = createInteractiveAuthOptions(options);
+      options = checkInteractiveAuthOptions(options);
       await builder.buildInteractive(options);
     } catch (e: any) {
       if (options.verbose) console.error(`Could not authenticate interactively: ${e.message}`)
@@ -62,42 +62,18 @@ export default async function authenticate(options: ILoginOptions) {
 
 }
 
-function createClientCredentialsAuthOptions(options: ILoginOptions) {
-  if (options.config) {
-    try {
-      let configObj = JSON.parse(fs.readFileSync(options.config, 'utf8'));
-      if (configObj.email && !options.email) options.email = configObj.email;
-      if (configObj.password && !options.password) options.password = configObj.password;
-      if (configObj.idp && !options.idp) options.idp = configObj.idp;
-      if (configObj.storage && !options.sessionInfoStorageLocation) 
-        options.sessionInfoStorageLocation = configObj.sessionInfoStorageLocation;
-    } catch (e) {
-      throw new Error(`Error parsing config file. Please make sure it is valid JSON: ${(<Error>e).message}`);
-    }
-  }
-
-  if (!options.email) {
+function checkClientCredentialsAuthOptions(options: ILoginOptions) {
+   if (!options.email) {
     throw new Error('No valid email value given.')
   } else if (!options.password) {
     throw new Error('No valid password value given')
   } else if (!options.idp) {
     throw new Error('No valid identity provider value given.')
   }   
-  
   return options;
 }
 
-function createInteractiveAuthOptions(options: ILoginOptions) {
-  if (options.config) {
-    try {
-      let configObj = JSON.parse(fs.readFileSync(options.config, 'utf8'));
-      if (configObj.idp && !options.idp) options.idp = configObj.idp;
-      if (configObj.sessionInfoStorageLocation && !options.sessionInfoStorageLocation) 
-        options.sessionInfoStorageLocation = configObj.sessionInfoStorageLocation;
-    } catch (e) {
-      throw new Error(`Error parsing config file. Please make sure it is valid JSON: ${(<Error>e).message}`);
-    }
-  }
+function checkInteractiveAuthOptions(options: ILoginOptions) {
   if (!options.idp) throw new Error('No valid identity provider value given.')
   return options;
 }

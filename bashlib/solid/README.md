@@ -1,68 +1,99 @@
-# Solid tools
-This is a set of tools for Solid environments designed for the CLI and Node.js.
-It aims to port a default set of commands for use in a Solid environment.
-It makes heavy use of the [authentication and developer tools provided by inrupt for Solid](https://docs.inrupt.com/developer-tools/javascript/client-libraries/using-libraries/).
+# Bashlib-solid
+The Bashlib-solid library provides a set of functions for interacting with Solid environments from Node.JS and the CLI. The aim is to provide shell-like functionality to facility the use of and development for the Solid ecosystem with a low requirement of specific knowledge of Solid and LDP.
+This library makes heavy use of the [Developer tools by inrupt for Solid](https://docs.inrupt.com/developer-tools/javascript/client-libraries/using-libraries/).
 
 ## Installing
-Navigate to the `tools/solid` folder and run the following command
+Navigate to the `bashlib/solid` folder and run the following command
 ```
 npm run build;
 ```
 
 ## Usage
-You can use the created tools both from the CLI, as well as from Node.js
+The developed functionality can be accessed from both the **[CLI](#cli)**, as well as in **[Node.js](#nodejs)**
 
 
 ## CLI
-All available commands are present in `bin/solid.js`
+All available commands are presented through the CLI interface found in `bin/solid.js`
 
 ```
 node bin/solid.js [authentication_options] command [command_options] <command_args>
 ```
-### auth options
-In this section we detail the available authentication options. There are 2 authentication. options given. 
+### authentication options
+In this section we detail the available authentication options in the CLI interface. These make use of the [authentication module](../css#creating-an-authenticated-fetch) exposed by [Bashlib-css](../css).
 
-Using **interactive login**, you can authenticate to all pod providers that support OpenID Connect](https://openid.net/connect/) (This includes at least: [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer), [pod.inrupt.com](https://pod.inrupt.com), and the [inrupt ESS](https://inrupt.com/products/enterprise-solid-server/) should also be supported (not tested) ). Note that this will store credentials encrypted on the local machine in the default path ```~/.solid/.solid-css-credentials```, to prevent having to re-login for every command.
+The **interactive** auth option opens a browser window that can be used to interacitvely authenticate you through the browser for the given identity provider value. This follows the default [Inrupt Node.JS authentication flow](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/authenticate-nodejs/). This option stores session information in your filesystem and re-uses a previous session where possible to speed up subsequent commands without requiring re-authentication.
+*A custom port used for the redirect in the authentication flow can be set using [environment variables](#environment-variables).*
 
-Using **non-interactive login**, the program tries to login using the provided *email*, *password* and *identityprovider* values. This **currently only supports v2.x.x of the Community Solid Server**, and works using the [inrupt script to generate an oidc token](https://github.com/inrupt/generate-oidc-token), after which all browser interactions are simulated using Node.js.
+The **token** auth option makes use of [Client Credentials tokens](https://github.com/CommunitySolidServer/CommunitySolidServer/blob/main/documentation/client-credentials.md) available for the Community Solid Server as of version 4. The authentication flow using these tokens happens entirely in Node.JS, and requires **no browser interaction!** This option stores session information in your filesystem and re-uses a previous session where possible to speed up subsequent commands without requiring re-authentication. Information on how to create a Client Credentials token can be found in the [create-token](../css#client-credentials-token-generation) module of [Bashlib-css](../css).
+**note: This option is only available for Solid-accounts hosted by a Community Solid Server version 4.0.0 and up.**
 
-On failing to authenticate, the program will try to continue unauthenticated.
+The **credentials** auth option uses client credentials to authenticate the user. It requires a valid *email*, *password* and *identityprovider* value to be given and hijacks the browser login flow used by the Community Solid Server version 2.x.x. When possible, please make use of the *token* authentication option, as this does not require the user credentials to be stored on the system! 
+*A custom port used for the redirect in the authentication flow can be set using [environment variables](#environment-variables).*
+**note: This option is deprecated, and only supports versions 2.x.x of the Community Solid Server.**
 
+When failing to authenticate, the program will try to continue unauthenticated.
 
-#### cli authentication options
-The following options are available for authentication on the CLI interface. *These options take precedence over the options defined in the config file and environment variables*. 
+#### CLI authentication options
+These are the authentication options that can be passed to the CLI interface.
+Some options are only required for specific authentication types, shown by the `(auth: type)` description.
 
-- `-i, --interactive`                                   Use interactive Login. This opens a browser window to handle authentication. **This option requires an identity provider value to be set either via the command line options, via the config file or via the environment variables!** 
-- `-idp, --identityprovider <string>`                   The URL of the identity provider.
-- `-e, --email <string>`                                USer email address.
-- `-p, --password <string>`                             User password.
-- `-c, --config <string>`                               Config file location.
-- `-s, --storage <string>`                              Credentials storage location (*only for interactive login,* **defaults to `~/.solid/.css-auth-token`)**
-- `--silent`                                            Silence authentication errors
+```
+[authentication_options]
+  -U, --unauthenticated                Skip authentication step
+  -a, --auth <string>                  token | credentials | interactive - Authentication type (defaults to "token")
+  -i, --idp <string>                   (auth: any) URL of the Solid Identity Provider
+  -e, --email <string>                 (auth: credentials) Email adres for the user. Default to <uname>@test.edu
+  -p, --password <string>              (auth: credentials) User password. Default to <uname>
+  -t, --tokenStorage <string>          (auth: token) Location of file storing Client Credentials token. Defaults to ~/.solid/.css-auth-token
+  -s, --sessionStorage <string>        (auth: token | interactive) Location of file storing session information. Defaults to ~/.solid/.session-info-<auth>
+  -c, --config <string>                (auth: any) Location of config file with authentication info.
+  --port                               (auth: interactive | credentials) Specify port to be used when redirecting in Solid authentication flow. Defaults to 3435.
+  --silent                             Silence authentication errors
+```
 
-#### config file
-The config file must be a JSON file formatted as follows:
-
+#### The config file
+You can use a config file with the `-c, --config <path>` option.
+This config file will be used to auto-fill any missing authentication options.
+The config file must adhere to the following format, and may include any of the following options:
 ```
 {
-  idp: <user identity provider>,
-  email: <user email>,
-  password: <user password>,
-  storage: <prefered storage location>,
+  auth: "token" | "credentials" | "interactive",
+  idp: "https://your.pod.identity.provider.org/",
+  email: "User email address",
+  password: "User password,
+  tokenStorage: "/path/of/token/file",
+  sessionStorage: "/path/of/session/storage/file",
+  port: <number>
+  silent: true | false,
 }
 ```
-(Not all values have to be present in the config)
-
+This option is the preferred way to passing user credentials when using credentials based authentication.
 
 #### environment variables
-Finally, the following environment variables can be set.
+Finally, the environment variables can be used to pass the above authentication options.
 ```
-SOLID_SUITE_SESSION_STORAGE=<session_storage_location> (= --storage option) 
-SOLID_SUITE_CONFIG=<config_file_location>
+BASHLIB_AUTH=<auth type> 
+BASHLIB_IDP=<identity provider> 
+BASHLIB_TOKEN_STORAGE=<client_credentials_token_storage_location>
+BASHLIB_SESSION_STORAGE=<session_info_storage_location>
+BASHLIB_CONFIG=<config_file_location>
+BASHLIB_AUTH_PORT=<number>
 ```
-These can be used to pass the location of the config file, and the location of the session storage file to use.
 
+### URL prefix options
+The CLI interface provides some default prefixes you can use in all URL values for all commands. The prefix is replaced by the found value when running the command.
+
+```
+webid: (The user WebID)
+base: (The base storage location of your data pod -might not be found when WebId is outside of pod domain.)
+inbox: (The user inbox - when available)
+
+example usage:
+node bin/solid.js -a "interactive" fetch webid:
+``` 
+Be sure to include the `:` at the end of the prefix!
 ### commands
+In this section, all available commands in the CLI interface are listed and explained.
 
 #### fetch
 This command enables authenticated fetching of resources from the CLI.

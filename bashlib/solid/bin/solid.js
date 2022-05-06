@@ -36,12 +36,40 @@ console.error = function(errorString){
 };
 
 function addEnvOptions(options) {
-  const envStorage = process.env['SOLID_SUITE_SESSION_STORAGE']
-  const envConfig = process.env['SOLID_SUITE_CONFIG']
-  if (envStorage && !options.storage) options.storage = envStorage
-  if (envConfig && !options.config) options.config = envConfig
+  const envAuthType = process.env['BASHLIB_AUTH']
+  const envIdp = process.env['BASHLIB_IDP']
+  const envTokenStorage = process.env['BASHLIB_TOKEN_STORAGE']
+  const envSessionStorage = process.env['BASHLIB_SESSION_STORAGE']
+  const envConfig = process.env['BASHLIB_CONFIG']
+  const envAuthPort = process.env['BASHLIB_AUTH_PORT']
 
-  if (!options.silent) options.verbose = true // setting verbose setting for authentication
+  // Set config options
+  options.config = options.config || envConfig
+  if (options.config) {
+    try {
+      let cfg = JSON.parse(fs.readFileSync(options.config, 'utf8'));
+      for (let key of Object.keys(cfg)) {
+        // Set config option value if no cli value
+        if (!options[key]) options[key] = cfg[key]
+      }
+    } catch (e) {
+      // Dirty solution to prevent extra error handling everywhere :)
+      console.error(`Error parsing config file at ${options.config}.`);
+      process.exit(1);
+    }
+  }
+
+  // Set env option value if no cli and config option value
+  options.auth = options.auth || envAuthType
+  options.idp = options.idp || envIdp
+  options.tokenStorage = options.tokenStorage || envTokenStorage
+  options.sessionStorage = options.sessionStorage || envSessionStorage
+  options.port = options.port || envAuthPort
+
+  // Fixing some naming inconsistencies because of limited option length
+  options.clientCredentialsTokenStorageLocation = options.tokenStorage
+  options.sessionInfoStorageLocation = options.sessionStorage
+  options.verbose = !options.silent 
   return options
 }
 
@@ -50,16 +78,16 @@ program
   .description('Utility toolings for interacting with a Solid server.')
   .version('0.1.0')
   .enablePositionalOptions()
-  .option('-a, --auth <string>', 'token | credentials | interactive - Authentication type, defaults to cssv4')
-  .option('-U, --unauthenticated', 'Continue unauthenticated')
-  .option('-t, --tokenFile <string>', 'Location of generated token of CSSv4. Defaults to ~/.solid/.css-auth-token')
-  .option('-i, --idp <string>', 'URI of the IDP')
-  .option('-e, --email <string>', 'Email adres for the user. Default to <uname>@test.edu')
-  .option('-p, --password <string>', 'User password. Default to <uname>')
-  .option('-c, --config <string>', 'Config file containing user email, password and idp in format: {email: <email>, password: <password>, idp: <idp>}')
-  .option('-s, --storage <string>', 'Local file to store session information for consequent uses')
+  .option('-U, --unauthenticated', 'Skip authentication step')
+  .option('-a, --auth <string>', 'token | credentials | interactive - Authentication type (defaults to "token")')
+  .option('-i, --idp <string>', '(auth: any) URL of the Solid Identity Provider')
+  .option('-e, --email <string>', '(auth: credentials) Email adres for the user. Default to <uname>@test.edu')
+  .option('-p, --password <string>', '(auth: credentials) User password. Default to <uname>')
+  .option('-t, --tokenStorage <string>', '(auth: token) Location of file storing Client Credentials token. Defaults to ~/.solid/.css-auth-token')
+  .option('-s, --sessionStorage <string>', '(auth: token | interactive) Location of file storing session information. Defaults to ~/.solid/.session-info-<auth>')
+  .option('-c, --config <string>', '(auth: any) Location of config file with authentication info.')
   .option('--silent', 'Silence authentication errors')
-
+  .option('--port', 'Specify port to be used when redirecting in Solid authentication flow. Defaults to 3435.')
 /*********
  * FETCH *
  *********/
