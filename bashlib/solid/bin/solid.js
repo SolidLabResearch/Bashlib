@@ -13,11 +13,11 @@ const find = commands.find
 const remove = commands.remove
 const move = commands.move
 const query = commands.query
-const tree = commands.tree
 const listPermissions = commands.listPermissions
 const changePermissions = commands.changePermissions
 const deletePermissions = commands.deletePermissions
 const authenticatedFetch = commands.authenticatedFetch
+const tree = require('../dist/commands/solid-tree').default
 
 const columns = require('cli-columns');
 const Table = require('cli-table');
@@ -289,7 +289,12 @@ program
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
   url = await changeUrlPrefixes(authenticationInfo, url)
-  await tree(url, options)
+  try {
+    await tree(url, options)  
+  } catch (e) {
+    console.error(`Could not display tree structure for ${url}: ${e.message}`)
+  }
+  
   process.exit(0)
 })
 

@@ -10,6 +10,9 @@ export type TreeOptions = {
 const WHITESPACE = '   '
 const DASHES = '---'
 
+/**
+ * This function is CLI only, as it does not make any sense as a Node.JS export
+ */
 export default async function tree(url: string, options: TreeOptions) {
   if (!isDirectory(url)) {
     throw new Error('Can only call tree with a container as argument.')
