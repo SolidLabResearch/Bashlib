@@ -25,7 +25,7 @@ type copyOptions = {
   all: boolean,
 }
 
-export default async function copyData(src: string, dst: string, options: copyOptions) : Promise<{
+export default async function copy(src: string, dst: string, options: copyOptions) : Promise<{
   source: {files: FileInfo[]; directories: FileInfo[]; aclfiles: FileInfo[];}
   destination: {files: FileInfo[]; directories: FileInfo[]; aclfiles: FileInfo[];}
 }> {

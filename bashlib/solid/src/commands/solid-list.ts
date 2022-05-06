@@ -5,7 +5,6 @@ type ListingOptions = {
   fetch: any,
   all?: boolean,
   full?: boolean,
-  long?: boolean,
   verbose?: boolean,
 }
 

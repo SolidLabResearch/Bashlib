@@ -7,7 +7,7 @@ var editor = process.env.EDITOR || 'vi';
 const authenticate = require('../dist/utils/authenticate').default
 const commands = require('../')
 
-const copyData = commands.copyData
+const copy = commands.copy
 const list = commands.list
 const find = commands.find
 const remove = commands.remove
@@ -16,7 +16,7 @@ const query = commands.query
 const listPermissions = commands.listPermissions
 const changePermissions = commands.changePermissions
 const deletePermissions = commands.deletePermissions
-const authenticatedFetch = commands.authenticatedFetch
+const authenticatedFetch = require('../dist/commands/solid-fetch').default
 const tree = require('../dist/commands/solid-tree').default
 
 const columns = require('cli-columns');
@@ -146,7 +146,7 @@ program
     try {
       src = await changeUrlPrefixes(authenticationInfo, src)
       dst = await changeUrlPrefixes(authenticationInfo, dst)
-      await copyData(src, dst, { ...options, ...opts})  
+      await copy(src, dst, { ...options, ...opts})  
     } catch (e) {
       console.error(`Could not copy requested resources from ${src} to ${dst}: ${e.message}`)
       process.exit(1)
@@ -425,7 +425,7 @@ program
     const tmpPath = pth.join(tmpDir, '.solid', fileName)
     let copiedFileLocalUrl;
 
-    let copiedData = await copyData(url, tmpPath, options);
+    let copiedData = await copy(url, tmpPath, options);
     let copiedFileContentType = copiedData.source.files[0].contentType;
     let copiedFileUrl = copiedData.source.files[0].absolutePath;
     copiedFileLocalUrl = copiedData.destination.files[0].absolutePath;
@@ -451,7 +451,7 @@ program
       })
     }
 
-    await copyData(copiedFileLocalUrl, copiedFileUrl, options)
+    await copy(copiedFileLocalUrl, copiedFileUrl, options)
     if (options.verbose) console.log('Remote file updated!');
     
 

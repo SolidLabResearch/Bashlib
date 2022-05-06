@@ -1,4 +1,4 @@
-import copyData from './solid-copy';
+import copy from './solid-copy';
 import { isDirectory, isRemote } from '../utils/util';
 import remove from './solid-remove';
 
@@ -22,7 +22,7 @@ export default async function move(source: string, destination: string, options:
   }
   
   // Copy from source to destination
-  await copyData(source, destination, options)
+  await copy(source, destination, options)
 
   // Remove source recursively
   if (isRemote(source)) {

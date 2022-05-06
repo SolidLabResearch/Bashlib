@@ -120,11 +120,11 @@ The passed URL should be a container, or the command will fail.
 The `--all` flag can be set to include `.acl` files in the listing.
 The `--long` format provides a table of the resources, and indicates the connection between a resources and their `.acl` files.
 
-usage
+*usage*
 ```
 node bin/solid.js [auth_options] list [options] <url>
 ```
-options
+*options*
 ```
   -a, --all      List all resources (includes .acl and .meta resources)
   -f, --full     List resources with their full uri (defaults to showing only resource name)
@@ -138,16 +138,85 @@ The passed URL should be a container, or the command will fail.
 
 The `--all` flag can be set to include `.acl` files in the listing.
 
-usage
+*usage*
 ```
 node bin/solid.js [auth_options] tree [options] <url>
 ```
-options
+*options*
 ```
   -a, --all      List all resources (includes .acl and .meta resources)
   -f, --full     List resources with their full uri (defaults to showing only resource name)
   -v, --verbose  Log all operations to cli
 ```
+
+
+#### copy
+This command copies files/resources from and to both the local filesystem and solid pods.
+Both the source and destination arguments can be either a local path or a URI on a solid pod. Resources that cannot be read due to lack of authorization will be ignored, but can be notified using the `--verbose` flag.
+Containers/directories are always be copied recursively  by default.
+The command will error on trying to copy a container to a file.
+Copying a file/resource to a container/directory will create a new file in the container/directory with the same name, and **overwrite it if it already exists.**
+
+The `--all` flag can be set to include `.acl` files when copying.
+
+*usage*
+```
+node bin/solid.js [auth_options] copy [options] <source> <destination>
+```
+*options*
+```
+  -a, --all      Copy all resources (includes .acl and .meta resources)
+  -v, --verbose  Log all operations to cli
+```
+
+#### move
+This command moves files/resources from and to both the local filesystem and solid pods.
+Its functionality is equal to copying the files/resources from the source to the destination, and then removing the source. **note: if the source is the local filesystem, files will not be removed, and the command will be identical to a copy.**
+Resources that cannot be read due to lack of authorization will be ignored, but can be notified using the `--verbose` flag.
+Containers/directories are always be moved recursively  by default.
+The command will error on trying to move a container to a file.
+Moving a file to a container will create a new file in the container with the same name, and **overwrite it if it already exists.**
+
+The `--all` flag can be set to include `.acl` files when moving.
+
+*usage*
+```
+node bin/solid.js [auth_options] move [options] <url> <query>
+```
+*options*
+```
+  -a, --all      Move all resources (includes .acl and .meta resources)
+  -v, --verbose  Log all operations to cli
+```
+
+#### remove
+This command removes resources from solid environments.
+**Removing a container requires the -r flag to be set to recursively remove resources from containers! This is in contrast to copy and move commands that set this automatically.**
+`.acl` resources are not explicitly removed by this command. We expect these auxiliary resources to be deleted by the Pod Provider on resource deletion.
+
+*usage*
+```
+node bin/solid.js [auth_options] remove [options] <url>
+```
+*options*
+```
+  -r, --recursive  Recursively removes all files in given container
+  -v, --verbose  Log all operations to cli
+```
+
+#### mkdir
+This command creates a new empty container on a Solid pod on given URL.
+Missing parent containers are created automatically.
+
+*usage*
+```
+node bin/solid.js [auth_options] mkdir [options] <url>
+```
+*options*
+```
+  -v, --verbose  Log all operations to cli
+```
+
 
 #### find
 This command finds the resources contained by the url argument matching the passed string argument.
@@ -155,11 +224,11 @@ The passed URL should be a container, or the command will fail.
 
 The `--all` flag can be set to include `.acl` files in the results.
 
-usagelisting
+*usage*
 ```
 node bin/solid.js [auth_options] find [options] <url> <match>
 ```
-options
+*options*
 ```
   -a, --all      Match all resources (includes .acl and .meta resources)
   -f, --full     Match resources with their full uri (defaults to matching with their relative path compared to the passed URI argument)
@@ -173,11 +242,11 @@ The `--all` flag can be set to include `.acl` files in the listing.
 The `--full` flag will show the full file URL in the returned results, instead of the relative path to the queried container.
 The `--pretty` flag will show the results in a table format.
 
-usage
+*usage*
 ```
 node bin/solid.js [auth_options] query [options] <url> <query>
 ```
-options
+*options*
 ```
   -a, --all      Query all resources (includes .acl and .meta resources)
   -f, --full     List resources with their full uri (defaults to showing only relative URI to the passed url argument)
@@ -185,70 +254,16 @@ options
   -v, --verbose  Log all operations to cli
 ```
 
-#### copy
-This command copies files/resources from and to both the local filesystem and solid pods.
-Both the source and destination arguments can be either a local path or a URI on a solid pod. Resources that cannot be read due to lack of authorization will be ignored, but can be notified using the `--verbose` flag.
-Containers/directories are always be copied recursively  by default.
-The command will error on trying to copy a container to a file.
-Copying a file/resource to a container/directory will create a new file in the container/directory with the same name, and **overwrite it if it already exists.**
+#### perms
+This command enables the listing, editing and removing of resource permisssions. This command only supports `Web Access Controls resources (.acl)`, and does not support `Access Control Policies resources (.acp)`. Editing permissions can be done by supplying a set of permissions. These permissions must be formatted according to the description below.
 
-The `--all` flag can be set to include `.acl` files when copying.
+The `--pretty` flag can be set to display the results in a table format when listing resource permissions and is ignored for other options.
 
-usage
-```
-node bin/solid.js [auth_options] copy [options] <source> <destination>
-```
-options
-```
-  -a, --all      Copy all resources (includes .acl and .meta resources)
-  -v, --verbose  Log all operations to cli
-```
-
-#### move
-This command moves files/resources from and to both the local filesystem and solid pods.
-Its functionality is equal to copying the files/resources from the source to the destination, and then removing the source. **note: if the source is the local filesystem, files will not be removed, and the command will be identical to a copy.**
-Resources that cannot be read due to lack of authorization will be ignored, but can be notified using the `--verbose` flag.
-Containers/directories are always be copied recursively  by default.
-The command will error on trying to move a container to a file.
-Moving a file to a container will create a new file in the container with the same name, and **overwrite it if it already exists.**
-
-The `--all` flag can be set to include `.acl` files when moving.
-
-usage
-```
-node bin/solid.js [auth_options] move [options] <url> <query>
-```
-options
-```
-  -a, --all      Copy all resources (includes .acl and .meta resources)
-  -v, --verbose  Log all operations to cli
-```
-
-#### remove
-This command removes files/resources from solid environments.
-Its functionality is equal to copying the files/resources from the source to the destination, and then removing the source.
-**removing a container requires the -r flag to be set to recursively remove resources from containers, in contrast to copy and move**
-*Acl files are deleted on resource deletion* (not sure about ACP resources!)
-
-usage
-```
-node bin/solid.js [auth_options] remove [options] <url>
-```
-options
-```
-  -a, --all      Copy all resources (includes .acl and .meta resources)
-  -r, --recursive  Recursively removes all files in given container
-  -v, --verbose  Log all operations to cli
-```
-
-#### parms
-This command enables the listing, editing and removing of ACL resources connected to a resource.
-**This command only works with ACL resources. It does not support ACP**
-usage
+*usage*
 ```
 node bin/solid.js [auth_options] perms [options] <operation> [permissions]
 ```
-options
+*options*
 ```
   -p, --pretty   Use pretty formatting
   -v, --verbose  Log all operations to cli
@@ -260,14 +275,9 @@ edit            Edit the permissions for the current resource
 remove          Remove the ACL file for the current resource
 ```
 *permissions* 
-
-Permissions are ignored when the operation is not *edit*.
-Permissions are formatted according to the following options:
-
-formatting:
 ```
 setting public permissions
-p=[d][a][c][r][w]
+p=[d][a][c][r][w]*permission formatting:*
 
 setting permissions for the currently authenticated webId
 u=[d][a][c][r][w]
@@ -283,33 +293,85 @@ permissions options:
 [c] : apply control permissions (if this is not set, control permissions are set to false)
 [g] : defines the <webId> as a group id instead of a webId
 
-example: setting default read and write permissions for http://pod.com/bob/profile/card#me results in:
 
-node bin/solid.js [auth_options] perms edit http://pod.com/bob/profile/card#me=rwd
+example: setting default read and write permissions for http://pod.com/bob/profile/card#me on resource https://pod.com/resource results in:
+> node bin/solid.js perms edit https://pod.com/resource http://pod.com/bob/profile/card#me=rwd
+
+example2: setting personal and public default read access on resource https://pod.com/resource results in:
+> node bin/solid.js perms edit https://pod.com/resource p=rd u=rd
+
+```
+
+#### edit
+The edit command is a convenience command created to edit resources on your Solid pod locally.
+The command will default to use the default system `$editor`. 
+After editing, the result will be used to overwrite the original resource.
+Please keep in mind that there is not locking mechanism for multiple users editing the same file simultaneously.
+
+The `--header` flag can be used to pass custom headers when retrieving the resource to e.g. request the resource in a specific RDF format.
+The `--editor` flag can be set to specify the path to the executable of the editor to be used.
+the `--wait` flag can be set to wait with uploading the file until a key is pressed. This allows the use of non-cli based editors. When done modifying the file, focus the CLI and press any key to upload the result.
+
+*usage*
+```
+node bin/solid.js [auth_options] edit [options] <url>
+```
+*options*
+```
+  -h, --header <string>                     The request header. Multiple headers can be added separately. These follow the style of CURL. e.g. --header "Content-Type: application/json"
+  -e, --editor <path_to_editor_executable>  Use custom editor
+  -w, --wait                                Wait for user confirmation of file update before continuing
+  -v, --verbose  Log all operations to cli
 ```
 
 
 
 ## Node.js
-All available commands are exported as functions from this lib.
+The commands above are nearly all exported as functions by the `Bashlib-solid` library in Node.JS. For more information on the working of the functions, please look above in the explanation of the CLI commands. 
 
+### Functions
+Here a list of the available functions exposed by the lib in Node.JS is given.
+
+#### fetch
+An authenticated fetch function can be created using the `Bashlib-css` library.
+
+#### list
+
+*usage*
 ```
-include { list, remove, ... } from '/install/location'
+import { list } from "/install/location"
+
+let url = ...
+let options = {
+  fetch: any,         // an (authenticated) fetch function
+  all?: boolean,      // include .acl resources in the listing
+  full?: boolean,     // return full urls instead of relative urls
+  verbose?: boolean,  // log all operations
+} 
+
+await fetch(url, options)
 ```
 
-currently available functions:
-- authenticatedFetch (i would recommend just using session.fetch, this is mainly a helper for the command line interface)
-- list
-- copyData
-- remove
-- authenticatedFetch
-- move
-- find
-- query
-- tree
-- listPermissions
-- changePermissions
-- deletePermissions
+*returns*
+```
+ResourceInfo: {
+  url: string,              // the resource full url
+  relativePath?: string,    // the resource relative url
+  isDir: boolean,           // flag if directory or not
+  modified?: Date | null,   // last modified date
+  mtime?: number | null,    // last modified date as mtime
+  size?: number | null,     // resource size
+  types?: string[],         // resource types
+  metadata?: ResourceInfo   // resourceInfo of metadata resource
+  acl?: ResourceInfo,       // resourceInfo of acl resource
+}
+```
 
+#### copy
 
-These functions are identical to their CLI counterparts above.
+*usage*
+```
+import { copy } from "/install/location"
+```
+
+.. TODO
