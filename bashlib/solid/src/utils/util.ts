@@ -277,9 +277,15 @@ export async function checkHeadersForAclAndMetadata(url: any, fetch: Function, h
   }
   for (let header of headers.refs) {
     if (header.rel === 'acl') {
-      foundHeaders.acl = header.uri;
+      // Check if file exists first
+      if (await checkFileExists(header.uri, fetch)) {
+        foundHeaders.acl = header.uri;
+      }
     } else if (header.rel === 'describedby') {
-      foundHeaders.meta = header.uri;
+      // Check if file exists first
+      if (await checkFileExists(header.uri, fetch)) {
+        foundHeaders.meta = header.uri;
+      }
     }
   }
   return foundHeaders;

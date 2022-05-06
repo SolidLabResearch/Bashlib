@@ -2,6 +2,8 @@
 The Bashlib-solid library provides a set of functions for interacting with Solid environments from Node.JS and the CLI. The aim is to provide shell-like functionality to facility the use of and development for the Solid ecosystem with a low requirement of specific knowledge of Solid and LDP.
 This library makes heavy use of the [Developer tools by inrupt for Solid](https://docs.inrupt.com/developer-tools/javascript/client-libraries/using-libraries/).
 
+*note: `Access Control Policies (ACP)` files `(.acp)`, used by the Enterprised Solid Server and on the Inrupt Pod Spaces, are not supported by this lib! Only `Web Access Controls (WAC)` files `(.acl)` are supported.
+
 ## Installing
 Navigate to the `bashlib/solid` folder and run the following command
 ```
@@ -89,7 +91,7 @@ root: (The root of your data pod - will not be found when you have a custom WebI
 inbox: (The user inbox - when available)
 
 example usage:
-node bin/solid.js -a "interactive" fetch webid:
+node bin/solid.js fetch webid:
 ``` 
 Be sure to include the `:` at the end of the prefix!
 ### commands
@@ -98,11 +100,11 @@ In this section, all available commands in the CLI interface are listed and expl
 #### fetch
 This command enables authenticated fetching of resources from the CLI.
 
-usage
+*usage*
 ```
 node bin/solid.js [auth_options] fetch [options] <url>
 ```
-options
+*options*
 ```
   -v, --verbose          Write out full response and all headers
   -H, --only-headers     Only write out headers
@@ -114,6 +116,9 @@ options
 #### list
 This command lists the resources contained by the url argument.
 The passed URL should be a container, or the command will fail.
+
+The `--all` flag can be set to include `.acl` files in the listing.
+The `--long` format provides a table of the resources, and indicates the connection between a resources and their `.acl` files.
 
 usage
 ```
@@ -131,6 +136,8 @@ options
 This command gives a recursive overview of the resources contained by the url argument.
 The passed URL should be a container, or the command will fail.
 
+The `--all` flag can be set to include `.acl` files in the listing.
+
 usage
 ```
 node bin/solid.js [auth_options] tree [options] <url>
@@ -146,7 +153,9 @@ options
 This command finds the resources contained by the url argument matching the passed string argument.
 The passed URL should be a container, or the command will fail.
 
-usage
+The `--all` flag can be set to include `.acl` files in the results.
+
+usagelisting
 ```
 node bin/solid.js [auth_options] find [options] <url> <match>
 ```
@@ -159,6 +168,10 @@ options
 
 #### query
 This command queries over the given resource, or recursively over all contained resources in case the given url is a container. The query parameter MUST be a valid SPARQL query. All non-rdf resources will be ignored.
+
+The `--all` flag can be set to include `.acl` files in the listing.
+The `--full` flag will show the full file URL in the returned results, instead of the relative path to the queried container.
+The `--pretty` flag will show the results in a table format.
 
 usage
 ```
@@ -173,11 +186,13 @@ options
 ```
 
 #### copy
-This command copies files/resources from and to solid environments.
-Both the source and destination arguments can be either a local path or a URI on a solid pod. Resources that cannot be read due to lack of authorization will be ignored.
-Containers / directories are always be copied recursively.
+This command copies files/resources from and to both the local filesystem and solid pods.
+Both the source and destination arguments can be either a local path or a URI on a solid pod. Resources that cannot be read due to lack of authorization will be ignored, but can be notified using the `--verbose` flag.
+Containers/directories are always be copied recursively  by default.
 The command will error on trying to copy a container to a file.
-Copying a file to a container will create a new file in the container with the same name, and **overwrite it if it already exists.**
+Copying a file/resource to a container/directory will create a new file in the container/directory with the same name, and **overwrite it if it already exists.**
+
+The `--all` flag can be set to include `.acl` files when copying.
 
 usage
 ```
@@ -190,12 +205,14 @@ options
 ```
 
 #### move
-This command moves files/resources from and to solid environments.
-Its functionality is equal to copying the files/resources from the source to the destination, and then removing the source.
-Resources that cannot be read due to lack of authorization will be ignored.
-Containers / directories are always be moved recursively.
+This command moves files/resources from and to both the local filesystem and solid pods.
+Its functionality is equal to copying the files/resources from the source to the destination, and then removing the source. **note: if the source is the local filesystem, files will not be removed, and the command will be identical to a copy.**
+Resources that cannot be read due to lack of authorization will be ignored, but can be notified using the `--verbose` flag.
+Containers/directories are always be copied recursively  by default.
 The command will error on trying to move a container to a file.
 Moving a file to a container will create a new file in the container with the same name, and **overwrite it if it already exists.**
+
+The `--all` flag can be set to include `.acl` files when moving.
 
 usage
 ```

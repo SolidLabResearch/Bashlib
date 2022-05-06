@@ -174,8 +174,7 @@ program
         url = await changeUrlPrefixes(authenticationInfo, url)
         listings = await list(url, options)
       } catch (e) {
-        console.error(`Could not provide listing for ${url}:
-        url = await changeUrlPrefixes(authenticationInfo, url) ${e.message}`)
+        console.error(`Could not provide listing for ${url}: ${e.message}`)
         process.exit(1)
       }
 

@@ -1,5 +1,5 @@
 import copyData from './solid-copy';
-import { isDirectory } from '../utils/util';
+import { isDirectory, isRemote } from '../utils/util';
 import remove from './solid-remove';
 
 export type MoveOptions = {
@@ -25,6 +25,7 @@ export default async function move(source: string, destination: string, options:
   await copyData(source, destination, options)
 
   // Remove source recursively
-  await remove(source, { recursive: true, ...options });
-
+  if (isRemote(source)) {
+    await remove(source, { recursive: true, ...options });
+  }
 }
