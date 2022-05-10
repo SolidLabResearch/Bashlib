@@ -10,7 +10,7 @@ program
 program
   .command('create-pod')
   .option('-b, --base-url <string>', 'Base URI of the pod server.')
-  .option('-n, --name', 'Name for the newly created Solid account.')
+  .option('-n, --name <string>', 'Name for the newly created Solid account.')
   .option('-e, --email <string>', 'Email adres for the user. Default to <uname>@test.edu')
   .option('-p, --password <string>', 'User password. Default to <uname>')
   .action( async (options) => {
@@ -29,6 +29,7 @@ program
       email: options.email,
       password: options.password,
     }]
+    console.log('options', options, accountDataArray)
     try {
       await createPods(options.baseUrl, accountDataArray)
     } catch (e) {

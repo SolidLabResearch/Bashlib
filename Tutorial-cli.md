@@ -25,20 +25,52 @@ When you are done with the tutorial, you can remove the current folder to delete
 git clone https://github.com/CommunitySolidServer/CommunitySolidServer.git
 cd CommunitySolidServer/
 npm install
-npm start -- -c @css:config/file.json -f ./data/ -p 2323
+npm start
 ```
 
-Congratulations! Your own CSS instance is now running on localhost on port 2323. Now browse to `http://localhost:2323` in the browser, and you will be greeted with a setup screen. Here you may click on `complete setup`, and the server setup is now done! (You will notice that when you click on the `homepage` link, this will give a `Not logged in` error. This is because the server root is no longer publicly available now, and you are not currently authenticated.)
+Congratulations! Your own CSS instance is now running on localhost on port 2323. 
+You can confirm this by browsing to `http://localhost:3000` in the browser, and you will be greeted with a setup screen.
+You do not have to do anything on this screen for now! 
 
 ## Setting up Bashlib
-To setup the bahlib, we execute the following code:
+To setup the `Bashlib` library, we execute the following code:
 ```
-git clone https://github.com/MellonScholarlyCommunication/css-suite/tree/master/bashlib/css
+git clone https://github.com/SolidLabResearch/Bashlib.git
+cd Bashlib
+bash setup.sh
 ```
+This code does the setup for Bashlib, and installs the available modules.
+Your `Bashlib` library is now setup and ready to use!
+
 
 ## Bashlib-css
-The `Bashlib-css` module gives a set of functions specifically designed for the Community Solid Server. It handles functionality that is currently not included in the spec for Solid and may vary between implementations.
-
-
+To start with `Bashlib`, we first take a look at the `Bashlib-css` module.
+The `Bashlib-css` module gives a set of functions specifically designed for the Community Solid Server. 
+It handles functionality that is currently not included in the spec for Solid and may vary between implementations of the Solid specification.
+The CLI interface for `Bashlib-css` can be accessed here:
+```
+node bashlib/css/bin/css.js
+```
+**optional:** You can create an alias for this path so you do not have to write the full command every time. From here on, I will assume the alias `alias bashlib-css="node bashlib/css/bin/css.js"` to be set!
 ### Creating a new Solid account + data pod
-The `Bashlib-css` module provides functionality to create a new data pod.
+*compatbility: CSSv.0.0 - current*
+
+A first function of the `Bashlib-css` module is the creation of a new Solid-account and accompanying data pod on a CSS instance.
+This serves as an to having to use the browser interface to register a new user, which can be found on [http://localhost:3000/idp/register/](http://localhost:3000/idp/register/).
+
+To create a new Solid account and pod, please execute the following code:
+```
+bashlib-css create-pod 
+```
+An interactive prompt will be shown, requiring you to enter the information of your to-be-created Solid account.
+
+e.g. 
+```
+? CSS instance base url   http://localhost:3000/
+? Pod and user name       Bob
+? User email              bob@test.edu
+? User password           bobIsTheBest123 
+```
+This will result in the message that a pod for bob has been created succesfully on [http://localhost:3000/Bob/profile/card#me](http://localhost:3000/Bob/profile/card#me). If you navigate to this URL, you can now see the profile document of the newly created Solid account on the newly created Solid pod.
+
+If you do not want an interactive promt, you can call the function with all 
