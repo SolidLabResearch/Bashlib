@@ -57,7 +57,7 @@ program
       let answers = await inquirer.prompt(questions)
       options = { ...options, ...answers }
     }
-    options.tokenLocation = options.out;
+    options.clientCredentialsTokenStorageLocation = options.out;
 
     try {
       let storageLocation = await generateClientCredentialsToken(options);
