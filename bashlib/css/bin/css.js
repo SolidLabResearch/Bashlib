@@ -29,7 +29,6 @@ program
       email: options.email,
       password: options.password,
     }]
-    console.log('options', options, accountDataArray)
     try {
       await createPods(options.baseUrl, accountDataArray)
     } catch (e) {
