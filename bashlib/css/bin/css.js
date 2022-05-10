@@ -62,7 +62,7 @@ program
 
     try {
       let storageLocation = await generateClientCredentialsToken(options);
-      if(options.verbose) console.log(`Successfullly created token file at ${storageLocation}`)
+      if(options.verbose) console.log(`Successfully created token file at ${storageLocation}`)
     } catch (e) {
       console.error(`Could not create token: ${e.message}`)
       console.error(`Please make sure the filled in email and password values are correct!`)
