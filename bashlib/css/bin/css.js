@@ -39,7 +39,7 @@ program
 
 program
   .command('create-token')
-  .option('-i, --idp <string>', 'URL of your identity provider (= baseURI of your CSS server)')
+  .option('-b, --base-url <string>', 'URL of your identity provider (= baseURI of your CSS server)')
   .option('-n, --name <string>', 'Token name')
   .option('-e, --email <string>', 'User email')
   .option('-p, --password <string>', 'User password')
@@ -47,8 +47,8 @@ program
   .option('-v, --verbose', 'Log actions')
   .action( async (options) => {
     let questions = []
+    if (!options.baseUrl) questions.push({ type: 'input', name: 'baseUrl',  message: 'Pod baseuri'})
     if (!options.name) questions.push({ type: 'input', name: 'name',  message: 'Token name'})
-    if (!options.idp) questions.push({ type: 'input', name: 'idp',  message: 'Pod baseuri'})
     if (!options.email) questions.push({ type: 'input', name: 'email',  message: 'User email'})
     if (!options.password) questions.push({ type: 'password', name: 'password',  message: 'User password'})
 
@@ -58,6 +58,7 @@ program
       options = { ...options, ...answers }
     }
     options.clientCredentialsTokenStorageLocation = options.out;
+    options.idp = options.baseUrl;
 
     try {
       let storageLocation = await generateClientCredentialsToken(options);
