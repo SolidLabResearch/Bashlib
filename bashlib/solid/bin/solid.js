@@ -76,7 +76,7 @@ function addEnvOptions(options) {
 program
   .name('solid')
   .description('Utility toolings for interacting with a Solid server.')
-  .version('0.1.0')
+  .version('1.0.0')
   .enablePositionalOptions()
   .option('-U, --unauthenticated', 'Skip authentication step')
   .option('-a, --auth <string>', 'token | credentials | interactive - Authentication type (defaults to "token")')
@@ -88,56 +88,111 @@ program
   .option('-c, --config <string>', '(auth: any) Location of config file with authentication info.')
   .option('--silent', 'Silence authentication errors')
   .option('--port', 'Specify port to be used when redirecting in Solid authentication flow. Defaults to 3435.')
+
+/*****************
+ * COMPATIBILITY *
+ *****************/
+
+program
+  .command('cat')
+  .description('Utility to display files from remote Solid pod.')
+  .argument('<url>', 'file to be displayed')
+  .action(executeFetchCommand)
+
+program
+  .command('cp')
+  .description('Utility to copy files from and to both the local file system and remote Solid pod.')
+  .argument('<src>', 'file or directory to be copied')
+  .argument('<dst>', 'destination to copy file or directory to')
+  .option('-a, --all', 'Copy .acl files in recursive directory copies')
+  .option('-v, --verbose', 'Log all read and write operations')
+  .action(executeCopyCommand)
+
+program
+  .command('mv')
+  .description('Utility to move files or containers on remote Solid pod.')
+  .argument('<src>', 'file or directory to be moved')
+  .argument('<dst>', 'destination of the move')
+  .option('-a, --all', 'Move .acl files when moving directories recursively')
+  .option('-v, --verbose', 'Log all operations') 
+  .action(executeMoveCommand)
+
+program
+  .command('rm')
+  .description('Utility to remove files or container on remote Solid pod.')
+  .argument('<url>', 'URL of container to be listed')
+  .option('-r, --recursive', 'Recursively removes all files in given container (.acl files are removed on resource removal)') // Should this be default?
+  .option('-v, --verbose', 'Log all operations') // Should this be default?
+  .action(executeRemoveCommand)
+
+program
+  .command('ls')
+  .description('Utility to view files in container on remote Solid pod.')
+  .argument('<url>', 'URL of container to be listed')
+  .option('-a, --all', 'List all files including acl files')
+  .option('-f, --full', 'List files with their full uri')
+  .option('-l, --long', 'List in long format')
+  .option('-v, --verbose', '')
+  .action(executeListCommand)
+
+program
+  .command('chmod')
+  .description('Utility to list and edit resource permissions on a data pod. Only supports operations on ACL and not ACP.')
+  .argument('<operation>', 'list, edit, delete')
+  .argument('<url>', 'Resource URL')
+  .argument('[permissions...]', `Permission operations to edit resource permissions. 
+  Formatted according to <id>=[d][g][a][c][r][w]. 
+  For public permissions please set <id> to "p". 
+  For the current authenticated user please set <id> to "u".
+  To set updated permissions as default, please add the [d] option as follows: <id>=d[g][a][c][r][w]
+  To indicate the id as a group id, please add the [g] option as follows: <id>=g[d][a][c][r][w]
+  `)
+  .option('-p, --pretty', 'Pretty format') 
+  .option('-v, --verbose', 'Log all operations') // Should this be default?
+  .action(executePermsCommand)
+
 /*********
  * FETCH *
  *********/
 program
   .command('fetch')
   .description('Utility to fetch files from remote Solid pod.')
-  .version('0.1.0')
   .argument('<url>', 'file to be fetched')
   .option('-v, --verbose', 'Write out full response and all headers')
   .option('-H, --only-headers', 'Only write out headers')
-
-
   .option('-m, --method <string>', 'GET, POST, PUT, DELETE, ...')
   .option('-b, --body <string>', 'The request body')
   .option('-h, --header <string>', 'The request header. Multiple headers can be added separately. These follow the style of CURL. e.g. --header "Content-Type: application/json" ', arrayifyHeaders)
-  
-  // .option('-m, --mode <string>', 'no-cors, *cors, same-origin')
-  // .option('-ca, --cache <string>', '*default, no-cache, reload, force-cache, only-if-cached')
-  // .option('-cr, --credentials <string>', 'include, *same-origin, omit')
-  // .option('-r, --redirect <string>', 'manual, *follow, error')
-  // .option('-rp, --refferer-policy <string>', 'no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url')
+  .action(executeFetchCommand)
 
-  .action( async (url, options) => {
-    let programOpts = addEnvOptions(program.opts() || {});
-    const authenticationInfo = await authenticate(programOpts)
-    options.fetch = authenticationInfo.fetch
-    try {
-      url = await changeUrlPrefixes(authenticationInfo, url)
-      await authenticatedFetch(url, options)
-    } catch (e) {
-      console.error(`Could not fetch resource at ${url}: ${e.message}`)
-      process.exit(1)
-    }
+async function executeFetchCommand (url, options) {
+  let programOpts = addEnvOptions(program.opts() || {});
+  const authenticationInfo = await authenticate(programOpts)
+  options.fetch = authenticationInfo.fetch
+  try {
+    url = await changeUrlPrefixes(authenticationInfo, url)
+    await authenticatedFetch(url, options)
+  } catch (e) {
+    console.error(`Could not fetch resource at ${url}: ${e.message}`)
+    process.exit(1)
+  }
 
-    process.exit(0)
-  })
+  process.exit(0)
+}
 
-/*******
- * SCP *
- *******/
+/********
+ * Copy *
+ ********/
 program
   .command('copy')
   .description('Utility to copy files from and to both the local file system and remote Solid pod.')
-  .version('0.1.0')
   .argument('<src>', 'file or directory to be copied')
   .argument('<dst>', 'destination to copy file or directory to')
   .option('-a, --all', 'Copy .acl files in recursive directory copies')
   .option('-v, --verbose', 'Log all read and write operations')
+  .action(executeCopyCommand)
 
-  .action( async (src, dst, options) => {
+async function executeCopyCommand (src, dst, options) {
     let programOpts = addEnvOptions(program.opts() || {});
     const authenticationInfo = await authenticate(programOpts)
     let opts = { 
@@ -153,66 +208,93 @@ program
     }
     
     process.exit(0)
-  })
+  }
 
-  program
-    .command('list')
-    .description('Utility to view files in container on remote Solid pod.')
-    .version('0.1.0')
-    .argument('<url>', 'URL of container to be listed')
-    .option('-a, --all', 'List all files including acl files')
-    .option('-f, --full', 'List files with their full uri')
-    .option('-l, --long', 'List in long format')
-    .option('-v, --verbose', '')
-    .action( async (url, options) => {
-      let programOpts = addEnvOptions(program.opts() || {});
-      const authenticationInfo = await authenticate(programOpts)
-      
-      options.fetch = authenticationInfo.fetch
-      let listings = []
-      try {
-        url = await changeUrlPrefixes(authenticationInfo, url)
-        listings = await list(url, options)
-      } catch (e) {
-        console.error(`Could not provide listing for ${url}: ${e.message}`)
-        process.exit(1)
-      }
+/********
+program
+  .command('chmod')
+  .description('Utility to list and edit resource permissions on a data pod. Only supports operations on ACL and not ACP.')
+  .argument('<operation>', 'list, edit, delete')
+  .argument('<url>', 'Resource URL')
+  .argument('[permissions...]', `Permission operations to edit resource permissions. 
+  Formatted according to <id>=[d][g][a][c][r][w]. 
+  For public permissions please set <id> to "p". 
+  For the current authenticated user please set <id> to "u".
+  To set updated permissions as default, please add the [d] option as follows: <id>=d[g][a][c][r][w]
+  To indicate the id as a group id, please add the [g] option as follows: <id>=g[d][a][c][r][w]
+  `)
+  .option('-p, --pretty', 'Pretty format') 
+  .option('-v, --verbose', 'Log all operations') // Should this be default?
+  .action(executePermsCommand)
+ * List *
+ ********/
+program
+  .command('list')
+  .description('Utility to view files in container on remote Solid pod.')
+  .argument('<url>', 'URL of container to be listed')
+  .option('-a, --all', 'List all files including acl files')
+  .option('-f, --full', 'List files with their full uri')
+  .option('-l, --long', 'List in long format')
+  .option('-v, --verbose', '')
+  .action(executeListCommand)
 
-      // Output to command line
-      console.log(formatListing(listings, options))
-      process.exit(0)
-    })
+async function executeListCommand (url, options) {
+  let programOpts = addEnvOptions(program.opts() || {});
+  const authenticationInfo = await authenticate(programOpts)
+  
+  options.fetch = authenticationInfo.fetch
+  let listings = []
+  try {
+    url = await changeUrlPrefixes(authenticationInfo, url)
+    listings = await list(url, options)
+  } catch (e) {
+    console.error(`Could not provide listing for ${url}: ${e.message}`)
+    process.exit(1)
+  }
 
+  // Output to command line
+  console.log(formatListing(listings, options))
+  process.exit(0)
+}
+
+/**********
+ * Remove *
+ **********/
 program
   .command('remove')
   .description('Utility to remove files or container on remote Solid pod.')
-  .version('0.1.0')
   .argument('<url>', 'URL of container to be listed')
   .option('-r, --recursive', 'Recursively removes all files in given container (.acl files are removed on resource removal)') // Should this be default?
   .option('-v, --verbose', 'Log all operations') // Should this be default?
-  .action( async (url, options) => {
-    let programOpts = addEnvOptions(program.opts() || {});
-    const authenticationInfo = await authenticate(programOpts)
-    options.fetch = authenticationInfo.fetch
-    try {
-      url = await changeUrlPrefixes(authenticationInfo, url)
-      await remove(url, options)
-    } catch (e) {
-      console.error(`Could not remove ${url}: ${e.message}`)
-      process.exit(1)
-    }
-    process.exit(0)
-  })
+  .action(executeRemoveCommand)
 
+async function executeRemoveCommand (url, options) {
+  let programOpts = addEnvOptions(program.opts() || {});
+  const authenticationInfo = await authenticate(programOpts)
+  options.fetch = authenticationInfo.fetch
+  try {
+    url = await changeUrlPrefixes(authenticationInfo, url)
+    await remove(url, options)
+  } catch (e) {
+    console.error(`Could not remove ${url}: ${e.message}`)
+    process.exit(1)
+  }
+  process.exit(0)
+}
+
+/********
+ * Move *
+ ********/
 program
 .command('move')
 .description('Utility to move files or containers on remote Solid pod.')
-.version('0.1.0')
 .argument('<src>', 'file or directory to be moved')
 .argument('<dst>', 'destination of the move')
 .option('-a, --all', 'Move .acl files when moving directories recursively')
 .option('-v, --verbose', 'Log all operations') 
-.action( async (src, dst, options) => {
+.action(executeMoveCommand)
+
+async function executeMoveCommand (src, dst, options) {
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
@@ -225,122 +307,121 @@ program
     process.exit(1)
   }
   process.exit(0)
-})
+}
 
+/********
+ * Find *
+ ********/
 program
-.command('find')
-.description('Utility to find resoures on your data pod.')
-.version('0.1.0')
-.argument('<url>', 'Container to start the search')
-.argument('<filename>', 'Filename to match, processed as RegExp(filename)')
-.option('-a, --all', 'Match .acl and .meta files')
-.option('-f, --full', 'Match full filename.')
-.option('-v, --verbose', 'Log all operations') 
-.action( async (url, filename, options) => {
-  let programOpts = addEnvOptions(program.opts() || {});
-  const authenticationInfo = await authenticate(programOpts)
-  options.fetch = authenticationInfo.fetch
-  try {
-    url = await changeUrlPrefixes(authenticationInfo, url)
-    for await (let fileInfo of find(url, filename, options)) {
-      const name = options.full ? fileInfo.absolutePath : (fileInfo.relativePath || fileInfo.absolutePath)
-      console.log(name)
+  .command('find')
+  .description('Utility to find resoures on your data pod.')
+  .argument('<url>', 'Container to start the search')
+  .argument('<filename>', 'Filename to match, processed as RegExp(filename)')
+  .option('-a, --all', 'Match .acl and .meta files')
+  .option('-f, --full', 'Match full filename.')
+  .option('-v, --verbose', 'Log all operations') 
+  .action( async (url, filename, options) => {
+    let programOpts = addEnvOptions(program.opts() || {});
+    const authenticationInfo = await authenticate(programOpts)
+    options.fetch = authenticationInfo.fetch
+    try {
+      url = await changeUrlPrefixes(authenticationInfo, url)
+      for await (let fileInfo of find(url, filename, options)) {
+        const name = options.full ? fileInfo.absolutePath : (fileInfo.relativePath || fileInfo.absolutePath)
+        console.log(name)
+      }
+    } catch (e) {
+      console.error(`Could not find match in ${url}: ${e.message}`)
+      process.exit(1)
     }
-  } catch (e) {
-    console.error(`Could not find match in ${url}: ${e.message}`)
-    process.exit(1)
-  }
-  process.exit(0)
-})
+    process.exit(0)
+  })
 
 program
-.command('mkdir')
-.description('Utility to add an empty container to your pod.')
-.version('0.1.0')
-.argument('<url>', 'Container to start the search')
-.option('-v, --verbose', 'Log all operations')
-.action( async (url, options) => {
-  let programOpts = addEnvOptions(program.opts() || {});
-  const authenticationInfo = await authenticate(programOpts)
-  options.fetch = authenticationInfo.fetch
-  try {
-    url = await changeUrlPrefixes(authenticationInfo, url)
-    await commands.makeDirectory(url, options)
-  } catch (e) {
-    console.error(`Could not create container at ${url}: ${e.message}`)
-    process.exit(1)
-  }
-  process.exit(0)
-})
-
-program
-.command('query')
-.description('Utility to query RDF resoures on your data pod.')
-.version('0.1.0')
-.argument('<url>', 'Resource to query. In case of container recursively queries all contained files.')
-.argument('<query>', 'SPARQL query string | file path containing SPARQL query when -q flag is active')
-.option('-a, --all', 'Match .acl and .meta files')
-.option('-q, --queryfile', 'Process query parameter as file path of SPARQL query')
-.option('-p, --pretty', 'Pretty format') 
-.option('-f, --full', 'Return containing files using full filename.')
-.option('-v, --verbose', 'Log all operations') // Should this be default?
-.action( async (url, queryString, options) => {
-  let programOpts = addEnvOptions(program.opts() || {});
-  const authenticationInfo = await authenticate(programOpts)
-  options.fetch = authenticationInfo.fetch
-  try {
-    url = await changeUrlPrefixes(authenticationInfo, url)
-    if (options.queryfile) {
-      queryString = fs.readFileSync(queryString, {encoding: "utf-8"})
+  .command('mkdir')
+  .description('Utility to add an empty container to your pod.')
+  .argument('<url>', 'Container to start the search')
+  .option('-v, --verbose', 'Log all operations')
+  .action( async (url, options) => {
+    let programOpts = addEnvOptions(program.opts() || {});
+    const authenticationInfo = await authenticate(programOpts)
+    options.fetch = authenticationInfo.fetch
+    try {
+      url = await changeUrlPrefixes(authenticationInfo, url)
+      await commands.makeDirectory(url, options)
+    } catch (e) {
+      console.error(`Could not create container at ${url}: ${e.message}`)
+      process.exit(1)
     }
-    for await (let result of query(url, queryString, options)) {
-      formatBindings(result.fileName, result.bindings, options)
+    process.exit(0)
+  })
+
+program
+  .command('query')
+  .description('Utility to query RDF resoures on your data pod.')
+  .argument('<url>', 'Resource to query. In case of container recursively queries all contained files.')
+  .argument('<query>', 'SPARQL query string | file path containing SPARQL query when -q flag is active')
+  .option('-a, --all', 'Match .acl and .meta files')
+  .option('-q, --queryfile', 'Process query parameter as file path of SPARQL query')
+  .option('-p, --pretty', 'Pretty format') 
+  .option('-f, --full', 'Return containing files using full filename.')
+  .option('-v, --verbose', 'Log all operations') // Should this be default?
+  .action( async (url, queryString, options) => {
+    let programOpts = addEnvOptions(program.opts() || {});
+    const authenticationInfo = await authenticate(programOpts)
+    options.fetch = authenticationInfo.fetch
+    try {
+      url = await changeUrlPrefixes(authenticationInfo, url)
+      if (options.queryfile) {
+        queryString = fs.readFileSync(queryString, {encoding: "utf-8"})
+      }
+      for await (let result of query(url, queryString, options)) {
+        formatBindings(result.fileName, result.bindings, options)
+      }
+    } catch (e) {
+      console.error(`Could not query resource at ${url}: ${e.message}`)
+      process.exit(1)
     }
-  } catch (e) {
-    console.error(`Could not query resource at ${url}: ${e.message}`)
-    process.exit(1)
-  }
-  process.exit(0)
-})
+    process.exit(0)
+  })
 
 program
-.command('tree')
-.description('Utility to query RDF resoures on your data pod.')
-.version('0.1.0')
-.argument('<url>', 'Base container to construct tree over')
-.option('-a, --all', 'Match .acl and .meta files')
-.option('-f, --full', 'Return containing files using full filename.')
-.option('-v, --verbose', 'Log all operations') // Should this be default?
-.action( async (url, options) => {
-  let programOpts = addEnvOptions(program.opts() || {});
-  const authenticationInfo = await authenticate(programOpts)
-  options.fetch = authenticationInfo.fetch
-  url = await changeUrlPrefixes(authenticationInfo, url)
-  try {
-    await tree(url, options)  
-  } catch (e) {
-    console.error(`Could not display tree structure for ${url}: ${e.message}`)
-  }
-  
-  process.exit(0)
-})
+  .command('tree')
+  .description('Utility to query RDF resoures on your data pod.')
+  .argument('<url>', 'Base container to construct tree over')
+  .option('-a, --all', 'Match .acl and .meta files')
+  .option('-f, --full', 'Return containing files using full filename.')
+  .option('-v, --verbose', 'Log all operations') // Should this be default?
+  .action( async (url, options) => {
+    let programOpts = addEnvOptions(program.opts() || {});
+    const authenticationInfo = await authenticate(programOpts)
+    options.fetch = authenticationInfo.fetch
+    url = await changeUrlPrefixes(authenticationInfo, url)
+    try {
+      await tree(url, options)  
+    } catch (e) {
+      console.error(`Could not display tree structure for ${url}: ${e.message}`)
+    }
+    process.exit(0)
+  })
 
 program
-.command('perms')
-.description('Utility to list and edit resource permissions on a data pod. Only supports operations on ACL and not ACP.')
-.version('0.1.0')
-.argument('<operation>', 'list, edit, delete')
-.argument('<url>', 'Resource URL')
-.argument('[permissions...]', `Permission operations to edit resource permissions. 
-Formatted according to <id>=[d][g][a][c][r][w]. 
-For public permissions please set <id> to "p". 
-For the current authenticated user please set <id> to "u".
-To set updated permissions as default, please add the [d] option as follows: <id>=d[g][a][c][r][w]
-To indicate the id as a group id, please add the [g] option as follows: <id>=g[d][a][c][r][w]
-`)
-.option('-p, --pretty', 'Pretty format') 
-.option('-v, --verbose', 'Log all operations') // Should this be default?
-.action( async (operation, url, permissions, options) => {
+  .command('perms')
+  .description('Utility to list and edit resource permissions on a data pod. Only supports operations on ACL and not ACP.')
+  .argument('<operation>', 'list, edit, delete')
+  .argument('<url>', 'Resource URL')
+  .argument('[permissions...]', `Permission operations to edit resource permissions. 
+  Formatted according to <id>=[d][g][a][c][r][w]. 
+  For public permissions please set <id> to "p". 
+  For the current authenticated user please set <id> to "u".
+  To set updated permissions as default, please add the [d] option as follows: <id>=d[g][a][c][r][w]
+  To indicate the id as a group id, please add the [g] option as follows: <id>=g[d][a][c][r][w]
+  `)
+  .option('-p, --pretty', 'Pretty format') 
+  .option('-v, --verbose', 'Log all operations') // Should this be default?
+  .action(executePermsCommand)
+
+async function executePermsCommand (operation, url, permissions, options) {
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch
@@ -398,12 +479,11 @@ To indicate the id as a group id, please add the [g] option as follows: <id>=g[d
     console.error(`Could not evaluate permissions for ${url}: ${e.message}`)
   }
   process.exit(0)
-})
+}
 
 program
 .command('edit')
 .description('Edit a remote file using your default editor')
-.version('0.1.0')
 .argument('<url>', 'Resource URL')
 .option('-h, --header <string>', 'The request header. Multiple headers can be added separately. These follow the style of CURL. e.g. --header "Content-Type: application/json" ', arrayifyHeaders)
 .option('-e, --editor <path_to_editor_executable>', 'Use custom editor') 
