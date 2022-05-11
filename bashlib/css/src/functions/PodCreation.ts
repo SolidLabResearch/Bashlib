@@ -22,7 +22,7 @@ export default async function createPods(baseUrl: string, accountData: AccountDa
   const responses = []
   for (let account of accountData) {
     const settings =  {
-      podName: account.name,
+      podName: account.name.toLowerCase(),
       email: account.email || `${account.name}@test.edu`,
       password: account.password || account.name,
       confirmPassword: account.password || account.name,
@@ -39,9 +39,9 @@ export default async function createPods(baseUrl: string, accountData: AccountDa
     // See server response or error text
     let jsonResponse = await res.json()
     if (jsonResponse.name && jsonResponse.name.includes('Error')) {
-      console.error(`${jsonResponse.name} - Creating pod for ${settings.podName} failed: ${jsonResponse.message}`)
+      console.error(`${jsonResponse.name} - Creating pod for ${account.name} failed: ${jsonResponse.message}`)
     } else {
-      console.log(`Pod for ${settings.podName} created succesfully on ${jsonResponse.webId}`)
+      console.log(`Pod for ${account.name} created succesfully on ${jsonResponse.webId}`)
       responses.push(jsonResponse)
     }
   }
