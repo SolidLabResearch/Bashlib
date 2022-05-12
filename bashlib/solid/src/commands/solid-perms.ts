@@ -127,7 +127,7 @@ export async function changePermissions(resourceUrl: string, operations: Permiss
       access = updateAccess(access, operation)
       // Update local acl for agent with new rights
       if (operation.default) aclDataset = await setAgentDefaultAccess(aclDataset, operation.id, access)
-      else aclDataset = await setAgentResourceAccess(aclDataset, operation.id, access)
+      aclDataset = await setAgentResourceAccess(aclDataset, operation.id, access)
 
     } else if (operation.type === 'group') {
       // Update access rights
@@ -136,7 +136,7 @@ export async function changePermissions(resourceUrl: string, operations: Permiss
       access = updateAccess(access, operation)
       // Update local acl for group with new rights
       if (operation.default) aclDataset = await setGroupDefaultAccess(aclDataset, operation.id, access)
-      else aclDataset = await setGroupResourceAccess(aclDataset, operation.id, access)
+      aclDataset = await setGroupResourceAccess(aclDataset, operation.id, access)
 
     } else if (operation.type === 'public') {
       // Update access rights
@@ -145,7 +145,7 @@ export async function changePermissions(resourceUrl: string, operations: Permiss
       access = updateAccess(access, operation)
       // Update local acl for agent with new rights
       if (operation.default) aclDataset = await setPublicDefaultAccess(aclDataset, access)
-      else aclDataset = await setPublicResourceAccess(aclDataset, access)
+      aclDataset = await setPublicResourceAccess(aclDataset, access)
     } else { 
       if (options.verbose) writeErrorString("Incorrect operation type", 'Please provide an operation type of agent, group or public.')
     }
