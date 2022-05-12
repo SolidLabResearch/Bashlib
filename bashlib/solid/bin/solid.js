@@ -177,7 +177,6 @@ async function executeFetchCommand (url, options) {
     console.error(`Could not fetch resource at ${url}: ${e.message}`)
     process.exit(1)
   }
-
   process.exit(0)
 }
 
