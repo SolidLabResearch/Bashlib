@@ -584,6 +584,7 @@ async function changeUrlPrefixes(authenticationInfo, url) {
 }
 
 function mergeStringsSingleSlash(a, b) {
+  if (!b) return a
   if (a.endsWith('/') && b.startsWith('/')) {
     return `${a}${b.slice(1).toString()}`
   }
