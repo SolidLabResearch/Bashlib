@@ -20,6 +20,7 @@
     "cli-table": "^0.3.11",
     "commander": "^9.0.0",
     "http-link-header": "^1.0.4",
+    "md5": "^2.3.0",
     "mime-types": "^2.1.35",
     "node-fetch": "^2.6.7",
     "tiny-queue": "^0.2.1"

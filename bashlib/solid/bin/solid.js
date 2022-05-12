@@ -1,6 +1,7 @@
 const { program } = require('commander');
 const os = require("os");
 const pth = require('path');
+const md5 = require('md5');
 const child_process = require('child_process')
 var editor = process.env.EDITOR || 'vi';
 
@@ -506,7 +507,7 @@ program
     const tmpPath = pth.join(tmpDir, '.solid', fileName)
 
     let copiedData = await copy(url, tmpPath, options);
-    let copiedFileContentType = copiedData.source.files[0].contentType;
+    let oldMd5  = await fileMD5(tmpPath);
     let copiedFileUrl = copiedData.source.files[0].absolutePath;
     copiedFileLocalUrl = copiedData.destination.files[0].absolutePath;
 
@@ -516,14 +517,14 @@ program
       });
   
       child.on('exit', function (e, code) {
-        console.log("finished");
+        console.log("Finished");
         resolve();
       });
   
     })
 
     if (options.wait){    
-      console.log('Press any key to update remote file with changes');
+      console.log('Press any key to continue');
       await new Promise((resolve, reject) => {
         process.stdin.setRawMode(true);
         process.stdin.resume();
@@ -531,9 +532,33 @@ program
       })
     }
 
-    await copy(copiedFileLocalUrl, copiedFileUrl, options)
-    if (options.verbose) console.log('Remote file updated!');
-    
+    let newMd5 = await fileMD5(tmpPath);
+
+    let updateChanges = true;
+
+    if (oldMd5 === newMd5) {
+      console.log('Update without changes? [y/N] ');
+      updateChanges = await new Promise((resolve, reject) => {
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+        process.stdin.on('data', (chk) => {
+          if (chk.toString('utf8') === "y") {
+            resolve(true);
+          }
+          else {
+            resolve(false);
+          }
+        } );
+      });
+    }
+
+    if (updateChanges) {
+      await copy(copiedFileLocalUrl, copiedFileUrl, options)
+      if (options.verbose) console.log('Remote file updated!');
+    }
+    else {
+      if (options.verbose) console.log('Remote file untouched');
+    }
 
   } catch (e) {
     console.error(`Could not edit resource at ${url}: ${e.message}`)
@@ -860,4 +885,17 @@ function getResourceInforelativePath(info) { return info.relativePath ? info.rel
 
 function isEmpty (obj) {
   return Object.keys(obj).length === 0
+}
+
+async function fileMD5(path) {
+    return new Promise( (resolve, reject) => {  
+      fs.readFile(path, (err,buf) => {
+          if (err) {
+            reject(err)
+          }
+          else {
+            resolve(md5(buf));
+          }
+      });
+    });
 }
