@@ -1,8 +1,4 @@
 const { program } = require('commander');
-const os = require("os");
-const pth = require('path');
-const md5 = require('md5');
-const child_process = require('child_process')
 var editor = process.env.EDITOR || 'vi';
 
 const authenticate = require('../dist/utils/authenticate').default
@@ -19,6 +15,7 @@ const changePermissions = commands.changePermissions
 const deletePermissions = commands.deletePermissions
 const authenticatedFetch = require('../dist/commands/solid-fetch').default
 const tree = require('../dist/commands/solid-tree').default
+const edit = require('../dist/commands/solid-edit').default
 
 const columns = require('cli-columns');
 const Table = require('cli-table');
@@ -211,21 +208,6 @@ async function executeCopyCommand (src, dst, options) {
   }
 
 /********
-program
-  .command('chmod')
-  .description('Utility to list and edit resource permissions on a data pod. Only supports operations on ACL and not ACP.')
-  .argument('<operation>', 'list, edit, delete')
-  .argument('<url>', 'Resource URL')
-  .argument('[permissions...]', `Permission operations to edit resource permissions. 
-  Formatted according to <id>=[d][g][a][c][r][w]. 
-  For public permissions please set <id> to "p". 
-  For the current authenticated user please set <id> to "u".
-  To set updated permissions as default, please add the [d] option as follows: <id>=d[g][a][c][r][w]
-  To indicate the id as a group id, please add the [g] option as follows: <id>=g[d][a][c][r][w]
-  `)
-  .option('-p, --pretty', 'Pretty format') 
-  .option('-v, --verbose', 'Log all operations') // Should this be default?
-  .action(executePermsCommand)
  * List *
  ********/
 program
@@ -485,86 +467,26 @@ program
 .command('edit')
 .description('Edit a remote file using your default editor')
 .argument('<url>', 'Resource URL')
-.option('-h, --header <string>', 'The request header. Multiple headers can be added separately. These follow the style of CURL. e.g. --header "Content-Type: application/json" ', arrayifyHeaders)
+//.option('-h, --header <string>', 'The request header. Multiple headers can be added separately. These follow the style of CURL. e.g. --header "Content-Type: application/json" ', arrayifyHeaders)
 .option('-e, --editor <path_to_editor_executable>', 'Use custom editor') 
-.option('-w, --wait', 'Wait for user confirmation of file update before continuing') 
+// .option('-w, --wait', 'Wait for user confirmation of file update before continuing') 
 .option('-v, --verbose', 'Log all operations') // Should this be default?
 .action( async (url, options) => {
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch;
-  let copiedFileLocalUrl;
+  options.editor = options.editor || editor
   try {
     url = await changeUrlPrefixes(authenticationInfo, url)
     if (isDirectory(url)) {
       console.error('Cannot edit containers, only single files.')
       process.exit(1);
     }
-
-    const tmpDir = os.tmpdir()
-    const fileName = url.split('/').slice(-1)[0]
-    const tmpPath = pth.join(tmpDir, '.solid', fileName)
-
-    let copiedData = await copy(url, tmpPath, options);
-    let oldMd5  = await fileMD5(tmpPath);
-    let copiedFileUrl = copiedData.source.files[0].absolutePath;
-    copiedFileLocalUrl = copiedData.destination.files[0].absolutePath;
-
-    await new Promise((resolve, reject) => {
-      var child = child_process.spawn(options.editor || editor, [copiedFileLocalUrl], {
-        stdio: 'inherit'
-      });
-  
-      child.on('exit', function (e, code) {
-        console.log("Finished");
-        resolve();
-      });
-  
-    })
-
-    if (options.wait){    
-      console.log('Press any key to continue');
-      await new Promise((resolve, reject) => {
-        process.stdin.setRawMode(true);
-        process.stdin.resume();
-        process.stdin.on('data', () => resolve());
-      })
-    }
-
-    let newMd5 = await fileMD5(tmpPath);
-
-    let updateChanges = true;
-
-    if (oldMd5 === newMd5) {
-      console.log('Update without changes? [y/N] ');
-      updateChanges = await new Promise((resolve, reject) => {
-        process.stdin.setRawMode(true);
-        process.stdin.resume();
-        process.stdin.on('data', (chk) => {
-          if (chk.toString('utf8') === "y") {
-            resolve(true);
-          }
-          else {
-            resolve(false);
-          }
-        } );
-      });
-    }
-
-    if (updateChanges) {
-      await copy(copiedFileLocalUrl, copiedFileUrl, options)
-      if (options.verbose) console.log('Remote file updated!');
-    }
-    else {
-      if (options.verbose) console.log('Remote file untouched');
-    }
-
+    await edit(url, options)
   } catch (e) {
     console.error(`Could not edit resource at ${url}: ${e.message}`)
     process.exit(1)
-  } finally {
-    if(copiedFileLocalUrl) fs.unlinkSync(copiedFileLocalUrl);
-  }
+  } 
   process.exit(0)
 })
 
@@ -884,17 +806,4 @@ function getResourceInforelativePath(info) { return info.relativePath ? info.rel
 
 function isEmpty (obj) {
   return Object.keys(obj).length === 0
-}
-
-async function fileMD5(path) {
-    return new Promise( (resolve, reject) => {  
-      fs.readFile(path, (err,buf) => {
-          if (err) {
-            reject(err)
-          }
-          else {
-            resolve(md5(buf));
-          }
-      });
-    });
 }
