@@ -19,11 +19,12 @@ export type ILoginOptions = {
 export default async function authenticate(options: ILoginOptions) {
 
   let builder = new SolidFetchBuilder;
+  let DEFAULTAUTHOPTION = 'none'
 
   options.idp = options.idp || options.identityprovider; // TODO:: make this not necessary :p
-  let authType = (options.auth || 'token').trim().toLowerCase();
+  let authType = (options.auth || DEFAULTAUTHOPTION).trim().toLowerCase();
 
-  if (authType === 'unauthenticated') {
+  if (authType === 'none') {
     return { fetch: nodeFetch }
     
   } else if (authType === 'credentials') {
@@ -49,7 +50,7 @@ export default async function authenticate(options: ILoginOptions) {
       if (options.verbose) console.error(`Could not authenticate interactively: ${e.message}`)
     }
   } else {
-    throw new Error('Invalid authentication scheme. Please choose "credentials", "token" or "interactive" as your authentication option.')
+    throw new Error('Invalid authentication scheme. Please choose "credentials", "token", "interactive" or "none" as your authentication option.')
   }
 
   let sessionInfo = builder.getSessionInfo();

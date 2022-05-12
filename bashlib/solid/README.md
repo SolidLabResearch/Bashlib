@@ -41,8 +41,7 @@ Some options are only required for specific authentication types, shown by the `
 
 ```
 [authentication_options]
-  -U, --unauthenticated                Skip authentication step
-  -a, --auth <string>                  token | credentials | interactive - Authentication type (defaults to "token")
+  -a, --auth <string>                  token | credentials | interactive | none - Authentication type (defaults to "none")
   -i, --idp <string>                   (auth: any) URL of the Solid Identity Provider
   -e, --email <string>                 (auth: credentials) Email adres for the user. Default to <uname>@test.edu
   -p, --password <string>              (auth: credentials) User password. Default to <uname>
@@ -59,7 +58,7 @@ This config file will be used to auto-fill any missing authentication options.
 The config file must adhere to the following format, and may include any of the following options:
 ```
 {
-  auth: "token" | "credentials" | "interactive",
+  auth: "token" | "credentials" | "interactive" | "none",
   idp: "https://your.pod.identity.provider.org/",
   email: "User email address",
   password: "User password,
