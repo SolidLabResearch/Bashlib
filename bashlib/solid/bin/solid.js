@@ -161,7 +161,7 @@ program
   .option('-H, --only-headers', 'Only write out headers')
   .option('-m, --method <string>', 'GET, POST, PUT, DELETE, ...')
   .option('-b, --body <string>', 'The request body')
-  .option('-h, --header <string>', 'The request header. Multiple headers can be added separately. These follow the style of CURL. e.g. --header "Content-Type: application/json" ', arrayifyHeaders)
+  .option('-h, --header <string>', 'The request header. Multiple headers can be added separately. e.g. -h "Accept: application/json" -h "..." ', arrayifyHeaders)
   .action(executeFetchCommand)
 
 async function executeFetchCommand (url, options) {
@@ -565,13 +565,13 @@ async function changeUrlPrefixes(authenticationInfo, url) {
     if (!authenticationInfo.webId) throw new Error('Cannot process URL with "root:" prefix, no WebID value currently known.')
     let podRoot = await getPodRoot(authenticationInfo.webId, authenticationInfo.fetch);
     if (!podRoot) throw new Erorr('No pod root container found')
-    return mergeStringsSingleSlash(podroot, url.replace('root:', '')) 
+    return mergeStringsSingleSlash(podRoot, url.replace('root:', '')) 
 
   } else if (url.startsWith('base:')) {
     if (!authenticationInfo.webId) throw new Error('Cannot process URL with "root:" prefix, no WebID value currently known.')
     let podRoot = await getPodRoot(authenticationInfo.webId, authenticationInfo.fetch);
     if (!podRoot) throw new Erorr('No pod root container found')
-    return mergeStringsSingleSlash(podroot, url.replace('base:', '')) 
+    return mergeStringsSingleSlash(podRoot, url.replace('base:', '')) 
 
   } else if (url.startsWith('inbox:')) {
     if (!authenticationInfo.webId) throw new Error('Cannot process URL with "inbox:" prefix, no WebID value currently known.')

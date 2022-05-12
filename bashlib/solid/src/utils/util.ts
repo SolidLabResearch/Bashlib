@@ -56,7 +56,7 @@ export function fixLocalPath(filePath: string) {
   : path.resolve(filePath)
 }
 
-export async function getPodRoot(url: string, fetch: Function) : Promise<string | null> {
+export async function getPodRoot(url: string, fetch: Function): Promise<string | null> {
   let splitUrl = url.split('/')
   for (let index = splitUrl.length-1; index > 2; --index) {
     let currentUrl = splitUrl.slice(0, index).join('/') + '/'
