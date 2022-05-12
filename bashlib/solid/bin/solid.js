@@ -492,6 +492,7 @@ program
   let programOpts = addEnvOptions(program.opts() || {});
   const authenticationInfo = await authenticate(programOpts)
   options.fetch = authenticationInfo.fetch;
+  let copiedFileLocalUrl;
   try {
     url = await changeUrlPrefixes(authenticationInfo, url)
     if (isDirectory(url)) {
@@ -502,7 +503,6 @@ program
     const tmpDir = os.tmpdir()
     const fileName = url.split('/').slice(-1)[0]
     const tmpPath = pth.join(tmpDir, '.solid', fileName)
-    let copiedFileLocalUrl;
 
     let copiedData = await copy(url, tmpPath, options);
     let copiedFileContentType = copiedData.source.files[0].contentType;
