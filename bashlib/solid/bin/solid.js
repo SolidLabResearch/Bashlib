@@ -161,6 +161,7 @@ program
   .option('-H, --only-headers', 'Only write out headers')
   .option('-m, --method <string>', 'GET, POST, PUT, DELETE, ...')
   .option('-b, --body <string>', 'The request body')
+  .option('-F, --file <string>', 'File containing the request body. Ignored when the --body flag is set.')
   .option('-h, --header <string>', 'The request header. Multiple headers can be added separately. e.g. -h "Accept: application/json" -h "..." ', arrayifyHeaders)
   .action(executeFetchCommand)
 

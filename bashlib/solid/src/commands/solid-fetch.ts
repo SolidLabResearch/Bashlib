@@ -1,8 +1,10 @@
+import fs from 'fs';
 type FetchOptions = {
   fetch: Function,
   header?: string[],
   method?: string,
   body?: string,
+  file?: string, // File containing the body
   verbose?: boolean,
   onlyHeaders?: boolean,
 }
@@ -12,6 +14,10 @@ export default async function authenticatedFetch(url: string, options: FetchOpti
   for (let header of options.header || []) {
     let split = header.split(':')
     processedHeaders[split[0].trim()] = split[1].trim()
+  }
+
+  if (options.file && !options.body){
+    options.body = fs.readFileSync(options.file, { encoding: "utf-8"})
   }
   
   const fetchOptions = {
