@@ -373,7 +373,7 @@ program
  *********/
 program 
   .command('touch')
-  .description('Utility to create an empty resource on your data pod (if doesn\'t exist yet')
+  .description('Utility to create an empty resource on your data pod (if doesn\'t exist yet)')
   .argument('<url>', 'file to be created')
   .option('-v, --verbose', 'Log all operations') 
   .action( async (url, options) => {
