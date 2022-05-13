@@ -19,6 +19,7 @@ This tutorial only regards the CLI interface of the Bashlib library. For the Nod
       - [Interactive authentication](#interactive-authentication)
       - [No authentication](#no-authentication)
     - [Commands](#commands)
+      - [URL Prefixes](#url-prefixes)
       - [fetch / cat](#fetch--cat)
       - [list / ls](#list--ls)
       - [copy / cp](#copy--cp)
@@ -191,15 +192,96 @@ We can now use fetch public resources as such:
 ### Commands
 Now that we have created a Solid account and pod and learned how to authenticate, we will look at the available commands in `Bashlib-solid`.
 These commands will help you see solid not only as a Web technology, but as something you can easily include in existing workflows, while enabling ease of access and sharing of resources in between systems and users.
+**We use the alias `alias bashlib-auth = "node bashlib/solid/bin/solid.js --auth token -t .tokens/.bobs-auth-token"` as a shortcut to make authenticated requests from here. In case you use another authentication method feel free to choose your own alias!**
+
+#### URL Prefixes
+All commands support URL prefixes for all URL parameters.
+**Prefixes only work when the user is authenticated!**
+Accepted prefixes are:
+  - `webid:`  - The user WebID
+  - `inbox:`  - The user inbox (if available) 
+  - `root:`   - The user storage root (only found if the WebID is inside te data pod)
+  - `base:`   - Identical to `root:`
+
+For our user bob, we can now write the following url
+```
+  base:/public/resource1.ttl
+```
+to define the resource located at
+```
+  http://localhost:3000/bob/public/resource1.ttl
+```
 
 #### fetch / cat
 The first command is the `fetch` command, with its twin the `cat` command.
-Both commands have an identical result, of fetching and displaying the remote resource to `stdout`.
-However, the `fetch` command can take additional flags to pass custom headers and more.
+Both commands have an identical result, of fetching and displaying the remote resource to `stdout`, 
+but the `fetch` command can take additional flags to pass custom headers and more.
+
+To fetch the user webId, we can now call the following function:
+```
+  bashlib-auth fetch webid:
+```
+As the authenticated user is Bob (see the alias we created), we just fetched bob's WebID.
+Additional options can be found by calling the help function.
+```
+  bashlib-auth fetch --help
+```
+If we want to fetch the file in an other RDF format, we can add custom headers:
+```
+  bashlib-auth fetch -h "Accept: application/ld+json" http://localhost:3000/bob/profile/card#me
+```
 
 #### list / ls
+The `list` or `ls` command displays a listing of a container on a Solid pod.
+The url argument should end in a `/` as it must be a container.
+Options can be discovered using the help command. 
+
+To list the resources in our profile folder, we use the following command:
+```
+  bashlib-auth ls http://localhost:3000/bob/profile
+```
+
+By looking at the help function, we now will add the `--all` flag to also include any .acl files in the directory, and the `--long` flag to show a table overview of the result
+
+```
+  bashlib-auth ls --all --long http://localhost:3000/bob/profile
+```
+
 
 #### copy / cp
+The `copy` or `cp` command copies resources form and to both the local filesystem and a data pod.
+**Make sure you have read permissisons for the source location and write permissions for the destination location when they are on a pod.**
+
+we start by creating a new file
+```
+ echo "<https://localhost:3000/bob/profile/card#me> <http://xmlns.com/foaf/0.1/knows> <https://localhost:3000/carol/profile/card#me> ." > contacts.ttl
+```
+We can now upload this file to our bob's data pod as follows:
+```
+ bashlib-auth cp contacts.ttl base:/profile/
+```
+This copies the `contacts.ttl` file to the container at the url `http://localhost:3000/bob/profile/`, and creates the contacts.ttl resource in this container.
+We can now request the copied file as follows:
+```
+ bashlib-auth cat http://localhost:3000/bob/profile/contacts.ttl
+```
+We can also copy resources from one location on our pod to another location as follows:
+```
+ bashlib-auth cp http://localhost:3000/bob/profile/contacts.ttl base:/test/contacts/
+```
+and can now fetch the resource at the target location
+```
+ bashlib-auth fetch base:/test/contacts/contacts.ttl
+```
+We see that the missing containers were automatically created.
+
+Notes:
+- Directories are always copied recursively as a default.
+- Copying files without an extension from the data pod will result in <filename>$.<extension>, with the extension value based on the file contenttype.
+- Copying a file `card$.ttl` to your data pod will result in a file `card` with a content type of `text/turtle`.
+- Copying a file to a directory will place that file with the given filename in the destination directory.
+- When directly copying an .acl file, the `--all` flag must not be set. 
+- Missing containers are automatically created.
 
 #### move / mv
 
