@@ -16,6 +16,7 @@ const deletePermissions = commands.deletePermissions
 const authenticatedFetch = require('../dist/commands/solid-fetch').default
 const tree = require('../dist/commands/solid-tree').default
 const edit = require('../dist/commands/solid-edit').default
+const touch = require('../dist/commands/solid-touch').default
 
 const columns = require('cli-columns');
 const Table = require('cli-table');
@@ -363,6 +364,27 @@ program
     } catch (e) {
       console.error(`Could not query resource at ${url}: ${e.message}`)
       process.exit(1)
+    }
+    process.exit(0)
+  })
+
+ /********
+ * Touch *
+ *********/
+program 
+  .command('touch')
+  .description('Utility to create an empty resource on your data pod (if doesn\'t exist yet')
+  .argument('<url>', 'file to be created')
+  .option('-v, --verbose', 'Log all operations') 
+  .action( async (url, options) => {
+    let programOpts = addEnvOptions(program.opts() || {});
+    const authenticationInfo = await authenticate(programOpts)
+    options.fetch = authenticationInfo.fetch
+    url = await changeUrlPrefixes(authenticationInfo, url)
+    try {
+      await touch(url, options)
+    } catch (e) {
+      console.error(`Could not touch ${url}: ${e.message}`)
     }
     process.exit(0)
   })
