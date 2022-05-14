@@ -679,6 +679,7 @@ ${table.toString()}
 }
 
 function formatPermissionListing(url, permissions, options) {
+  let formattedString = ``    
   let formattedPerms = permissions.access 
   if (permissions.resource) {
     if (permissions.resource.agent) {
@@ -771,26 +772,23 @@ function formatPermissionListing(url, permissions, options) {
       ])
 
     }
-    let formattedString = ``
     formattedString += `> ${chalk.bold(url)}\n`
     formattedString += `${table.toString()}`
-    console.log(formattedString)
   } else {
-
-    let formattedString = ``    
     formattedString += `> ${chalk.bold(url)}\n`
     if (!isEmpty(formattedPerms.agent)) {
       formattedString += `${chalk.bold('Agent')}\n`
       for (let id of Object.keys(formattedPerms.agent)) {
         formattedString += `${id} - `
+        let inherited = true;
         for (let permission of Object.entries(formattedPerms.agent[id])) {
-          if (permission[1]) {
+          if (permission[0] !== 'resource') { 
+            inherited = false
+          } else if (permission[1]) {
             formattedString += `${permission[0]} `
-          } else if (permission[0] === 'resource') {
-            formattedString += `${chalk.cyan('inherited')} `
-          }
+          } 
         }
-        if (Object.entries(formattedPerms.agent[id]).indexOf('resource') === -1) {
+        if (inherited) {
           formattedString += `${chalk.cyan('inherited')} `
         }
         formattedString += `\n`
@@ -800,14 +798,15 @@ function formatPermissionListing(url, permissions, options) {
       formattedString += `${chalk.bold('Group')}\n`
       for (let id of Object.keys(formattedPerms.group)) {
         formattedString += `${id} - `
+        let inherited = true;
         for (let permission of Object.entries(formattedPerms.group[id])) {
-          if (permission[1]) {
+          if (permission[0] !== 'resource') { 
+            inherited = false
+          } else if (permission[1]) {
             formattedString += `${permission[0]} `
-          } else if (permission[0] === 'resource') {
-            formattedString += `${chalk.cyan('inherited')} `
-          }
+          } 
         }
-        if (Object.entries(formattedPerms.group[id]).indexOf('resource') === -1) {
+        if (inherited) {
           formattedString += `${chalk.cyan('inherited')} `
         }
         formattedString += `\n`
@@ -816,20 +815,21 @@ function formatPermissionListing(url, permissions, options) {
     if (!isEmpty(formattedPerms.public)) {
       formattedString += `${chalk.bold('Public')}\n`
       formattedString += `${'#public'} - `
+      let inherited = true;
       for (let permission of Object.entries(formattedPerms.public)) {
-        if (permission[1] && permission[0] !== 'resource') {
+        if (permission[0] !== 'resource') { 
+          inherited = false
+        } else if (permission[1]) {
           formattedString += `${permission[0]} `
-        } else if (permission[0] === 'resource') {
-          formattedString += `${chalk.cyan('inherited')} `
-        }
+        } 
       }
-      if (Object.entries(formattedPerms.public).indexOf('resource') === -1) {
+      if (inherited) {
         formattedString += `${chalk.cyan('inherited')} `
       }
       formattedString += `\n`
     }
-    console.log(formattedString)
   }
+  console.log(formattedString)
 }
 
 function getResourceInforelativePath(info) { return info.relativePath ? info.relativePath : info.url }
