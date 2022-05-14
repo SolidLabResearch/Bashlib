@@ -499,7 +499,7 @@ program
 .argument('<url>', 'Resource URL')
 //.option('-h, --header <string>', 'The request header. Multiple headers can be added separately. These follow the style of CURL. e.g. --header "Content-Type: application/json" ', arrayifyHeaders)
 .option('-e, --editor <path_to_editor_executable>', 'Use custom editor') 
-// .option('-w, --wait', 'Wait for user confirmation of file update before continuing') 
+.option('-t, --touch', 'Create file if not exists') // Should this be default?
 .option('-v, --verbose', 'Log all operations') // Should this be default?
 .action( async (url, options) => {
   let programOpts = addEnvOptions(program.opts() || {});

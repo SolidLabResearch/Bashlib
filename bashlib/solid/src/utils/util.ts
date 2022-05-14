@@ -379,7 +379,7 @@ export async function checkRemoteFileExists(url: string, fetch: any){
 
 export async function checkRemoteFileAccess(url: string, fetch: any){ 
   try {
-    const res = await fetch(url, {method: 'HEAD'})
+    const res = await fetch(url, { method: 'HEAD' })
     return res.ok;
   } catch (e) {
     return false;
