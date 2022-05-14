@@ -115,7 +115,7 @@ export async function readRemoteDirectoryRecursively(
       containerLinks = await checkHeadersForAclAndMetadata(resourcePath, options.fetch);
     } catch (_ignored) {}
     if (containerLinks && containerLinks.acl) {
-      if (await checkFileExists(containerLinks.acl, options.fetch)) {
+      if (await checkRemoteFileAccess(containerLinks.acl, options.fetch)) {
         aclfiles.push({
           absolutePath: containerLinks.acl,
           relativePath: containerLinks.acl.startsWith(resourcePath) ? containerLinks.acl.slice(resourcePath.length) : '',
@@ -134,7 +134,7 @@ export async function readRemoteDirectoryRecursively(
       try {
         resourceLinks = await checkHeadersForAclAndMetadata(uri, options.fetch)
         if (resourceLinks && resourceLinks.acl) {
-          if (await checkFileExists(resourceLinks.acl, options.fetch)) {
+          if (await checkRemoteFileAccess(resourceLinks.acl, options.fetch)) {
             aclfiles.push({ 
               absolutePath: resourceLinks.acl, 
               relativePath: resourceLinks.acl.startsWith(root_path) ? resourceLinks.acl.slice(root_path.length) : '',
@@ -243,14 +243,14 @@ async function getResourceHeaderLinks(url: string, fetch: any, baseUrl?: string 
   let acl, meta;
   try { 
     let links = await checkHeadersForAclAndMetadata(url, fetch) 
-    if (links && links.acl && await checkFileExists(links.acl, fetch)) {
+    if (links && links.acl && await checkRemoteFileAccess(links.acl, fetch)) {
       acl = {
         absolutePath: links.acl,
         relativePath: baseUrl && getRelativePath(links.acl, baseUrl),
         directory: url,
       }
     }
-    if (links && links.meta && await checkFileExists(links.meta, fetch)) {
+    if (links && links.meta && await checkRemoteFileAccess(links.meta, fetch)) {
       meta = {
         absolutePath: links.meta,
         relativePath: baseUrl && getRelativePath(links.meta, baseUrl),
@@ -278,12 +278,12 @@ export async function checkHeadersForAclAndMetadata(url: any, fetch: Function, h
   for (let header of headers.refs) {
     if (header.rel === 'acl') {
       // Check if file exists first
-      if (await checkFileExists(header.uri, fetch)) {
+      if (await checkRemoteFileAccess(header.uri, fetch)) {
         foundHeaders.acl = header.uri;
       }
     } else if (header.rel === 'describedby') {
       // Check if file exists first
-      if (await checkFileExists(header.uri, fetch)) {
+      if (await checkRemoteFileAccess(header.uri, fetch)) {
         foundHeaders.meta = header.uri;
       }
     }
@@ -366,12 +366,21 @@ function getContentTypeHeader(reply: any) {
   return reply.headers.get('Content-type')
 }
 
-async function checkFileExists(url: string, fetch: any){ 
+export async function checkRemoteFileExists(url: string, fetch: any){ 
   try {
     const res = await fetch(url, {method: 'HEAD'})
-    // When are we sure a file exists
+    // When are we sure a file does not exists
     if (res && res.status && res.status === 404) return false;
     return true 
+  } catch (e) {
+    return false;
+  } 
+}
+
+export async function checkRemoteFileAccess(url: string, fetch: any){ 
+  try {
+    const res = await fetch(url, {method: 'HEAD'})
+    return res.ok;
   } catch (e) {
     return false;
   } 

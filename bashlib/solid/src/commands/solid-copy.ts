@@ -1,17 +1,14 @@
 import fs from 'fs'
 import path from 'path'
 import { getFile, overwriteFile, getContentType, getContainedResourceUrlAll, getSolidDataset, createContainerAt } from "@inrupt/solid-client"
-import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively } from '../utils/util';
+import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively, checkRemoteFileExists } from '../utils/util';
 import Blob = require("fetch-blob")
+import { requestUserCLIConfirmation } from '../utils/userInteractions';
 
 const mime = require('mime-types');
 
 // TODO:: Make reads / writes happen 1 file at a time (1 pair at a time in a threaded loop maybe), instead of reading all files and then writing all files.
 // Also this can probably be made a tad shorter by removing some duplication and clearing some code
-
-export type CopyOptions = {
-  fetch: Function,
-}
 
 type srcOptions = {
   path: string,
@@ -19,19 +16,23 @@ type srcOptions = {
   isDir: boolean
 }
 
-type copyOptions = {
+type CopyOptions = {
   fetch: Function,
-  verbose: boolean,
-  all: boolean,
+  verbose?: boolean,
+  all?: boolean,
+  confirmOverwrite?: boolean,
+  noOverwrite?: boolean,
 }
 
-export default async function copy(src: string, dst: string, options: copyOptions) : Promise<{
+export default async function copy(src: string, dst: string, options: CopyOptions) : Promise<{
   source: {files: FileInfo[]; directories: FileInfo[]; aclfiles: FileInfo[];}
   destination: {files: FileInfo[]; directories: FileInfo[]; aclfiles: FileInfo[];}
 }> {
   let fetch = options.fetch;
-  let verbose = options.verbose || false;
-  let all = options.all || false;
+  options.verbose = options.verbose || false;
+  options.all = options.all || false;
+  options.confirmOverwrite = options.confirmOverwrite || false;
+  options.noOverwrite = options.noOverwrite || false;
   
   /*********************
    * Processing Source *
@@ -71,10 +72,10 @@ export default async function copy(src: string, dst: string, options: copyOption
   } 
 
   let resourcesToTransfer : { files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[] };
-  if (source.isRemote) {all
-    resourcesToTransfer = await getRemoteSourceFiles(source, fetch, verbose, all)
+  if (source.isRemote) {
+    resourcesToTransfer = await getRemoteSourceFiles(source, fetch, options.verbose, options.all)
   } else {
-    resourcesToTransfer = await getLocalSourceFiles(source, verbose, all)
+    resourcesToTransfer = await getLocalSourceFiles(source, options.verbose, options.all)
   }  
 
   let destinationInfo: { files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[] } = {
@@ -96,12 +97,12 @@ export default async function copy(src: string, dst: string, options: copyOption
       destinationPath = destination.isDir
       ? (relativePath ? combineURLs(destination.path, relativePath) : destination.path)
       : destination.path;
-      await writeRemoteDirectory(destinationPath, resourceInfo, fetch, verbose)
+      await writeRemoteDirectory(destinationPath, resourceInfo, fetch, options)
     } else {
       destinationPath = destination.isDir
       ? (relativePath ? path.join(destination.path, relativePath) : destination.path)
       : destination.path;
-      await writeLocalDirectory(destinationPath, resourceInfo, verbose)
+      await writeLocalDirectory(destinationPath, resourceInfo, options)
     }
     destinationInfo.directories.push({absolutePath: destinationPath})
   }
@@ -119,12 +120,12 @@ export default async function copy(src: string, dst: string, options: copyOption
       destinationPath = destination.isDir
       ? (fileRelativePath ? combineURLs(destination.path, fileRelativePath) : destination.path)
       : destination.path;
-      await writeRemoteFile(destinationPath, sourceFileInfo, fetch, verbose)
+      await writeRemoteFile(destinationPath, sourceFileInfo, fetch, options)
     } else {
       destinationPath = destination.isDir
       ? (fileRelativePath ? path.join(destination.path, fileRelativePath) : destination.path)
       : destination.path;
-      let fileName = await writeLocalFile(destinationPath, sourceFileInfo, verbose)
+      let fileName = await writeLocalFile(destinationPath, sourceFileInfo, options)
       // fileName can change in function
       if(fileName) destinationPath = fileName
     }
@@ -146,12 +147,12 @@ export default async function copy(src: string, dst: string, options: copyOption
         destinationPath = destination.isDir
         ? (fileRelativePath ? combineURLs(destination.path, fileRelativePath) : destination.path)
         : destination.path;
-        await writeRemoteFile(destinationPath, sourceFileInfo, fetch, verbose)
+        await writeRemoteFile(destinationPath, sourceFileInfo, fetch, options)
       } else {
         destinationPath = destination.isDir
         ? (fileRelativePath ? path.join(destination.path, fileRelativePath) : destination.path)
         : destination.path;
-        let fileName = await writeLocalFile(destinationPath, sourceFileInfo, verbose)
+        let fileName = await writeLocalFile(destinationPath, sourceFileInfo, options)
         // fileName can change in function
         if(fileName) destinationPath = fileName
       }
@@ -252,14 +253,14 @@ async function readRemoteFile(path: string, fetch: any, verbose: boolean) : Prom
   
 }
 
-async function writeLocalDirectory(path: string, fileInfo: FileInfo, verbose: boolean): Promise<any> {
-  if (verbose) console.log('Writing local directory:', path)
+async function writeLocalDirectory(path: string, fileInfo: FileInfo, options: CopyOptions): Promise<any> {
+  if (options.verbose) console.log('Writing local directory:', path)
   fs.mkdirSync(path, { recursive: true })
   return true;
 }
 
-async function writeRemoteDirectory(path: string, fileInfo: FileInfo, fetch: any, verbose: boolean): Promise<any> {
-  if (verbose) console.log('Writing remote directory:', path)
+async function writeRemoteDirectory(path: string, fileInfo: FileInfo, fetch: any, options: CopyOptions): Promise<any> {
+  if (options.verbose) console.log('Writing remote directory:', path)
   try {
     await createContainerAt(path, { fetch })
   } catch (e: any) {
@@ -267,7 +268,7 @@ async function writeRemoteDirectory(path: string, fileInfo: FileInfo, fetch: any
   }
 }
 
-async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, verbose: boolean): Promise<string | undefined> {
+async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options: CopyOptions): Promise<string | undefined> {
   ensureDirectoryExistence(resourcePath);
   let ext = path.extname(resourcePath) 
   // Hardcode missing common extensions
@@ -277,8 +278,23 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, verbose:
     const extension = mime.extension(fileInfo.contentType)
     if (extension) resourcePath = `${resourcePath}$.${extension}`
   }
-  if (verbose) console.log('Writing local file:', resourcePath)
 
+  let executeWrite = true
+  if (options.confirmOverwrite || options.noOverwrite) {
+    if (fs.existsSync(resourcePath)) { 
+      if (options.noOverwrite) {
+        executeWrite = false;
+      } else if (options.confirmOverwrite) { 
+        executeWrite = await requestUserCLIConfirmation(`Overwrite local file: ${resourcePath}`)
+      }
+    }
+  }
+  if (!executeWrite) {
+    if (options.verbose) console.log('Skipping existing local file:', resourcePath)
+    return undefined;
+  }
+
+  if (options.verbose) console.log('Writing local file:', resourcePath)
   try {
     if (fileInfo.buffer) {
       fs.writeFileSync(resourcePath, fileInfo.buffer)
@@ -290,13 +306,29 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, verbose:
     }
     return resourcePath;
   } catch (e: any) {
-    if (verbose) console.error(`Could not save local file ${resourcePath} : ${e.message}`)
+    if (options.verbose) console.error(`Could not save local file ${resourcePath} : ${e.message}`)
     return undefined;
   }
 }
 
-async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: any, verbose: boolean): Promise<string | undefined> {
+async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: any, options: CopyOptions): Promise<string | undefined> {
   resourcePath = resourcePath.split('$.')[0];
+
+  let executeWrite = true
+  if (options.confirmOverwrite || options.noOverwrite) {
+    if (fs.existsSync(resourcePath)) { 
+      if (options.noOverwrite) {
+        executeWrite = false;
+      } else if (options.confirmOverwrite) { 
+        executeWrite = await requestUserCLIConfirmation(`Overwrite local file: ${resourcePath}`)
+      }
+    }
+  }
+  if (!executeWrite) {
+    if (options.verbose) console.log('Skipping existing local file:', resourcePath)
+    return undefined;
+  }
+
   try {
     if (fileInfo.buffer) {
       let blob = new Blob([toArrayBuffer(fileInfo.buffer)], {type: fileInfo.contentType})
@@ -326,11 +358,11 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
       )
       if (!res.ok) throw new Error(`HTTP Error Response requesting ${resourcePath}: ${res.status} ${res.statusText}`);
     } else {
-      if (verbose) console.error('No content to write for:', resourcePath)
+      if (options.verbose) console.error('No content to write for:', resourcePath)
     }
     return resourcePath;
   } catch (e:any) {
-    if (verbose) console.error(`Could not write file: ${resourcePath}: ${e.message}`)
+    if (options.verbose) console.error(`Could not write file: ${resourcePath}: ${e.message}`)
     return;
   }
 }

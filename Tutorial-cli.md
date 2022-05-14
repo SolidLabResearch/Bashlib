@@ -3,6 +3,13 @@ This tutorial aims to teach the basics of the Solid Bashlib library.
 This tutorial only regards the CLI interface of the Bashlib library. For the Node.JS interface, please look at the [Bashlib tutorial - Node.JS edition]()!
 
 
+**Used aliases in this document:**
+All aliases are calculated from the root of the cloned bashlib repo.
+  - bashlib-css  - `alias bashlib-css="node bashlib/css/bin/css.js"`
+  - bashlib-solid  - `alias bashlib-solid="node bashlib/solid/bin/solid.js"`
+  - bashlib-auth - `alias bashlib-auth="node bashlib/solid/bin/solid.js --auth interactive --idp <your pod identity provider>"`
+Feel free to use a different authentication scheme for the `bashlib-auth` alias.
+
 
 ## Index
 - [Bashlib Tutorial - CLI edition](#bashlib-tutorial---cli-edition)
@@ -25,9 +32,10 @@ This tutorial only regards the CLI interface of the Bashlib library. For the Nod
       - [copy / cp](#copy--cp)
       - [move / mv](#move--mv)
       - [remove / rm](#remove--rm)
-      - [remove / rm](#remove--rm-1)
-      - [remove / rm](#remove--rm-2)
-      - [remove / rm](#remove--rm-3)
+      - [mkdir](#mkdir)
+      - [find](#find)
+      - [query](#query)
+      - [perms](#perms)
 
 ## Setting up a Solid Server
 Before we use the Bashlib library, we need a Solid account and accompanying data pod to use the library. In case you already own a Solid pod, you may still want to follow the setup process, as some of the functionality will only be available for pods created on a [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer) instance.
@@ -211,6 +219,7 @@ to define the resource located at
 ```
   http://localhost:3000/bob/public/resource1.ttl
 ```
+From here on out, we will make use of the prefixes, so feel free to authenticate with your own data pod, and follow the steps on your own pod environment.
 
 #### fetch / cat
 The first command is the `fetch` command, with its twin the `cat` command.
@@ -228,7 +237,7 @@ Additional options can be found by calling the help function.
 ```
 If we want to fetch the file in an other RDF format, we can add custom headers:
 ```
-  bashlib-auth fetch -h "Accept: application/ld+json" http://localhost:3000/bob/profile/card#me
+  bashlib-auth fetch -h "Accept: application/ld+json" webid:
 ```
 
 #### list / ls
@@ -238,13 +247,13 @@ Options can be discovered using the help command.
 
 To list the resources in our profile folder, we use the following command:
 ```
-  bashlib-auth ls http://localhost:3000/bob/profile
+  bashlib-auth ls base:/profile/
 ```
 
 By looking at the help function, we now will add the `--all` flag to also include any .acl files in the directory, and the `--long` flag to show a table overview of the result
 
 ```
-  bashlib-auth ls --all --long http://localhost:3000/bob/profile
+  bashlib-auth ls --all --long base:/profile/
 ```
 
 
@@ -252,26 +261,23 @@ By looking at the help function, we now will add the `--all` flag to also includ
 The `copy` or `cp` command copies resources form and to both the local filesystem and a data pod.
 **Make sure you have read permissisons for the source location and write permissions for the destination location when they are on a pod.**
 
-we start by creating a new file
-```
- echo "<https://localhost:3000/bob/profile/card#me> <http://xmlns.com/foaf/0.1/knows> <https://localhost:3000/carol/profile/card#me> ." > contacts.ttl
-```
-We can now upload this file to our bob's data pod as follows:
+We will demonstrate the copy command by uploading a profile image form our local disk.
+If you have chosen a local image file, we can now upload this to our pod as follows:
 ```
  bashlib-auth cp contacts.ttl base:/profile/
 ```
 This copies the `contacts.ttl` file to the container at the url `http://localhost:3000/bob/profile/`, and creates the contacts.ttl resource in this container.
 We can now request the copied file as follows:
 ```
- bashlib-auth cat http://localhost:3000/bob/profile/contacts.ttl
+ bashlib-auth cat base:/profile/contacts.ttl
 ```
 We can also copy resources from one location on our pod to another location as follows:
 ```
- bashlib-auth cp http://localhost:3000/bob/profile/contacts.ttl base:/test/contacts/
+ bashlib-auth cp base:/profile/contacts.ttl base:/test/
 ```
 and can now fetch the resource at the target location
 ```
- bashlib-auth fetch base:/test/contacts/contacts.ttl
+ bashlib-auth fetch base:/test/contacts.ttl
 ```
 We see that the missing containers were automatically created.
 
@@ -284,11 +290,91 @@ Notes:
 - Missing containers are automatically created.
 
 #### move / mv
+The `move` or `mv` command moves resources between different locations on a data pod or between data pods. It is equal to a `cp` operation followed by a `rm` operation on the source. 
+**Make sure that the correct permissions are set to read and remove the source resources, and write to the desintation resources.**
+
+In the last section, we made a `contacts.ttl` resource in our `base:/test/` container. 
+We can now move the test resource we just made as a demonstration:
+```
+bashlib-auth mv base:/test/contacts.ttl base:/test/demo_contacts.ttl
+```
+
 
 #### remove / rm
+The `remove` or `rm` command removes resources from a data pod.
 
-#### remove / rm
+With this command, we can now remove the `demo_contacts.ttl` file in the `/test` folder:
+```
+bashlib-auth rm base:/test/demo_contacts.ttl
+```
+If we now look at the container listing:
+```
+bashlib-auth ls base:/test/
+```
+we see that the resource has been removed.
+We can also remove the container now as follows:
+```
+bashlib-auth rm base:/test/
+```
+To remove a container together with the contained resources, the `-r, --recursive` flag has to be set.
 
-#### remove / rm
 
-#### remove / rm
+#### mkdir
+The `mkdir` command creates a target container.
+
+```
+bashlib-auth mkdir base:/Pictures/
+```
+creates a new `Pictures/` container in the root of your pod.
+
+#### find
+The `find` command enables you to find specific files in a given container based on a given filename regex.
+
+If we want to find where our profile card is located on our data pod, we can use the following command:
+```
+bashlib find --full base: card
+```
+This command looks to match all found files in the `base:` container with the given filename match `card`.
+We use the `--full` flag to match with and display the full url of the found resources.
+
+#### query
+The `query` command is a convenience command that lets the user query all files in a given container based on a given SPARQL query.
+
+To return all triples from our WebID, we can use the following command:
+```
+bashlib-auth query webid: "Select * WHERE { ?s ?p ?o . }"
+```
+
+This command also works on containers to recursively query all contained resources.
+To test this, we first make a new file containing a SPARQL query:
+```
+echo "Select * WHERE { ?s ?p ?o . }" > queryFile.txt
+```
+Now, we can use this query to get all triples of all files on our data pod. We use the `--pretty` flag to receive the results in a table format:
+```
+bashlib-auth query -q -p base: queryFile.txt
+```
+
+
+#### perms
+The `perms` command provides three operations to list, edit and delete permissions for a resource on a Solid pod.
+**This command only works for pods implementing the WAC protocols. Pods implementing the ACP protocol (Inrupt) are currently not supported.**
+
+*listing*
+
+To list the permissions of your profile resource, we can use the following command:
+```
+bashlib-auth perms list webid:
+```
+Here, we see the permissions written out for all agents, groups and the public for the given resource.
+This also works for containers. The following command prints the permissions of the pod root in a table format:
+```
+bashlib-auth perms list --pretty base:
+```
+
+*editing*
+
+To edit permissions of a resource on your Solid pod, use the following command:
+```
+bashlib-auth perms edit 
+```
