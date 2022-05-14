@@ -216,6 +216,17 @@ node bin/solid.js [auth_options] mkdir [options] <url>
   -v, --verbose  Log all operations to cli
 ```
 
+#### touch
+This command creates a new empty resource on a Solid pod on a given URL.
+
+*usage*
+```
+node bin/solid.js [auth_options] touch [options] <url>
+```
+*options*
+```
+  -v, --verbose  Log all operations to cli
+```
 
 #### find
 This command finds the resources contained by the url argument matching the passed string argument.

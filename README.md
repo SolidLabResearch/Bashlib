@@ -86,6 +86,9 @@ The [remove](/bashlib/solid#remove) function provides functionality to remove fi
 #### [Mkdir](/bashlib/solid#mkdir)
 The [mkdir](/bashlib/solid#mkdir) function provides functionality to create empty containers in a Solid environment.
 
+#### [Touch](/bashlib/solid#touch)
+The [Touch](/bashlib/solid#touch) function provides functionality to create empty resources in a Solid environment.
+
 #### [Find](/bashlib/solid#find)
 The [find](/bashlib/solid#find) function allows you to recursively find resources in a container in a Solid environment matching a given file name regex.
 
