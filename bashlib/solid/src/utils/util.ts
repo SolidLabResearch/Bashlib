@@ -369,8 +369,9 @@ function getContentTypeHeader(reply: any) {
 async function checkFileExists(url: string, fetch: any){ 
   try {
     const res = await fetch(url, {method: 'HEAD'})
-    if (!res.ok) return false
-    return res.status && res.status >= 200 && res.status < 300
+    // When are we sure a file exists
+    if (res && res.status && res.status === 404) return false;
+    return true 
   } catch (e) {
     return false;
   } 
