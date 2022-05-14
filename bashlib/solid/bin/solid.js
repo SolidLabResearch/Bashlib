@@ -782,7 +782,7 @@ function formatPermissionListing(url, permissions, options) {
         formattedString += `${id} - `
         let inherited = true;
         for (let permission of Object.entries(formattedPerms.agent[id])) {
-          if (permission[0] !== 'resource') { 
+          if (permission[0] === 'resource') { 
             inherited = false
           } else if (permission[1]) {
             formattedString += `${permission[0]} `
@@ -800,7 +800,7 @@ function formatPermissionListing(url, permissions, options) {
         formattedString += `${id} - `
         let inherited = true;
         for (let permission of Object.entries(formattedPerms.group[id])) {
-          if (permission[0] !== 'resource') { 
+          if (permission[0] === 'resource') { 
             inherited = false
           } else if (permission[1]) {
             formattedString += `${permission[0]} `
@@ -817,7 +817,7 @@ function formatPermissionListing(url, permissions, options) {
       formattedString += `${'#public'} - `
       let inherited = true;
       for (let permission of Object.entries(formattedPerms.public)) {
-        if (permission[0] !== 'resource') { 
+        if (permission[0] === 'resource') { 
           inherited = false
         } else if (permission[1]) {
           formattedString += `${permission[0]} `
