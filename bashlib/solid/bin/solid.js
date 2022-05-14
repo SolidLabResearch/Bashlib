@@ -103,6 +103,8 @@ program
   .argument('<src>', 'file or directory to be copied')
   .argument('<dst>', 'destination to copy file or directory to')
   .option('-a, --all', 'Copy .acl files in recursive directory copies')
+  .option('-i, --interactive-override', 'Interactive confirmation prompt when overriding existing files')
+  .option('-n, --no-override', 'Do not override existing files')
   .option('-v, --verbose', 'Log all read and write operations')
   .action(executeCopyCommand)
 
@@ -112,6 +114,8 @@ program
   .argument('<src>', 'file or directory to be moved')
   .argument('<dst>', 'destination of the move')
   .option('-a, --all', 'Move .acl files when moving directories recursively')
+  .option('-i, --interactive-override', 'Interactive confirmation prompt when overriding existing files')
+  .option('-n, --no-override', 'Do not override existing files')
   .option('-v, --verbose', 'Log all operations') 
   .action(executeMoveCommand)
 
@@ -187,8 +191,8 @@ program
   .argument('<src>', 'file or directory to be copied')
   .argument('<dst>', 'destination to copy file or directory to')
   .option('-a, --all', 'Copy .acl files in recursive directory copies')
-  .option('-c, --confirm-overrides', 'Request confirmation when overriding files')
-  .option('-n, --no-overrides', 'No overriding files.')
+  .option('-i, --interactive-override', 'Interactive confirmation prompt when overriding existing files')
+  .option('-n, --no-override', 'Do not override existing files')
   .option('-v, --verbose', 'Log all read and write operations')
   .action(executeCopyCommand)
 
@@ -276,8 +280,8 @@ program
 .argument('<src>', 'file or directory to be moved')
 .argument('<dst>', 'destination of the move')
 .option('-a, --all', 'Move .acl files when moving directories recursively')
-.option('-c, --confirm-overrides', 'Request confirmation when overriding files')
-.option('-n, --no-overrides', 'No overriding files.')
+.option('-i, --interactive-override', 'Interactive confirmation prompt when overriding existing files')
+.option('-n, --no-override', 'Do not override existing files')
 .option('-v, --verbose', 'Log all operations') 
 .action(executeMoveCommand)
 
