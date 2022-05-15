@@ -1,7 +1,7 @@
 import { FetchError, getResourceInfo } from "@inrupt/solid-client" 
 const mime = require('mime-types');
 
-export default async function edit(url: string, options: any) { 
+export default async function touch(url: string, options: any) { 
     let fetch = options.fetch;
     let verbose = options.verbose || false;
     
