@@ -31,23 +31,24 @@ export default async function authenticate(options: ILoginOptions) {
     try {
       options = checkClientCredentialsAuthOptions(options);
       await builder.buildFromClientCredentials(options)
-    } catch (e: any) {
-      if (options.verbose) console.error(`Could not authenticate using client credentials: ${e.message}`)
+    } catch (e) {
+
+      if (options.verbose) writeErrorString(`Could not authenticate using client credentials`, e);
     }
     
   } else if (authType === 'token') {
     try {
       await builder.buildFromClientCredentialsToken(options)
-    } catch (e: any) {
-      if (options.verbose) console.error(`Could not authenticate using client credentials token: ${e.message}`)
+    } catch (e) {
+      if (options.verbose) writeErrorString(`Could not authenticate using client credentials token`, e);
     }
 
   } else if (authType === 'interactive') {
     try {
       options = checkInteractiveAuthOptions(options);
       await builder.buildInteractive(options);
-    } catch (e: any) {
-      if (options.verbose) console.error(`Could not authenticate interactively: ${e.message}`)
+    } catch (e) {
+      if (options.verbose) writeErrorString(`Could not authenticate interactively`, e);
     }
   } else {
     throw new Error('Invalid authentication scheme. Please choose "credentials", "token", "interactive" or "none" as your authentication option.')

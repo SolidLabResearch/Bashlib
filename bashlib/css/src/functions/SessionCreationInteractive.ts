@@ -5,6 +5,7 @@ import { Session } from '@inrupt/solid-client-authn-node';
 import open from 'open';
 import fs from 'fs';
 import { SessionInfo, IInteractiveAuthOptions, DEFAULTPORT, APPNAME } from './CreateFetch';
+import { writeErrorString } from '../../../solid/src/utils/util';
 const nodefetch = require("node-fetch")
 const express = require('express')
 const homedir = require('os').homedir();
@@ -28,8 +29,8 @@ export default async function createAuthenticatedSessionInteractive(options: IIn
         }
       }
     }
-  } catch (e:any) {
-    if (options?.verbose) console.error(`Could not load existing session: ${e.message}`)
+  } catch (e) {
+    if (options?.verbose) writeErrorString('Could not load existing session', e);
   }
   
   if (!options.idp) throw new Error('Cannot login: no identity provider value given.')
@@ -38,8 +39,8 @@ export default async function createAuthenticatedSessionInteractive(options: IIn
 
   try {
     return await createFetchWithNewAccessToken(options.idp, appName, port, sessionInfoStorageLocation)
-  } catch (e: any) {
-    if (options?.verbose) console.error(`Error creating new session: ${e.message}`)
+  } catch (e) {
+    if (options?.verbose) writeErrorString('Error creating new session', e);
     return { fetch: nodefetch }
   }
   

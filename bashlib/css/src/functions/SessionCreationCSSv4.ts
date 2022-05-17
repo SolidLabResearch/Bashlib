@@ -2,6 +2,7 @@ import { KeyPair } from '@inrupt/solid-client-authn-core';
 import { createDpopHeader, generateDpopKeyPair, buildAuthenticatedFetch } from '@inrupt/solid-client-authn-core';
 import { decodeIdToken, getOIDCConfig, readSessionTokenInfo, storeSessionTokenInfo, ensureDirectoryExistence } from '../utils/util';
 import { IClientCredentialsTokenGenerationOptions, SessionInfo, IClientCredentialsTokenAuthOptions } from './CreateFetch';
+import { writeErrorString } from '../../../solid/src/utils/util';
 
 const nodefetch = require('node-fetch')
 const fs = require('fs')
@@ -59,13 +60,13 @@ export async function createAuthenticatedSessionInfoCSSv4(options?: IClientCrede
         }
       }
     }
-  } catch (e:any) {
-    if (options?.verbose) console.error(`Could not load existing session: ${e.message}`)
+  } catch (e) {
+    if (options?.verbose) writeErrorString('Could not load existing session', e);
   }
   try {
     return createFetchWithNewAccessToken(options);
-  } catch (e: any) {
-    if (options?.verbose) console.error(`Could not create new session: ${e.message}`)
+  } catch (e) {
+    if (options?.verbose) writeErrorString('Could not create new session', e);
     return { fetch: nodefetch}
   }
 }

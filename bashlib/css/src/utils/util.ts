@@ -48,8 +48,9 @@ export async function getOIDCConfig(idp: string): Promise<OIDCConfig> {
     if (!res.ok) throw new Error(`HTTP Error Response requesting ${oidclocation}: ${res.status} ${res.statusText}`);
     let json = await res.json();
     return json;
-  } catch (e: any) {
-    throw new Error(`Could not find OIDC config of user: ${e.message}`)
+  } catch (e) {
+    let message = (e instanceof Error) ? e.message : String(e);
+    throw new Error(`Could not find OIDC config of user: ${message}`)
   }
 }
 
@@ -180,8 +181,9 @@ async function fixKeyPairType(key: any) : Promise<KeyPair> {
     const publicKeyKeyLike = await importJWK(key.publicKey, JWTALG);
     publicKeyJWK = await exportJWK(publicKeyKeyLike);
     privateKeyKeyLike = await importJWK(key.privateKey, JWTALG) as KeyLike;
-  } catch (e: any) {
-    throw new Error(`Cannot restore session keys: ${e.message}`)
+  } catch (e) {
+    let message = (e instanceof Error) ? e.message : String(e);
+    throw new Error(`Cannot restore session keys: ${message}`)
   }
   let dpopKey = {
     privateKey: privateKeyKeyLike,

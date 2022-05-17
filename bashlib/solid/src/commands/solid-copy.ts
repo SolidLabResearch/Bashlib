@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { getFile, overwriteFile, getContentType, getContainedResourceUrlAll, getSolidDataset, createContainerAt } from "@inrupt/solid-client"
-import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively, checkRemoteFileExists } from '../utils/util';
+import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively, checkRemoteFileExists, writeErrorString } from '../utils/util';
 import Blob = require("fetch-blob")
 import { requestUserCLIConfirmation } from '../utils/userInteractions';
 
@@ -205,8 +205,8 @@ async function getRemoteSourceFiles(source: srcOptions, fetch: Function, verbose
         fileInfo.blob = fileData.blob as any;
         fileInfo.contentType = fileData.contentType
         return fileInfo
-      } catch (e: any) {
-        if (verbose) console.error(`Could not read remote file: ${e.message}`)
+      } catch (e) {
+        if (verbose) writeErrorString(`Could not read remote file ${fileInfo.absolutePath}`, e);
         return null;
       }
     }))).filter(f => f) as FileInfo[]
@@ -219,8 +219,8 @@ async function getRemoteSourceFiles(source: srcOptions, fetch: Function, verbose
           fileInfo.blob = fileData.blob as any;
           fileInfo.contentType = fileData.contentType
           return fileInfo
-        } catch (e: any) {
-          if (verbose) console.error(`Could not read remote file: ${e.message}`)
+        } catch (e) {
+          if (verbose) writeErrorString(`Could not read remote file ${fileInfo.absolutePath}`, e);
           return null;
         }
       }))).filter(f => f) as FileInfo[]
@@ -263,8 +263,8 @@ async function writeRemoteDirectory(path: string, fileInfo: FileInfo, fetch: any
   if (options.verbose) console.log('Writing remote directory:', path)
   try {
     await createContainerAt(path, { fetch })
-  } catch (e: any) {
-    console.error(`Could not write directory: ${path}: ${e.message}`)
+  } catch (e) {
+    if (options.verbose) writeErrorString(`Could not write directory for ${path}`, e);
   }
 }
 
@@ -305,8 +305,8 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options:
       console.error('No content to write for:', resourcePath)
     }
     return resourcePath;
-  } catch (e: any) {
-    if (options.verbose) console.error(`Could not save local file ${resourcePath} : ${e.message}`)
+  } catch (e) {
+    if (options.verbose) writeErrorString(`Could not save local file ${resourcePath}`, e);
     return undefined;
   }
 }
@@ -362,7 +362,7 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
     }
     return resourcePath;
   } catch (e:any) {
-    if (options.verbose) console.error(`Could not write file: ${resourcePath}: ${e.message}`)
+    if (options.verbose) writeErrorString(`CouldCould not write file ${resourcePath}`, e);
     return;
   }
 }

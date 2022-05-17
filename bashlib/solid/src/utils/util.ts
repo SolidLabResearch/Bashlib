@@ -392,6 +392,7 @@ export function getRelativePath(path: string, basePath: string) {
 }
 
 export function writeErrorString(explanation: string, e: any) {
-  console.error(`Error: ${chalk.red.bold(explanation)}: ${chalk.red((e as Error).message || e)}`)
+    let message = (e instanceof Error) ? e.message : String(e);
+  console.error(`${explanation}: ${message}`)
 
 }
