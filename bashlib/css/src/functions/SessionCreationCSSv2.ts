@@ -4,12 +4,12 @@ import type { Cookie } from 'set-cookie-parser';
 import { parse, splitCookiesString } from 'set-cookie-parser';
 import LoginHandler from '../utils/LoginHandler'
 import CSSConfigLoginHandler from '../utils/CSSConfigLoginHandler';
-import { SessionInfo, IClientCredentialsAuthOptions, APPNAME, DEFAULTPORT } from './CreateFetch';
+import { SessionInfo, IUserCredentialsAuthOptions, APPNAME, DEFAULTPORT } from './CreateFetch';
 const fetch = require("node-fetch")
 
 const APPLICATION_X_WWW_FORM_URLENCODED = 'application/x-www-form-urlencoded';
 
-export default async function createAuthenticatedSessionInfoCSSv2(options: IClientCredentialsAuthOptions) : Promise<SessionInfo> {
+export default async function createAuthenticatedSessionInfoCSSv2(options: IUserCredentialsAuthOptions) : Promise<SessionInfo> {
   const sessionProvider = new NodeSolidSessionProvider(options);
   const session = await sessionProvider.login()
   return {
@@ -19,14 +19,14 @@ export default async function createAuthenticatedSessionInfoCSSv2(options: IClie
 }
 
 class NodeSolidSessionProvider {
-  options: IClientCredentialsAuthOptions
+  options: IUserCredentialsAuthOptions
   loginHandler: LoginHandler 
 
   public session?: Session;
   private readonly cookies: Map<string, Cookie>;
   private cookie?: string;
 
-  constructor(options: IClientCredentialsAuthOptions) {
+  constructor(options: IUserCredentialsAuthOptions) {
    this.loginHandler = new CSSConfigLoginHandler();
    this.loginHandler.on('redirect', (url: string) => this.handleRedirect(url));
    this.options = options;

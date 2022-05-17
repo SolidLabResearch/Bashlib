@@ -29,11 +29,11 @@ export default async function authenticate(options: ILoginOptions) {
     
   } else if (authType === 'credentials') {
     try {
-      options = checkClientCredentialsAuthOptions(options);
-      await builder.buildFromClientCredentials(options)
+      options = checkUserCredentialsAuthOptions(options);
+      await builder.buildFromUserCredentials(options)
     } catch (e) {
 
-      if (options.verbose) writeErrorString(`Could not authenticate using client credentials`, e);
+      if (options.verbose) writeErrorString(`Could not authenticate using user credentials`, e);
     }
     
   } else if (authType === 'token') {
@@ -64,7 +64,7 @@ export default async function authenticate(options: ILoginOptions) {
 
 }
 
-function checkClientCredentialsAuthOptions(options: ILoginOptions) {
+function checkUserCredentialsAuthOptions(options: ILoginOptions) {
    if (!options.email) {
     throw new Error('No valid email value given.')
   } else if (!options.password) {

@@ -94,7 +94,7 @@ The Node.JS interface provides identical functionality to the CLI interface.
     clientCredentialsTokenStorageLocation?: string // (optional) Storage location of the stored client credentials token (defaults to ~/.solid/.css-auth-token).
   }
   
-  // Returns the location of the newly generated Client Credentials token.s
+  // Returns the location of the newly generated Client Credentials token.
   let storageLocation = await generateClientCredentialsToken(options);
 ```
 
@@ -140,12 +140,12 @@ let options = {
   sessionInfoStorageLocation?: string,             // (optional) Storage location of session information to reuse in subsequent runs of the application (defaults to ~/.solid/.session-info-token).
   verbose?: boolean,                               // (optional) Log authentication errors
 }
-builder.buildFromClientCredentials(options);
+builder.buildFromClientCredentialsToken(options);
 let fetch = builder.getFetch()
 // OR let {fetch, webId} = builder.getSessionInfo();
 ```
 
-### From Client Credentials
+### From User Credentials
 *compatibility: CSSv2.x.x*
 
 **deprecated - Older version of CSS and requires user credentials, please use [token based authentication flow](#from-client-credentials-token) instead.**
@@ -164,7 +164,7 @@ let options = {
   port?: number,     // (optional) Port used for redirect url of OIDC login flow
   verbose?: boolean, // (optional) Log authentication errors
 }
-builder.buildFromClientCredentials(options);
+builder.buildFromUserCredentials(options);
 let fetch = builder.getFetch()
 // OR let {fetch, webId} = builder.getSessionInfo();
 ```

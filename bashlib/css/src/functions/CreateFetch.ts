@@ -12,7 +12,7 @@ export type IInteractiveAuthOptions = {
   verbose?: boolean,
 }
 
-export type IClientCredentialsAuthOptions = {
+export type IUserCredentialsAuthOptions = {
   idp: string,
   email: string,
   password: string,
@@ -44,7 +44,7 @@ class SolidFetchBuilder {
   private webId: undefined | string;
   private fetch: undefined | ((input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>);
 
-  buildFromClientCredentials = async (options: IClientCredentialsAuthOptions) => {
+  buildFromUserCredentials = async (options: IUserCredentialsAuthOptions) => {
     const sessionInfo = await createAuthenticatedSessionInfoCSSv2(options);
     this.webId = sessionInfo.webId;
     this.fetch = sessionInfo.fetch;
