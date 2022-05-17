@@ -68,7 +68,6 @@ export async function listPermissions(resourceUrl: string, options: QueryOptions
     permissions.access.public = await getPublicAccess(resourceInfo)
 
     let aclDataset = getResourceAcl(resourceInfo); 
-    if (!aclDataset) throw new Error('Could not read ACL resource. Please make sure you have adequate permissions')
     
     if (aclDataset) {
       permissions.default = {};
