@@ -211,8 +211,8 @@ export async function* generateRecursiveListing( baseContainerURI: string, optio
     }
 
     let containerResourceURIs = await getContainedResourceUrlAll(containerDataset)
-    let resourceURIs = containerResourceURIs.filter(uri => !uri.endsWith('/'));
-    let containerURIs = containerResourceURIs.filter(uri => uri.endsWith('/'));
+    let resourceURIs = containerResourceURIs.filter((uri: string) => !uri.endsWith('/'));
+    let containerURIs = containerResourceURIs.filter((uri: string) => uri.endsWith('/'));
     resourceURIs.sort()
     containerURIs.sort().reverse();
     
@@ -392,7 +392,6 @@ export function getRelativePath(path: string, basePath: string) {
 }
 
 export function writeErrorString(explanation: string, e: any) {
-    let message = (e instanceof Error) ? e.message : String(e);
+  let message = (e instanceof Error) ? e.message : String(e);
   console.error(`${explanation}: ${message}`)
-
 }

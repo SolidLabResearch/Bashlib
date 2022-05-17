@@ -208,3 +208,8 @@ type IdToken = {
 export function decodeIdToken(idToken: string): IdToken {
   return jwt_decode(idToken);
 }
+
+export function writeErrorString(explanation: string, e: any) {
+  let message = (e instanceof Error) ? e.message : String(e);
+  console.error(`${explanation}: ${message}`)
+}

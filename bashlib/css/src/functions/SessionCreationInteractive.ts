@@ -1,11 +1,11 @@
-import { getOIDCConfig, getSessionInfoFromStorage, StorageHandler, OIDCConfig, readSessionTokenInfo, storeSessionTokenInfo, decodeIdToken } from '../utils/util';
+import { getOIDCConfig, getSessionInfoFromStorage, StorageHandler, OIDCConfig, readSessionTokenInfo, storeSessionTokenInfo, decodeIdToken, writeErrorString } from '../utils/util';
 import { generateDpopKeyPair, KeyPair, createDpopHeader, buildAuthenticatedFetch } from '@inrupt/solid-client-authn-core';
 import formurlencoded from 'form-urlencoded';
 import { Session } from '@inrupt/solid-client-authn-node';
 import open from 'open';
 import fs from 'fs';
 import { SessionInfo, IInteractiveAuthOptions, DEFAULTPORT, APPNAME } from './CreateFetch';
-import { writeErrorString } from '../../../solid/src/utils/util';
+
 const nodefetch = require("node-fetch")
 const express = require('express')
 const homedir = require('os').homedir();

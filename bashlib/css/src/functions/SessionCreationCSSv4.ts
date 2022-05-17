@@ -1,12 +1,10 @@
 import { KeyPair } from '@inrupt/solid-client-authn-core';
 import { createDpopHeader, generateDpopKeyPair, buildAuthenticatedFetch } from '@inrupt/solid-client-authn-core';
-import { decodeIdToken, getOIDCConfig, readSessionTokenInfo, storeSessionTokenInfo, ensureDirectoryExistence } from '../utils/util';
+import { decodeIdToken, getOIDCConfig, readSessionTokenInfo, storeSessionTokenInfo, ensureDirectoryExistence, writeErrorString } from '../utils/util';
 import { IClientCredentialsTokenGenerationOptions, SessionInfo, IClientCredentialsTokenAuthOptions } from './CreateFetch';
-import { writeErrorString } from '../../../solid/src/utils/util';
 
 const nodefetch = require('node-fetch')
 const fs = require('fs')
-
 
 const homedir = require('os').homedir();
 const SOLIDDIR = `${homedir}/.solid/`
