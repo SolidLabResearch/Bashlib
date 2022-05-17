@@ -20,6 +20,9 @@ export default async function edit(url: string, options: CommandOptionEdit) {
   if (exists && access) {
     await editRemoteFile(url, options)
   } else if (!exists) { 
+    if (!options.touch) {
+      throw new Error('Could not edit non-existing resource. Please use the --touch flag to create a new resource on edit.')
+    }
     await editNewFile(url, options)
   } else { 
     throw new Error(`No access rights for editing resource at ${url}.`)

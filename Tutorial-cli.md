@@ -33,9 +33,14 @@ Feel free to use a different authentication scheme for the `bashlib-auth` alias.
       - [move / mv](#move--mv)
       - [remove / rm](#remove--rm)
       - [mkdir](#mkdir)
+      - [touch](#touch)
       - [find](#find)
       - [query](#query)
       - [perms](#perms)
+      - [edit](#edit)
+  - [Examples](#examples)
+    - [Creating a new pod and authentication token](#creating-a-new-pod-and-authentication-token)
+    - [Setting up a profile image on your pod](#setting-up-a-profile-image-on-your-pod)
 
 ## Setting up a Solid Server
 Before we use the Bashlib library, we need a Solid account and accompanying data pod to use the library. In case you already own a Solid pod, you may still want to follow the setup process, as some of the functionality will only be available for pods created on a [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer) instance.
@@ -198,7 +203,7 @@ We can now use fetch public resources as such:
 ```
 
 ### Commands
-Now that we have created a Solid account and pod and learned how to authenticate, we will look at the available commands in `Bashlib-solid`.
+Now that we have created a Solid account and pod and learned how to authenticate, we will look at the available commands in `Bashlib-solid`. In this section, we will do a runthrough for all available commands, and how they can be used.
 These commands will help you see solid not only as a Web technology, but as something you can easily include in existing workflows, while enabling ease of access and sharing of resources in between systems and users.
 **We use the alias `alias bashlib-auth = "node bashlib/solid/bin/solid.js --auth token -t .tokens/.bobs-auth-token"` as a shortcut to make authenticated requests from here. In case you use another authentication method feel free to choose your own alias!**
 
@@ -327,6 +332,14 @@ bashlib-auth mkdir base:/Pictures/
 ```
 creates a new `Pictures/` container in the root of your pod.
 
+#### touch
+The `touch` command creates a target resource in a container.
+
+```
+bashlib-auth touch base:/test.txt
+```
+creates a new resource `test.txt` in the root of your pod.
+
 #### find
 The `find` command enables you to find specific files in a given container based on a given filename regex.
 
@@ -360,11 +373,11 @@ bashlib-auth query -q -p base: queryFile.txt
 The `perms` command provides three operations to list, edit and delete permissions for a resource on a Solid pod.
 **This command only works for pods implementing the WAC protocols. Pods implementing the ACP protocol (Inrupt) are currently not supported.**
 
-*listing*
+***listing***
 
 To list the permissions of your profile resource, we can use the following command:
 ```
-bashlib-auth perms list webid:
+bashlib-auth perms list webid:https://github.com/CommunitySolidServer/CommunitySolidServer
 ```
 Here, we see the permissions written out for all agents, groups and the public for the given resource.
 This also works for containers. The following command prints the permissions of the pod root in a table format:
@@ -372,9 +385,186 @@ This also works for containers. The following command prints the permissions of 
 bashlib-auth perms list --pretty base:
 ```
 
-*editing*
+***editing***
+**note: The editing of permissions for containers and other resources is exactly the same.**
 
-To edit permissions of a resource on your Solid pod, use the following command:
+To demonstrate the editing of permissions, we will first create a `Private` and `Public` folder on our pod.
 ```
-bashlib-auth perms edit 
+bashlib-auth mkdir base:/Private/
+bashlib-auth mkdir base:/Public/
 ```
+
+We start by setting the permissions for the `base:/Public/` container to be publicly readable, and make this the default for all contained resources (only an option for WAC).
+```
+bashlib-auth perms edit base:/Public/ p=rd
+```
+
+When we now list the resource permissions, we see that public permissions are set to `read` and `default`.
+```
+bashlib-auth perms list --pretty base:/Public/
+```
+
+Now we want to make sure the public cannot read or interact in any way with out `Private` container.
+For this we set public permissions to be nothing.
+However, we want our currently authenticated user to have full permissions in this container and all contained resources as a default (append permissions are implicitly set by giving write permissions):
+```
+bashlib-auth perms edit base:/Private/ p= u=rwcd
+```
+
+When we now list the resource permissions, we see that no public permissions are set. We also see that the permissions are NOT inherited, meaning they are have been set for the resource successfully.
+```
+bashlib-auth perms list --pretty base:/Private/
+```
+
+Finally, we want to give permission to our friend with the WebID `https://my.friends.pod/profile/card#me` to read and write in our `Private` container.
+For this we use the following command:
+```
+bashlib-auth perms edit base:/Private/ https://my.friends.pod/profile/card#me=rw
+```
+
+When we now list the resource permissions, we see that our friend `https://my.friends.pod/profile/card#me` had received read, write and append (implicitly given through write) permissions over our `Private` container.
+```
+bashlib-auth perms list --pretty base:/Private/
+```
+
+***deleting***
+Finally, we can also delete resource permissions.
+We can remove the permissions set for a given resource.
+
+To remove the permissions set for the public container, we can use the following command:
+```
+bashlib-auth perms delete base:/Public/
+```
+
+If we now list the permissions for this container, we see that all current permissions are inherited from the parent container, as the permissions for the `Public` container have been deleted.
+```
+bashlib-auth perms list --pretty base:/Public/
+```
+
+
+#### edit
+The edit command is a helper command to quickly allow you to edit resources on your pod.
+The command takes the url of a resource (cannot be a container), copies the resource to your local filesystem and opens the resource with your given or your default editor.
+
+We will now edit the file `base:/Public/test.txt` with our local vim editor. 
+If you do not have vim installed, please select your prefered editor or do not use the flag to use the default system editor.
+Using the `--touch` flag, we will create a new file if the resource does not exist yet.
+```
+bashlib-auth edit --editor vim --touch base:/Public/test.txt
+```
+
+Now your editor will open with an empty file.
+You can now edit the file to contain a string of text, and then save the file in your editor.
+On exiting the editor, and returning to the terminal, you must press any button to continue.
+Now, the edited resource will be copied from your local filesystem to its location on the data pod, and be removed from the local filesystem.
+
+If we now look at the created file
+```
+bashlib-auth cat base:/Public/test.txt
+```
+we see that the file has been created and contains the text that was written in the editor.
+
+
+
+
+
+## Examples
+In this section, we will go over some quick examples of how the CLI interface of `Bashlib` can be used to do some common tasks.
+For all examples, we will make use of the following aliases:
+
+- bashlib-css - `alias bashlib-css="node bashlib/css/bin/css.js"`
+- bashlib-solid - `alias bashlib-auth="node bashlib/solid/bin/solid.js"`
+- bashlib-auth - `alias bashlib-auth="node bashlib/solid/bin/solid.js" --auth <your_preferred_auth_option`
+
+
+### Creating a new pod and authentication token 
+*compatibility CSSv4 - current*
+
+First, we need to have a Community Solid Server instance running. More info on how to setup a Community Solid Server can be found [here](https://github.com/CommunitySolidServer/CommunitySolidServer).
+
+First, we create a new pod on our running CSS instance.
+For this we run the `create-pod` command:
+```
+bashlib-css create-pod 
+```
+and we fill in the required information:
+```
+? CSS instance base url   your CSS server baseURL, e.g. http://localhost:3000/
+? Pod and user name       the name for your pod
+? User email              the email address to login to the pod
+? User password           the password to login to the pod
+```
+
+On completion, you will receive the following message
+```
+Pod for <name> created succesfully on <baseurl>/<name>/profile/card#me
+```
+This `<baseurl>/<name>/profile/card#me` is the WebID of your newly created Solid account.
+
+Now that we have created a Solid account, we will create an authentication token we can use to authenticate to our pod from the CLI. For this, we use the `create-token` command.
+```
+bashlib-css create-token
+```
+and fill in the required information:
+```
+? Token name        the name of the token e.g. my-cli-auth-token
+? Pod baseuri       your CSS server baseURL, e.g. http://localhost:3000/
+? User email        the email address to login to the pod
+? User password     the password to login to the pod
+? Token location    you can choose a custom location or leave this blank to default to ~/.solid/.css-auth-token
+```
+
+This creates a client-credentials-token you can use to authenticate at the `Token location` (default is `~/.solid/.css-auth-token`). With this token, we can now authenticate our commands, such as listing the permissions of our WebID profile resource.
+
+In case the default location was used to store the token, we use the following command
+```
+bashlib-solid --auth "token" perms list --pretty webid:
+```
+In case a custom token location was given, we pass the `-t` flag to indicate where the token can be found:
+```
+bashlib-solid --auth "token" -t <path_to_token> perms list --pretty webid:
+```
+
+You can alias this to have a quick and easy way to use `Bashlib` from the cli (-t option only required if the default storage location was not used):
+```
+alias bashlib-auth=`bashlib-solid --auth "token" -t <path_to_token>
+```
+From here on, you can use this alias to make all your commands authenticated:
+```
+bashlib-auth perms list --pretty webid:
+```
+
+
+
+### Setting up a profile image on your pod 
+Here we will discuss how we can quickly add a profile image to our profile, and store it on our pod. For this, we first need to choose a profile image. Say we have a nice image we want to use for this at `~/Pictures/my_nice_picture.png`.
+
+First, we copy the image to our pod at the location `base:/profile/img.png`.
+```
+bashlib-auth cp ~/Pictures/my_nice_picture.png base:/profile/img.png
+```
+
+Next, we will make this image publicly readable, so everyone can see your profile picture. If you do not like this, feel free to only add read permissions for specific WebIDs.
+```
+bashlib-auth perms edit base:/profile/img.png p=r
+```
+
+With our image uploaded to our pod and made public, we will now have to edit our profile document to link the new profile image to our WebID.
+```
+bashlib-auth edit webId:
+```
+This will open our profile document in our default editor.
+We now add the following line to the document (replace `imageurl` with the url of the newly uploaded image):
+```
+<#me> <http://xmlns.com/foaf/0.1/img> <imageurl> .
+```
+
+Now save the document, and exit the editor.
+Press on any key to continue, and your profile document is now updated with a link to your newly added profile image 
+
+Congratulations, you just set your profile image.
+
+
+
+
+

@@ -14,6 +14,12 @@ bash setup.sh
 
 <hr>
 
+## Tutorial
+A tutorial for the CLI interface for Bashlib can be found [here](https://github.com/SolidLabResearch/Bashlib/blob/master/Tutorial-cli.md).
+
+
+<hr>
+
 ## [Bashlib-css](/bashlib/css)
 [Bashlib-css](/bashlib/css) provides a set of modules created for development and testing using the [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer).
 It enables quick setting up of new Solid accounts and pods and authenticating users in Node.JS or the CLI.
