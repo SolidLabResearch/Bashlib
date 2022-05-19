@@ -7,7 +7,7 @@ The **[Bashlib-solid](/bashlib/solid)** library provides functionality to intera
 ## Setup
 To setup all the libraries, please run the setup script.
 ``` 
-git clone git@github.com:MellonScholarlyCommunication/css-suite.git
+git clone git@github.com:SolidLabResearch/Bashlib.git
 cd Bashlib
 bash setup.sh
 ```
