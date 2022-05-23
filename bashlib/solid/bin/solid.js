@@ -646,7 +646,7 @@ function formatBindings(fileName, bindings, options) {
     let table;
     if (!bindings.length) {
       console.log(chalk.bold(`> ${fileName}`))
-      writeErrorString(`No results for file ${fileName}`, '-')
+      if (options.verbose) writeErrorString(`No results for resource ${fileName}`, '-')
       return;
     }
     for (let binding of bindings) {
@@ -665,7 +665,7 @@ ${table.toString()}
     let bindingsString = ""
     if (!bindings.length) {
       console.log(chalk.bold(`> ${fileName}`))
-      writeErrorString(`No results for file ${fileName}`, '-')
+      if (options.verbose) writeErrorString(`No results for resource ${fileName}`, '-')
       return;
     }
     for (let binding of bindings) {
