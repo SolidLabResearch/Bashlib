@@ -10,6 +10,7 @@ const find = commands.find
 const remove = commands.remove
 const move = commands.move
 const query = commands.query
+const update = commands.update
 const listPermissions = commands.listPermissions
 const changePermissions = commands.changePermissions
 const deletePermissions = commands.deletePermissions
@@ -376,6 +377,33 @@ program
     process.exit(0)
   })
 
+program
+  .command('update')
+  .description('Utility to update RDF resoures on your data pod.')
+  .argument('<url>', 'Resource to update. In case of container recursively queries all contained files.')
+  .argument('<query>', 'SPARQL Update query string | file path containing SPARQL Update query when -q flag is active')
+  .option('-a, --all', 'Match .acl and .meta files')
+  .option('-q, --queryfile', 'Process query parameter as file path of SPARQL Update query')
+  .option('-p, --pretty', 'Pretty format') 
+  .option('-f, --full', 'Return containing files using full filename.')
+  .option('-v, --verbose', 'Log all operations') // Should this be default?
+  .action( async (url, queryString, options) => {
+    let programOpts = addEnvOptions(program.opts() || {});
+    const authenticationInfo = await authenticate(programOpts)
+    options.fetch = authenticationInfo.fetch
+    try {
+      url = await changeUrlPrefixes(authenticationInfo, url)
+      if (options.queryfile) {
+        queryString = fs.readFileSync(queryString, {encoding: "utf-8"})
+      }
+      await update(url, queryString, options)
+    } catch (e) {
+      console.error(`Could not update resource at ${url}: ${e.message}`)
+      process.exit(1)
+    }
+    process.exit(0)
+  })
+
  /********
  * Touch *
  *********/
@@ -526,7 +554,6 @@ program
 
 
 
-
 /**********************************************************************************
  *                                HELPER FUNCTIONS                                *
  **********************************************************************************/
@@ -541,19 +568,19 @@ async function changeUrlPrefixes(authenticationInfo, url) {
   } else if (url.startsWith('root:')) {
     if (!authenticationInfo.webId) throw new Error('Cannot process URL with "root:" prefix, no WebID value currently known.')
     let podRoot = await getPodRoot(authenticationInfo.webId, authenticationInfo.fetch);
-    if (!podRoot) throw new Erorr('No pod root container found')
+    if (!podRoot) throw new Error('No pod root container found')
     return mergeStringsSingleSlash(podRoot, url.replace('root:', '')) 
 
   } else if (url.startsWith('base:')) {
     if (!authenticationInfo.webId) throw new Error('Cannot process URL with "root:" prefix, no WebID value currently known.')
     let podRoot = await getPodRoot(authenticationInfo.webId, authenticationInfo.fetch);
-    if (!podRoot) throw new Erorr('No pod root container found')
+    if (!podRoot) throw new Error('No pod root container found')
     return mergeStringsSingleSlash(podRoot, url.replace('base:', '')) 
 
   } else if (url.startsWith('inbox:')) {
     if (!authenticationInfo.webId) throw new Error('Cannot process URL with "inbox:" prefix, no WebID value currently known.')
     let inbox = await getInbox(authenticationInfo.webId, authenticationInfo.fetch);
-    if (!inbox) throw new Erorr('No inbox value found')
+    if (!inbox) throw new Error('No inbox value found')
     return mergeStringsSingleSlash(inbox, url.replace('inbox:', '')) 
   } else {
     return url;

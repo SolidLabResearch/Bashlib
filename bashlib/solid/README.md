@@ -264,6 +264,23 @@ node bin/solid.js [auth_options] query [options] <url> <query>
   -v, --verbose  Log all operations to cli
 ```
 
+#### update
+This command updates the given resource, or recursively all contained resources in case the given url is a container. The query parameter MUST be a valid SPARQL Update query. All non-rdf resources will be ignored.
+
+The `--all` flag can be set to include `.acl` files in the listing.
+The `--full` flag will show the full file URL in the returned results, instead of the relative path to the queried container.
+
+*usage*
+```
+node bin/solid.js [auth_options] update [options] <url> <query>
+```
+*options*
+```
+  -a, --all      Update all resources (includes .acl and .meta resources)
+  -f, --full     List resources with their full uri (defaults to showing only relative URI to the passed url argument)
+  -v, --verbose  Log all operations to cli
+```
+
 #### perms
 This command enables the listing, editing and removing of resource permisssions. This command only supports `Web Access Controls resources (.acl)`, and does not support `Access Control Policies resources (.acp)`. Editing permissions can be done by supplying a set of permissions. These permissions must be formatted according to the description below.
 **note: Editing permissions for a specific WebID or public permissions will remove all prior assigned permissions.** E.g. editing permissions to assign read permissions to a WebID will remove prior assigned write permissions!
@@ -518,6 +535,27 @@ await query(url, options)
 TODO::
 ```
 
+#### update
+
+*usage*
+```
+import { update } from "/install/location"
+
+let url = ...
+
+let options = {
+  fetch: any,         // an (authenticated) fetch function
+  all?: boolean,      // include .acl resources in querying
+  verbose?: boolean,  // log all operations
+} 
+
+await update(url, options)
+```
+
+*returns*
+```
+TODO::
+```
 
 #### perms
 
