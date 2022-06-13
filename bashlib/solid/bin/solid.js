@@ -541,19 +541,19 @@ async function changeUrlPrefixes(authenticationInfo, url) {
   } else if (url.startsWith('root:')) {
     if (!authenticationInfo.webId) throw new Error('Cannot process URL with "root:" prefix, no WebID value currently known.')
     let podRoot = await getPodRoot(authenticationInfo.webId, authenticationInfo.fetch);
-    if (!podRoot) throw new Erorr('No pod root container found')
+    if (!podRoot) throw new Error('No pod root container found')
     return mergeStringsSingleSlash(podRoot, url.replace('root:', '')) 
 
   } else if (url.startsWith('base:')) {
     if (!authenticationInfo.webId) throw new Error('Cannot process URL with "root:" prefix, no WebID value currently known.')
     let podRoot = await getPodRoot(authenticationInfo.webId, authenticationInfo.fetch);
-    if (!podRoot) throw new Erorr('No pod root container found')
+    if (!podRoot) throw new Error('No pod root container found')
     return mergeStringsSingleSlash(podRoot, url.replace('base:', '')) 
 
   } else if (url.startsWith('inbox:')) {
     if (!authenticationInfo.webId) throw new Error('Cannot process URL with "inbox:" prefix, no WebID value currently known.')
     let inbox = await getInbox(authenticationInfo.webId, authenticationInfo.fetch);
-    if (!inbox) throw new Erorr('No inbox value found')
+    if (!inbox) throw new Error('No inbox value found')
     return mergeStringsSingleSlash(inbox, url.replace('inbox:', '')) 
   } else {
     return url;
