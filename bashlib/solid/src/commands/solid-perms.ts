@@ -88,7 +88,7 @@ export async function listPermissions(resourceUrl: string, options: QueryOptions
 }
 
 export type PermissionOperation = {
-  type: "agent" | 'group' | 'public',
+  type: 'agent' | 'group' | 'public',
   id?: string,
   read?: boolean,
   write?: boolean,
