@@ -2,7 +2,7 @@
 const { Command } = require('commander');
 let program = new Command();
 
-const c = require('../dist/shell/commands/shellcommands')
+const c = require('../dist/shell/shellcommands')
 
 // Fix for console error in Inrupt lib.
 let consoleErrorFunction = console.error;
