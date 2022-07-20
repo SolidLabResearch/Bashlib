@@ -1,109 +1,174 @@
-# Bashlib
-This repository contains a suite of functionality to facilitate use and development for Solid, mainly focused on supporting the [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer).
-The **[Bashlib-css](/bashlib/css)** library provides functionality for pod-creation and authentication options that are mostly restricted in compatilibty with the [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer).
-The **[Bashlib-solid](/bashlib/solid)** library provides functionality to interact with Solid environments from Node.JS and the CLI, providing shell-like functionality to facilitate the use of and development for Solid for people without knowledge of Solid or LDP.
+# BashLib CSS tooling
+This is a set of tools specifically for facilitating interactions with the [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer) API.
 
+It provides a core set of [**functionality**](#functionality) for [creating data pods on a css instance](#create-pod) and [creating a client credentials token](#create-token) on a [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer) instance, as well as a set of [**authentication options**](#creating-an-authenticated-fetch) for Node.JS.
 
-## Setup
-To setup all the libraries, please run the setup script.
-``` 
-git clone git@github.com:SolidLabResearch/Bashlib.git
-cd Bashlib
-bash setup.sh
+## Installing
+```
+npm run build;
 ```
 
-<hr>
-
-## Tutorial
-A tutorial for the CLI interface for Bashlib can be found [here](https://github.com/SolidLabResearch/Bashlib/blob/master/Tutorial-cli.md).
+## Functionality
 
 
-<hr>
+### Pod creation
+*compatibility: CSSv2.0.0 - current*
 
-## [Bashlib-css](/bashlib/css)
-[Bashlib-css](/bashlib/css) provides a set of modules created for development and testing using the [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer).
-It enables quick setting up of new Solid accounts and pods and authenticating users in Node.JS or the CLI.
+This tool automatically creates a new Solid account and accompanying data pod on a Community Solid Server (CSS) instance.
+The CSS instance must be configured to allow multiple users to register (editable in the startup options of the server).
 
-### [Creating new data pods on a CSS instance](/bashlib/css#pod-creation)
-*Compatibility: CSSv2.0.0 - current*
-The [create-pod](/bashlib/css#pod-creation) module handles the creation of new data pods on a [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer) instance.
-It automates the process of creating a Solid-account and accompanying data pod for new users, and can be used from Node.JS or the CLI.
+#### CLI
+The `create-pod` command creates a new Solid account and data pod on a given CSS instance.
+The command triggers an interactive prompt if not all option values are passed.
+```
+node bin/css.js create-pod [options]
+```
+*options*
+```  
+  -b, --base-url <string>      Base URL of the pod server.
+  -n, --name                   Name for the newly created Solid account.
+  -e, --email <string>         Email adres for the user. Default to <name>@test.edu
+  -p, --password <string>      User password. Default to <name>
+```
+
+#### Node.JS usage
+The Node.JS interface provides the `createPods` function that initializes a Solid account on the given CSS instance for each account .
+```
+include { createPods } from '/install/location'
+
+// An array containing the information of the accounts to be create on the CSS instance
+let accounts = [
+  { // Account 1
+    "name": "Bob",
+    "email": "Bob@test.edu",
+    "password": "BobsVerySecurePassword",
+  }, 
+  { // Acount 2
+    "name": "Carol",
+  }
+]
+
+// CSS instance base URL
+let baseUrl = "https://localhost:3000/"
+
+// Create the requested accounts on the CSS instance
+await createPods(baseUrl, accounts)
+```
 
 
-### [Generating Client Credentials tokens for authentication](/bashlib/css#client-credentials-token-generation)
-*Compatibility: CSSv4.0.0 - current*
-The [create-token](/bashlib/css#client-credentials-token-generation) module handles the creation of [Client Credentials tokens](https://github.com/CommunitySolidServer/CommunitySolidServer/blob/main/documentation/client-credentials.md), a CSS-specific authentication mechanism that does not require browser interaction. The resulting tokens are stored on the file system, and can be used to automatically authenticate users in Node.JS and on the CLI.
 
 
-
-### [Building an authenticated fetch using Node.JS or CLI](/bashlib/css#creating-an-authenticated-fetch)
-This module handles the building of an authenticated fetch function for Node.JS.
-It provides multiple options to authenticate the user.
-
-#### [Interactive](/bashlib/css#interactive)
-*compatibility: all versions of all pods*
-The interactive login option authenticates the user via an interactive prompt in the browser. This follows the default [Inrupt Node.JS authentication flow](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/authenticate-nodejs/). The active session information is stored, resulting in subsequent runs of the application re-using previous sessions where possible.
-
-
-#### [From Client Credentials token](/bashlib/css#from-client-credentials-token)
+### Client Credentials Token generation
 *compatibility: CSSv4.0.0 - current*
-The Client Credentials Token generated by the [create-token]() module is used to automatically authenticate the user in Node.JS without any browser interaction. The active session information is stored, resulting in subsequent runs of the application re-using previous sessions where possible.
 
-#### [From User Credentials](/bashlib/css#from-client-credentials)
+As of version 4 of the [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer), support was added for authentication using [Client Credentials tokens](https://github.com/CommunitySolidServer/CommunitySolidServer/blob/main/documentation/client-credentials.md).
+Such a token can be generated by the user for their Solid account on their CSS pod provider.
+A generated token can be permanently used to create new access tokens, without requiring the user credentials or an interactive browser session again to authenticate the user.
+This module handles the creation and storage of this token, as well as some additional useful information for [building an authenticated fetch function using this token](#token-based-flow).
+#### CLI
+The `create-token` command creates a new Client Credentials token for your data pod on your local filesystem. This command provides an interactive prompt if not all option values are given.
+```
+node bin/css.js create-token [options]
+```
+*options*
+```
+  -i, --idp <string>       URL of your identity provider (= baseURI of your CSS server)
+  -n, --name <string>      Token name
+  -e, --email <string>     User email
+  -p, --password <string>  User password
+  -w, --webId <string>     User webId (optional)
+  -o, --out <string>       Token file location (defaults to ~/.solid/.css-auth-token)
+  -v, --verbose            Log actions
+```
 
-*compatibility: CSSv2.x.x -* **deprecated**
-This authentication option makes use of user credentials being passed to authenticate the user. For this, it hijacks the browser flow for this specific CSS version. Using a [Client Credentials token]() authentication flow with a more up-to-date version of the CSS is advised.
+#### Node.JS
+The Node.JS interface provides identical functionality to the CLI interface.
+```
+  import { generateClientCredentialsToken } from "/install/location"
+  
+  let options = {
+    name: string,                                  // The name of the token, used for matching and removing auth tokens.
+    email: string,                                 // The user email
+    password: string,                              // The user password
+    idp: string,                                   // URL of your identity provider (= baseURI of your CSS server)
+    clientCredentialsTokenStorageLocation?: string // (optional) Storage location of the stored client credentials token (defaults to ~/.solid/.css-auth-token).
+  }
+  
+  // Returns the location of the newly generated Client Credentials token.
+  let storageLocation = await generateClientCredentialsToken(options);
+```
 
-<hr>
 
-## [Bashlib-solid](/bashlib/solid)
-[Bashlib-solid](/bashlib/solid) provides a set of functions to interact with Solid environments from Node.JS and the CLI, providing shell-like functionality to facilitate the use of and development for Solid for people without knowledge of Solid or LDP. All modules provide their functionality both on the CLI interface, as well as through Node.JS.
 
-### CLI-Interface
-The CLI-interface exposes all functions as commands on the CLI. 
-It makes use of the [Authentication module of Bashlib-css](/bashlib/css#creating-an-authenticated-fetch) to authenticate the user.
 
-### Node.JS Interface
-All functions are exposed in Node.JS as exports of the Bashlib-solid library.
-Authentication can be done using the [Authentication module of Bashlib-css](/bashlib/css#creating-an-authenticated-fetch), or you can provide a custom authenticated fetch function.
+## Creating an authenticated fetch
+These modules provides a set of functions to create an authenticated fetch function to interact with resources on a Solid data pod. This functionality is developed for testing purposes in the Community Solid Server ecosystem. We advise against using these in production environments, and refer to the [Inrupt developer tools for authentication](https://docs.inrupt.com/developer-tools/javascript/client-libraries/reference/solid-client-authn/).
 
-### Functions
-This is a listing of all the functions made available on the CLI and Node.JS.
+### Interactive
+*compatbility: universal*
 
-#### [Fetch](/bashlib/solid#fetch)
-The [fetch](/bashlib/solid#fetch) function can be used to fetch authenticated resources from a Solid environment.
+This module provides an interactive authentication flow using the browser according to the [Inrupt Node.JS authentication flow](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/authenticate-nodejs/).
+This implementation stores the session info on disk (default location: ```~/.solid/.session-info-interactive```), to reuse the existing session in subsequent application calls, to support usecases where the application is run multiple times per minute without requiring the user to redo the browser authentication step every time.
 
-#### [List](/bashlib/solid#list)
-The [list](/bashlib/solid#list) function can be used to list resources in a container in a Solid environment.
-It provides additional CLI options include .acl files and more if needed.
+```
+import SolidFetchBuilder from "/install/location"
 
-#### [Tree](/bashlib/solid#tree)
-The [tree](/bashlib/solid#tree) function can be used to write a tree-structure of all resources in a container in a Solid environment to the command line. In Node.JS, this function writes the same output to the console, and returns nothing. When listing files in Node.JS, please use the [find](#find) function.
+const builder = new SolidFetchBuilder();
+let options = {
+  idp: string,                          // Solid identity provider
+  sessionInfoStorageLocation?: string,  // (optional) Session info storage (default: ~/.solid/.session-info-interactive).
+  port?: number,                        // (optional) Port used for redirect url of OIDC login flow
+  verbose?: boolean,                    // (optional) Log authentication errors
+}
+builder.buildInteractive(options);
+let fetch = builder.getFetch()
+// OR let {fetch, webId} = builder.getSessionInfo();
+```
 
-#### [Copy](/bashlib/solid#copy)
-The [copy](/bashlib/solid#copy) function provides functionality to copy files to and from both the local filesystem and a Solid environement. Recursive copying of containers is set as a default.
+### From Client Credentials token
+*compatibility: CSSv4.0.0 - current*
 
-#### [Move](/bashlib/solid#move)
-The [move](/bashlib/solid#move) function provides functionality to move files to and from both the local filesystem and a Solid environement. Recursive moving of containers is set as a default.
+This module builds an authenticated Fetch function given a client credentials token, that can be **generated using the [client credentials token generation module](#client-credentials-token-generation) module**. [Client Credentials tokens](https://github.com/CommunitySolidServer/CommunitySolidServer/blob/57c2566e11e42916b9c1c91976cce40549cabf64/documentation/client-credentials.md) are only available for the [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer) from `v4.x.x` and onwards. This module also stores the session information on disk, so subsequent runs of the application do not have to redo the authentication flow on every run (per default this information is stored in: ```~/.solid/.session-info-interactive```)
 
-#### [Remove](/bashlib/solid#remove)
-The [remove](/bashlib/solid#remove) function provides functionality to remove files on a Solid environement. Recursive removing of containers is added with a flag to prevent accidents.
+```
+import SolidFetchBuilder from "/install/location"
 
-#### [Mkdir](/bashlib/solid#mkdir)
-The [mkdir](/bashlib/solid#mkdir) function provides functionality to create empty containers in a Solid environment.
+const builder = new SolidFetchBuilder();
+let options = {
+  idp?: string,                                    // (optional) Solid identity provider - this value is stored in the generated token
+  clientCredentialsTokenStorageLocation?: string,  // (optional) Storage location of the stored client credentials token (defaults to ~/.solid/.css-auth-token).
+  sessionInfoStorageLocation?: string,             // (optional) Storage location of session information to reuse in subsequent runs of the application (defaults to ~/.solid/.session-info-token).
+  verbose?: boolean,                               // (optional) Log authentication errors
+}
+builder.buildFromClientCredentialsToken(options);
+let fetch = builder.getFetch()
+// OR let {fetch, webId} = builder.getSessionInfo();
+```
 
-#### [Touch](/bashlib/solid#touch)
-The [Touch](/bashlib/solid#touch) function provides functionality to create empty resources in a Solid environment.
+### From User Credentials
+*compatibility: CSSv2.x.x*
 
-#### [Find](/bashlib/solid#find)
-The [find](/bashlib/solid#find) function allows you to recursively find resources in a container in a Solid environment matching a given file name regex.
+**deprecated - Older version of CSS and requires user credentials, please use [token based authentication flow](#from-client-credentials-token) instead.**
 
-#### [Query](/bashlib/solid#query)
-The [query](/bashlib/solid#query) function allows you to recursively query resources in a container in a Solid environment using a given [SPARQL](https://www.w3.org/TR/rdf-sparql-query/) query.
+This module builds an authenticated fetch function given user credentials.
+This auth module hijacks the browser authentication flow for the Community Solid Server, and only works with v2.x.x of the CSS! (This module does not store session information, and re-authenticates on every subsequent run of the application using it)
 
-#### [Perms](/bashlib/solid#perms)
-The [perms](/bashlib/solid#perms) function provides functionality for the listing and editing of resource permissions in a Solid environment.
+```
+import SolidFetchBuilder from "/install/location"
 
-#### [Edit](/bashlib/solid#edit)
-The [edit](/bashlib/solid#edit) function is only available on the CLI interface! 
-It can be used to fetch a remote resource, edit it locally in your editor, and put the result back on the resource location.
+const builder = new SolidFetchBuilder();
+let options = {
+  idp: string,       // Solid identity provider
+  email: string,     // User email
+  password: string,  // User password
+  port?: number,     // (optional) Port used for redirect url of OIDC login flow
+  verbose?: boolean, // (optional) Log authentication errors
+}
+builder.buildFromUserCredentials(options);
+let fetch = builder.getFetch()
+// OR let {fetch, webId} = builder.getSessionInfo();
+```
+
+
+
+
