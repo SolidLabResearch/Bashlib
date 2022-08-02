@@ -1,5 +1,5 @@
 import SolidFetchBuilder from './CreateFetch';
-import { writeErrorString } from '../utils/util';
+import { getPodRoot, writeErrorString } from '../utils/util';
 import inquirer from 'inquirer';
 import { getConfigCurrentWebID, getConfigCurrentToken } from '../utils/configoptions';
 const nodeFetch = require('node-fetch')
@@ -64,7 +64,7 @@ async function queryUserAuthentication(options: ILoginOptions) {
   if (!currentWebID && !options.idp) { 
     // Ask the user if they want to authenticate. If not, use node-fetch, else give them a prompt to provide an idp
     console.log(`Do you want to authenticate the current request? [y, N] `);
-    let userWantsToAuthtenticate = await new Promise((resolve, reject) => {
+    let userWantsToAuthenticate = await new Promise((resolve, reject) => {
       process.stdin.setRawMode(true);
       process.stdin.resume();
       process.stdin.on('data', (chk) => {
@@ -76,14 +76,25 @@ async function queryUserAuthentication(options: ILoginOptions) {
       });
     });
     
-    while (!options.idp && userWantsToAuthtenticate) { 
-      if (userWantsToAuthtenticate) {
-        let answers = await inquirer.prompt([{ type: 'input', name: 'idp', message: 'Please provide an identity provider to authenticate' }])
-        let idp = answers.idp.trim();
-        options.idp = idp && (idp.endsWith('/') ? idp : idp + '/');
+    while (!options.idp && userWantsToAuthenticate) { 
+      if (userWantsToAuthenticate) {
+        options.idp = await getUserIdp()
       }
     }
-    
   }
   return options
 }
+
+export async function getUserIdp() { 
+  let idp;
+  let webId = getConfigCurrentWebID()
+  if (webId) { 
+    idp = await getPodRoot(webId, nodeFetch)
+  }
+  if (!idp) { 
+    let answers = await inquirer.prompt([{ type: 'input', name: 'idp', message: 'Please provide an identity provider to authenticate' }])
+    idp = answers.idp.trim();
+  }
+  return idp && (idp.endsWith('/') ? idp : idp + '/');
+}
+  

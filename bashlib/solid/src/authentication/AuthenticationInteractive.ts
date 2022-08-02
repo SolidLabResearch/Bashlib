@@ -7,6 +7,7 @@ import { SessionInfo, IInteractiveAuthOptions, DEFAULTPORT, APPNAME } from './Cr
 import { removeConfigSession, getConfigCurrentSession, getConfigCurrentWebID, ISessionEntry, setConfigCurrentWebID, setConfigSession } from '../utils/configoptions';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
+import { getUserIdp } from './authenticate';
 
 const nodefetch = require("node-fetch")
 const express = require('express')
@@ -59,12 +60,7 @@ export default async function authenticateInteractive(options: IInteractiveAuthO
     }
   }
 
-  if (!options.idp) { 
-    let answers = await inquirer.prompt([{ type: 'input', name: 'idp', message: 'Please provide an identity provider to authenticate' }])
-    let idp = answers.idp.trim();
-    options.idp = idp && (idp.endsWith('/') ? idp : idp + '/');
-  }
-  
+  if (!options.idp) { options.idp = await getUserIdp() }
   if (!options.idp) throw new Error('Cannot login: no identity provider value given.')
 
   try {
@@ -203,7 +199,7 @@ async function requestAccessToken(p: {
   let expirationDate = new Date(currentDate.getTime() + (1000 * tokenExpiratationInSeconds))
 
   let idTokenInfo = decodeIdToken(json.id_token);
-  let webId = idTokenInfo.webid;
+  let webId = idTokenInfo.webid || idTokenInfo.sub;
   if (!idTokenInfo || !webId) throw new Error('Invalid id token received')
 
   return { accessToken, expirationDate, dpopKey: p.dpopKey, webId };

@@ -41,9 +41,9 @@ export function initializeConfig() {
   }
 }
 
-export function setConfigCurrentWebID(webId: string) { 
+export function setConfigCurrentWebID(webId: string | undefined) { 
   try {
-    let config: IConfig = JSON.parse(fs.readFileSync(BASHLIBCONFIGPATH, { encoding: "utf8" }));
+    let config = loadConfig()
     config.currentWebID = webId
     fs.writeFileSync(BASHLIBCONFIGPATH, JSON.stringify(config, null, 2))
   }
@@ -64,7 +64,7 @@ export function getConfigCurrentWebID() {
 
 export function setConfigToken(webId: string, token: any) { 
   try {
-    let config: IConfig = JSON.parse(fs.readFileSync(BASHLIBCONFIGPATH, { encoding: "utf8" }));
+    let config = loadConfig()
     if (config.authInfo[webId]) {
       if (config.authInfo[webId].token) {
         console.error('WebID already has token entry')
@@ -87,7 +87,7 @@ export function setConfigToken(webId: string, token: any) {
 
 export function setConfigSession(webId: string, session: any) { 
   try {
-    let config: IConfig = JSON.parse(fs.readFileSync(BASHLIBCONFIGPATH, { encoding: "utf8" }));
+    let config = loadConfig()
     if (config.authInfo[webId]) {
         config.authInfo[webId].session = session
     } else { 
@@ -115,9 +115,9 @@ export function getConfigCurrentToken() {
 }
 
 export function getAllConfigEntries() { 
-  let info : any = {}
+  let info: Record<string, { hasToken: boolean, session?: { id?: string, idp?: string, expirationDate?: Date } }> = {}
   try {
-    let config: IConfig = JSON.parse(fs.readFileSync(BASHLIBCONFIGPATH, { encoding: "utf8" }));
+    let config = loadConfig()
     for (let webId of Object.keys(config.authInfo)) { 
       info[webId] = {
         hasToken: !!config.authInfo[webId].token,
@@ -128,11 +128,11 @@ export function getAllConfigEntries() {
         }
       }
     }
-fs.writeFileSync(BASHLIBCONFIGPATH, JSON.stringify(config, null, 2))
   }
   catch (e) { 
     throw new Error('Could not read config.')
   }
+  return info
 }
 
 export function removeConfigSession(webId: string) {
@@ -148,7 +148,7 @@ export function removeConfigSession(webId: string) {
 
 export function removeConfigSessionAll() {
   try {
-    let config: IConfig = JSON.parse(fs.readFileSync(BASHLIBCONFIGPATH, { encoding: "utf8" }));
+    let config = loadConfig()
     for (let webId of Object.keys(config.authInfo)) { 
       config.authInfo[webId].session = undefined;
     }
@@ -157,4 +157,25 @@ export function removeConfigSessionAll() {
   catch (e) { 
     throw new Error('Could not read config.')
   }
+}
+
+export function addConfigEmtpyEntry(webId: string) { 
+  try {
+    let config = loadConfig()
+    config.authInfo[webId] = {};
+    fs.writeFileSync(BASHLIBCONFIGPATH, JSON.stringify(config, null, 2))
+  }
+  catch (e) { 
+    throw new Error('Could not read config.')
+  }
+}
+
+function loadConfig() : IConfig { 
+  let config : IConfig = JSON.parse(fs.readFileSync(BASHLIBCONFIGPATH, { encoding: "utf8" }));
+  for (let webId of Object.keys(config.authInfo)) { 
+    let expirationDate = config.authInfo[webId].session?.expirationDate
+    if (expirationDate)
+      (config.authInfo[webId].session as any).expirationDate = new Date(expirationDate) // idk why its complaining here
+  }
+  return config
 }
