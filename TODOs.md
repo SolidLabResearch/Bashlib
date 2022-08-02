@@ -1,8 +1,8 @@
 ### Bashlib v0.2 features
 
-- [ ] Combining the css and solid functionality in one command
-- [ ] Token management
-- [ ] Session management
+- [X] Combining the css and solid functionality in one command
+- [X] Token management
+- [X] Session management
 - [ ] Handling multiple pods for a given WebID (pim:storage)
 - [ ] Session refreshing on longer commands where session may time-out in the middle of command!
 - [ ] Resource verification on edit (compare before / after hash and notify if something may have changed)

@@ -1,16 +1,18 @@
-import { addFetchCommand } from "./commands/fetch";
-import { addListCommand } from './commands/list';
-import { addCopyCommand } from './commands/copy';
-import { addMoveCommand } from './commands/mv';
-import { addRemoveCommand } from './commands/remove';
-import { addFindCommand } from './commands/find';
-import { addQueryCommand } from './commands/query';
-import { addEditCommand } from './commands/edit';
-import { addMkdirCommand } from './commands/mkdir';
-import { addPermsCommand } from './commands/perms';
-import { addShellCommand } from './commands/shell';
-import { addTouchCommand } from './commands/touch';
-import { addTreeCommand } from './commands/tree';
-import { addExitCommand } from './commands/exit';
+import ChangedirectoryCommand from './commands/navigation/cd';
+import FetchCommand from "./commands/fetch";
+import ListCommand from './commands/list';
+import CopyCommand from './commands/copy';
+import MoveCommand from './commands/mv';
+import RemoveCommand from './commands/remove';
+import FindCommand from './commands/find';
+import QueryCommand from './commands/query';
+import EditCommand from './commands/edit';
+import MkdirCommand from './commands/mkdir';
+import PermsCommand from './commands/perms';
+import ShellCommand from './commands/shell';
+import TouchCommand from './commands/touch';
+import TreeCommand from './commands/tree';
+import ExitCommand from './commands/exit';
+import AuthCommand from './commands/auth';
 
-export { addFetchCommand, addListCommand, addCopyCommand, addMoveCommand, addRemoveCommand, addFindCommand, addQueryCommand, addEditCommand, addMkdirCommand, addPermsCommand, addShellCommand, addTouchCommand, addTreeCommand, addExitCommand }  
+export { FetchCommand, ListCommand, CopyCommand, MoveCommand, RemoveCommand, FindCommand, QueryCommand, EditCommand, MkdirCommand, PermsCommand, ShellCommand, TouchCommand, TreeCommand, ExitCommand, ChangedirectoryCommand, AuthCommand }

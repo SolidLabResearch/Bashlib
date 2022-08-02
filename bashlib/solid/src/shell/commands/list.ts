@@ -1,53 +1,66 @@
 import { Command } from 'commander';
 import list from '../../commands/solid-list';
-import authenticate from '../../utils/authenticate';
-import { addEnvOptions, changeUrlPrefixes, getResourceInfoRelativePath } from '../../utils/shellutils';
+import authenticate from '../../authentication/authenticate';
+import { addEnvOptions, changeUrlPrefixes, getResourceInfoRelativePath, normalizeURL, getAndNormalizeURL } from '../../utils/shellutils';
 import { writeErrorString, ResourceInfo } from '../../utils/util';
 import chalk from 'chalk';
+import SolidCommand from './SolidCommand';
 const columns = require('cli-columns');
 
-export function addListCommand(program: Command, exit = false) { 
-  
-  async function executeListCommand (url: string, options: any) {
-    let programOpts = addEnvOptions(program.opts() || {});
-    const authenticationInfo = await authenticate(programOpts)
+export default class ListCommand extends SolidCommand { 
+
+  public addCommand(program: Command) {
+    this.programopts = program.opts();
+    let urlParam = this.mayUseCurrentContainer ? '[url]' : '<url>'
+
+    program
+      .command('ls')
+      .description('Utility to view files in container on remote Solid pod.')
+      .argument(urlParam, 'URL of container to be listed')
+      .option('-a, --all', 'List all files including acl files')
+      .option('-f, --full', 'List files with their full uri')
+      .option('-l, --long', 'List in long format')
+      .option('-v, --verbose', '')
+      .action(async (url: string, options: any) => { 
+        await this.executeCommand(url, options)
+      })
+
+    program
+      .command('list')
+      .description('Utility to view files in container on remote Solid pod.')
+      .argument(urlParam, 'URL of container to be listed')
+      .option('-a, --all', 'List all files including acl files')
+      .option('-f, --full', 'List files with their full uri')
+      .option('-l, --long', 'List in long format')
+      .option('-v, --verbose', '')
+      .action(async (url: string, options: any) => { 
+        await this.executeCommand(url, options)
+      })
     
+    return program
+  }
+  
+  private async executeCommand(url?: string, options?: any) {
+    let programOpts = addEnvOptions(this.programopts || {});
+    const authenticationInfo = await authenticate(programOpts)
     options.fetch = authenticationInfo.fetch
     let listings: ResourceInfo[] = []
     try {
+      if (this.shell) { 
+        if (!url) url = this.shell?.workingContainer || undefined;
+        url = getAndNormalizeURL(url, this.shell);
+      }
+      if (!url) throw new Error('No valid url parameter passed')
       url = await changeUrlPrefixes(authenticationInfo, url)
       listings = await list(url, options)
     } catch (e) {
       writeErrorString(`Could not provide listing for ${url}`, e)
-      if (exit) process.exit(1)
+      if (this.mayExit) process.exit(1)
     }
     // Output to command line
     console.log(formatListing(listings, options))
-    if (exit) process.exit(0)
+    if (this.mayExit) process.exit(0)
   }
-
-  program
-    .command('ls')
-    .description('Utility to view files in container on remote Solid pod.')
-    .argument('<url>', 'URL of container to be listed')
-    .option('-a, --all', 'List all files including acl files')
-    .option('-f, --full', 'List files with their full uri')
-    .option('-l, --long', 'List in long format')
-    .option('-v, --verbose', '')
-    .action(executeListCommand)
-
-  program
-    .command('list')
-    .description('Utility to view files in container on remote Solid pod.')
-    .argument('<url>', 'URL of container to be listed')
-    .option('-a, --all', 'List all files including acl files')
-    .option('-f, --full', 'List files with their full uri')
-    .option('-l, --long', 'List in long format')
-    .option('-v, --verbose', '')
-    .action(executeListCommand)
-
-  return program
-
 }
 
 
@@ -70,7 +83,6 @@ function formatListing(listings: any[], options: any) {
       else return path
     })
     return columns(values)
-    // console.log(columns(values));
   } else {
     // Write long formatted
     const fileNameLengths = listings.map(fileInfo => options.full ? fileInfo.url.length : getResourceInfoRelativePath(fileInfo).length)

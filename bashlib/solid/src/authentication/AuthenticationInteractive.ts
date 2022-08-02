@@ -1,0 +1,222 @@
+import { getOIDCConfig, getSessionInfoFromStorage, StorageHandler, OIDCConfig, readSessionTokenInfo, storeSessionTokenInfo, decodeIdToken, writeErrorString } from '../utils/authenticationUtils';
+import { generateDpopKeyPair, KeyPair, createDpopHeader, buildAuthenticatedFetch } from '@inrupt/solid-client-authn-core';
+import formurlencoded from 'form-urlencoded';
+import { Session } from '@inrupt/solid-client-authn-node';
+import open from 'open';
+import { SessionInfo, IInteractiveAuthOptions, DEFAULTPORT, APPNAME } from './CreateFetch';
+import { removeConfigSession, getConfigCurrentSession, getConfigCurrentWebID, ISessionEntry, setConfigCurrentWebID, setConfigSession } from '../utils/configoptions';
+import inquirer from 'inquirer';
+import chalk from 'chalk';
+
+const nodefetch = require("node-fetch")
+const express = require('express')
+
+export default async function authenticateInteractive(options: IInteractiveAuthOptions) : Promise<SessionInfo> {
+
+  let appName = APPNAME
+  let port = options.port || DEFAULTPORT
+
+  let currentSession = getConfigCurrentSession();
+  try {
+    if (currentSession) {
+      let sessionInfo = await readSessionTokenInfo();
+      if (options.idp && (!sessionInfo.idp || sessionInfo.idp !== options.idp )) throw new Error('Falling back on interactive login as stored session idp does not match current value')
+      if (sessionInfo) {
+        var tokenTimeLeftInSeconds = (sessionInfo.expirationDate.getTime() - new Date().getTime()) / 1000;
+        if (tokenTimeLeftInSeconds > 60) {
+          // Only reuse previous session tokens if we have enough time to work with, else continue to create a new access token.
+          let fetch = await buildAuthenticatedFetch(nodefetch, sessionInfo.accessToken, { dpopKey: sessionInfo.dpopKey });
+          let webId = sessionInfo.webId;
+          // fetch = await wrapFetchRefresh(fetch, sessionInfo.expirationDate, webId as string, options.idp as string, appName, port) as any;
+          return { fetch, webId }
+        } else { 
+          // remove timed out session
+          let webId = getConfigCurrentWebID();
+          if (webId) { removeConfigSession(webId) }
+        }
+      }
+    }
+  } catch (e) {
+    if (options?.verbose) writeErrorString('Could not load existing session', e);
+  }
+
+
+  // Check for available IDP. If not, require one from the user.
+  if (!options.idp) { 
+    if (currentSession && currentSession.idp) {
+      console.log(`Continue authenticating with ${chalk.bold(currentSession.idp)} ? [Y/n] `);
+      options.idp = await new Promise((resolve, reject) => {
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+        process.stdin.on('data', (chk) => {
+          if (chk.toString('utf8') === "n") {
+            resolve(undefined);
+          } else {
+            resolve((currentSession as ISessionEntry).idp);
+          }
+        });
+      });
+    }
+  }
+
+  if (!options.idp) { 
+    let answers = await inquirer.prompt([{ type: 'input', name: 'idp', message: 'Please provide an identity provider to authenticate' }])
+    let idp = answers.idp.trim();
+    options.idp = idp && (idp.endsWith('/') ? idp : idp + '/');
+  }
+  
+  if (!options.idp) throw new Error('Cannot login: no identity provider value given.')
+
+  try {
+    return await createFetchWithNewAccessToken(options.idp, appName, port)
+  } catch (e) {
+    if (options?.verbose) writeErrorString('Error creating new session', e);
+    return { fetch: nodefetch }
+  }
+  
+
+}
+
+/**
+ * Handle login flow if no existing session can be reused
+ * @param oidcIssuer 
+ * @param appName 
+ * @param port 
+ * @param storageLocation 
+ * @returns 
+ */
+async function createFetchWithNewAccessToken(oidcIssuer: string, appName: string, port: number) : Promise<SessionInfo> {
+  return new Promise( async (resolve, reject) => {
+    const config = await getOIDCConfig(oidcIssuer);
+    if (!config) reject(new Error("Could not read oidc config"));
+
+    const app = express();
+    const redirectUrl = `http://localhost:${port}/`;
+    const storage = new StorageHandler();
+    
+    let session : Session = new Session({
+      insecureStorage: storage,
+      secureStorage: storage,
+    });
+    const handleRedirect = (url: string) => { open(url) }
+
+    const server = app.listen(port, async () => {  
+      const loginOptions = {
+        clientName: appName,
+        oidcIssuer,
+        redirectUrl,
+        tokenType: "DPoP" as "DPoP", // typescript fix
+        handleRedirect,
+      };
+      await session.login(loginOptions)
+    });
+    
+    app.get("/", async (_req: any, res: any) => {
+      
+      const code = new URL(_req.url, redirectUrl).searchParams.get('code');
+      if (!code) throw new Error('No code parameter received in authentication flow.')
+      let { accessToken, expirationDate, dpopKey, webId } = await handleIncomingRedirect(oidcIssuer, redirectUrl, code, storage)
+      // Store the session info
+      storeSessionTokenInfo(accessToken, dpopKey, expirationDate, webId, oidcIssuer)
+      let fetch = await buildAuthenticatedFetch(nodefetch, accessToken, { dpopKey });
+      // fetch = await wrapFetchRefresh(fetch, expirationDate, webId, oidcIssuer, appName, port) as any;
+
+      // Set the current WebID to the current session
+      setConfigCurrentWebID(webId)
+
+      server.close();
+      resolve({
+        fetch, webId
+      })
+    });
+  })
+}
+
+
+
+/**
+ * Handles incoming redirect request and returns relevant access token info extracted.
+ * @param idp 
+ * @param redirectUrl 
+ * @param code 
+ * @param storage 
+ * @returns 
+ */
+async function handleIncomingRedirect(idp: string, redirectUrl: string, code: string, storage: StorageHandler) {
+  let config = await getOIDCConfig(idp)
+  let dpopKey = await generateDpopKeyPair();
+  let sessionInfo = await getSessionInfoFromStorage(storage);
+  if (!sessionInfo || !sessionInfo.clientId || !sessionInfo.clientSecret || !(sessionInfo as any).codeVerifier) throw new Error('Could not create an authenticated session.')
+
+  return await requestAccessToken({
+    dpopKey,
+    code,
+    codeVerifier: (sessionInfo as any).codeVerifier,
+    clientId: sessionInfo.clientId,
+    clientSecret: sessionInfo.clientSecret,
+    redirectUrl,
+    config,
+  })
+
+}
+
+
+async function requestAccessToken(p: {
+      dpopKey: KeyPair, 
+      code: string, 
+      codeVerifier: string, 
+      clientId: string, 
+      clientSecret: string, 
+      redirectUrl: string
+      config: OIDCConfig
+    }) : Promise<{ accessToken: string, expirationDate: Date, dpopKey: KeyPair, webId: string }>
+  {
+
+ 
+  const authString = `${encodeURIComponent(p.clientId)}:${encodeURIComponent(p.clientSecret)}`;
+
+  const response = await fetch(p.config.token_endpoint, {
+    method: 'POST',
+    headers: {
+      authorization: `Basic ${Buffer.from(authString).toString('base64')}`,
+      'content-type': 'application/x-www-form-urlencoded',
+      dpop: await createDpopHeader(p.config.token_endpoint, 'POST', p.dpopKey),
+    },
+    body: formurlencoded({
+      grant_type: 'authorization_code',
+      redirect_uri: p.redirectUrl,
+      code: p.code,
+      code_verifier: p.codeVerifier,
+      client_id: p.clientId,
+    }),
+  });
+
+  let json = await response.json()
+  if (json.error) {
+    throw new Error(`Could not retrieve access token: ${json.error} - ${json.error_description}`)
+  }
+
+  let accessToken = json.access_token;
+  let tokenExpiratationInSeconds = json.expires_in;
+
+  let currentDate = new Date();
+  let expirationDate = new Date(currentDate.getTime() + (1000 * tokenExpiratationInSeconds))
+
+  let idTokenInfo = decodeIdToken(json.id_token);
+  let webId = idTokenInfo.webid;
+  if (!idTokenInfo || !webId) throw new Error('Invalid id token received')
+
+  return { accessToken, expirationDate, dpopKey: p.dpopKey, webId };
+}
+
+// async function wrapFetchRefresh(fetch: Function, expirationDate: Date, webId: string, idp: string, appName: string, port: number) {
+//   try {
+//     var tokenTimeLeftInSeconds = (expirationDate.getTime() - new Date().getTime()) / 1000;
+//     if (tokenTimeLeftInSeconds > 20) {
+//       // Only reuse previous session tokens if we have enough time to work with, else continue to create a new access token.
+//       return (await createFetchWithNewAccessToken(idp, appName, port)).fetch
+//     }
+//   } catch (_ignored) {
+//     return fetch;
+//   }
+// }

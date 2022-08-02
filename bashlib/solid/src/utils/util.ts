@@ -1,10 +1,7 @@
 import { getSolidDataset, getContainedResourceUrlAll, getUrl, getUrlAll, getThing, getThingAll, getDatetime, getInteger, SolidDataset } from '@inrupt/solid-client';
-import chalk from 'chalk';
-import { resolve } from 'path';
 const fs = require('fs')
 const path = require('path')
 var LinkHeader = require( 'http-link-header' )
-var Queue = require('tiny-queue');
 
 export type DirInfo = {
   files: FileInfo[], 
@@ -61,9 +58,9 @@ export async function getPodRoot(url: string, fetch: Function): Promise<string |
   for (let index = splitUrl.length-1; index > 2; --index) {
     let currentUrl = splitUrl.slice(0, index).join('/') + '/'
     let res = await fetch(currentUrl)
-    if (!res.ok) throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`);
+    if (!res.ok) continue // throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`);
     let linkHeaders = res.headers.get('Link')
-    if (!linkHeaders) return null;
+    if (!linkHeaders) continue // return null;
     let headers = LinkHeader.parse(linkHeaders)
     for (let header of headers.refs) {
       if (header.uri === 'http://www.w3.org/ns/pim/space#Storage' && header.rel === 'type') {

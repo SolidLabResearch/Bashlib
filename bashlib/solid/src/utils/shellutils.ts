@@ -1,5 +1,6 @@
 import { getInbox, getPodRoot, writeErrorString } from './util';
 import fs from 'fs';
+import { SolidShell } from '../commands/solid-shell';
 
 export function arrayifyHeaders(value: any, previous: any) { return previous ? previous.concat(value) : [value] }
 
@@ -60,7 +61,7 @@ export async function changeUrlPrefixes(authenticationInfo: any, url: string) {
     let podRoot = await getPodRoot(authenticationInfo.webId, authenticationInfo.fetch);
     if (!podRoot) throw new Error('No pod root container found')
     return mergeStringsSingleSlash(podRoot, url.replace('base:', '')) 
-
+    
   } else if (url.startsWith('inbox:')) {
     if (!authenticationInfo.webId) throw new Error('Cannot process URL with "inbox:" prefix, no WebID value currently known.')
     let inbox = await getInbox(authenticationInfo.webId, authenticationInfo.fetch);
@@ -72,7 +73,7 @@ export async function changeUrlPrefixes(authenticationInfo: any, url: string) {
 }
 
 export function mergeStringsSingleSlash(a: string, b: string) {
-  if (!b) return a
+  if (!b && a && !a.endsWith('/')) return a + '/'
   if (a.endsWith('/') && b.startsWith('/')) {
     return `${a}${b.slice(1).toString()}`
   }
@@ -81,6 +82,46 @@ export function mergeStringsSingleSlash(a: string, b: string) {
   }
   return `${a}${b}`
 }
+
+export function normalizeURL(url: string, shell?: SolidShell): string {
+  if (url.startsWith('http') || url.startsWith('https')) {
+    return url;
+  } else if (shell && (shell.podBaseURI && shell.workingContainer)) {
+    if (url.startsWith('/') && !shell.podBaseURI) throw new Error('Cannot find root of the current Solid pod.')
+    let path = url.startsWith('/') ? shell.podBaseURI : shell.workingContainer
+    for (let pathEntry of url.split('/')) {
+      if (pathEntry === '.') {
+        continue;
+      } else if (pathEntry === '..') {
+        let split = path.split('/')
+        path = path.endsWith('/') ? split.slice(0, split.length - 2).join('/') : split.slice(0, split.length - 1).join('/')
+        path = path + '/' // Prevent missing trailing slash
+      } else if (pathEntry === '*') {
+        throw new Error(`Wildcard urls ('*') are currently not supported`)
+      } else {
+        if (path.endsWith('/') && !pathEntry) {
+          continue // Prevent double slashes
+        }
+        path = mergeStringsSingleSlash(path, pathEntry)
+      }
+    }
+    return path;
+  } else { 
+    return url;
+  }
+}
+
+export function getAndNormalizeURL(url?: string, shell?: SolidShell) : string { 
+  if (url) { 
+    return normalizeURL(url, shell)
+  } else if (!url && shell && shell.workingContainer) {
+    return shell.workingContainer;
+  } else { 
+    throw new Error('Could not find current working directory')
+  }
+}
+  
+
 
 
 export function getResourceInfoRelativePath(info: any) { return info.relativePath ? info.relativePath : info.url }

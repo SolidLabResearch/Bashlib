@@ -1,18 +1,58 @@
 import { Command } from 'commander';
 import { changePermissions, deletePermissions, listPermissions, PermissionOperation } from '../../commands/solid-perms';
-import authenticate from '../../utils/authenticate';
-import { addEnvOptions, changeUrlPrefixes } from '../../utils/shellutils';
+import authenticate from '../../authentication/authenticate';
+import { addEnvOptions, changeUrlPrefixes, getAndNormalizeURL } from '../../utils/shellutils';
 import { writeErrorString } from '../../utils/util';
 import chalk from 'chalk';
+import SolidCommand from './SolidCommand';
 const Table = require('cli-table');
 
-export function addPermsCommand(program: Command, exit = false) { 
+export default class PermsCommand extends SolidCommand { 
+
+  public addCommand(program: Command) {
+    this.programopts = program.opts();
+
+    program
+      .command('chmod')
+      .description('Utility to list and edit resource permissions on a data pod. Only supports operations on ACL and not ACP.')
+      .argument('<operation>', 'list, edit, delete')
+      .argument('<url>', 'Resource URL')
+      .argument('[permissions...]', `Permission operations to edit resource permissions. 
+      Formatted according to <id>=[d][g][a][c][r][w]. 
+      For public permissions please set <id> to "p". 
+      For the current authenticated user please set <id> to "u".
+      To set updated permissions as default, please add the [d] option as follows: <id>=d[g][a][c][r][w]
+      To indicate the id as a group id, please add the [g] option as follows: <id>=g[d][a][c][r][w]
+      `)
+      .option('-p, --pretty', 'Pretty format')
+      .option('-v, --verbose', 'Log all operations') // Should this be default?
+      .action(this.executeCommand)
+    
+    program
+      .command('perms')
+      .description('Utility to list and edit resource permissions on a data pod. Only supports operations on ACL and not ACP.')
+      .argument('<operation>', 'list, edit, delete')
+      .argument('<url>', 'Resource URL')
+      .argument('[permissions...]', `Permission operations to edit resource permissions. 
+      Formatted according to <id>=[d][g][a][c][r][w]. 
+      For public permissions please set <id> to "p". 
+      For the current authenticated user please set <id> to "u".
+      To set updated permissions as default, please add the [d] option as follows: <id>=d[g][a][c][r][w]
+      To indicate the id as a group id, please add the [g] option as follows: <id>=g[d][a][c][r][w]
+      `)
+      .option('-p, --pretty', 'Pretty format')
+      .option('-v, --verbose', 'Log all operations') // Should this be default?
+      .action(this.executeCommand)
+
+    return program
+  }
   
-  async function executePermsCommand (operation: string, url: string, permissions: string[], options: any) {
-    let programOpts = addEnvOptions(program.opts() || {});
+  async executeCommand (operation: string, url: string, permissions: string[], options: any) {
+    let programOpts = addEnvOptions(this.programopts || {});
     const authenticationInfo = await authenticate(programOpts)
     options.fetch = authenticationInfo.fetch
     try {
+      if (this.shell) url = getAndNormalizeURL(url, this.shell);
       url = await changeUrlPrefixes(authenticationInfo, url)
 
       if (operation === 'list') {
@@ -64,44 +104,11 @@ export function addPermsCommand(program: Command, exit = false) {
     }
     catch (e) {
       writeErrorString(`Could not evaluate permissions for ${url}`, e)
-      if (exit) process.exit(1)
+      if (this.mayExit) process.exit(1)
     }
-    if (exit) process.exit(0)
+    if (this.mayExit) process.exit(0)
   }
 
-  program
-    .command('chmod')
-    .description('Utility to list and edit resource permissions on a data pod. Only supports operations on ACL and not ACP.')
-    .argument('<operation>', 'list, edit, delete')
-    .argument('<url>', 'Resource URL')
-    .argument('[permissions...]', `Permission operations to edit resource permissions. 
-    Formatted according to <id>=[d][g][a][c][r][w]. 
-    For public permissions please set <id> to "p". 
-    For the current authenticated user please set <id> to "u".
-    To set updated permissions as default, please add the [d] option as follows: <id>=d[g][a][c][r][w]
-    To indicate the id as a group id, please add the [g] option as follows: <id>=g[d][a][c][r][w]
-    `)
-    .option('-p, --pretty', 'Pretty format') 
-    .option('-v, --verbose', 'Log all operations') // Should this be default?
-    .action(executePermsCommand)
-  
-  program
-    .command('perms')
-    .description('Utility to list and edit resource permissions on a data pod. Only supports operations on ACL and not ACP.')
-    .argument('<operation>', 'list, edit, delete')
-    .argument('<url>', 'Resource URL')
-    .argument('[permissions...]', `Permission operations to edit resource permissions. 
-    Formatted according to <id>=[d][g][a][c][r][w]. 
-    For public permissions please set <id> to "p". 
-    For the current authenticated user please set <id> to "u".
-    To set updated permissions as default, please add the [d] option as follows: <id>=d[g][a][c][r][w]
-    To indicate the id as a group id, please add the [g] option as follows: <id>=g[d][a][c][r][w]
-    `)
-    .option('-p, --pretty', 'Pretty format') 
-    .option('-v, --verbose', 'Log all operations') // Should this be default?
-    .action(executePermsCommand)
-
-  return program
 }
 
 
