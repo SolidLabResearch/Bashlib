@@ -4,6 +4,8 @@ import { getFile, overwriteFile, getContentType, getContainedResourceUrlAll, get
 import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively, checkRemoteFileExists, writeErrorString } from '../utils/util';
 import Blob = require("fetch-blob")
 import { requestUserCLIConfirmation } from '../utils/userInteractions';
+import BashlibError from '../utils/errors/BashlibError';
+import { BashlibErrorMessage } from '../utils/errors/BashlibError';
 
 const mime = require('mime-types');
 
@@ -343,7 +345,8 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
 
         }
       )
-      if (!res.ok) throw new Error(`HTTP Error Response requesting ${resourcePath}: ${res.status} ${res.statusText}`);
+      if (!res.ok)
+        throw new BashlibError(BashlibErrorMessage.httpResponseError, resourcePath, `${res.status} ${res.statusText}`)
 
     } else if (fileInfo.blob) {
       let res = await fetch(
@@ -356,14 +359,14 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
           }
         }
       )
-      if (!res.ok) throw new Error(`HTTP Error Response requesting ${resourcePath}: ${res.status} ${res.statusText}`);
+      if (!res.ok)
+        throw new BashlibError(BashlibErrorMessage.httpResponseError, resourcePath, `${res.status} ${res.statusText}`)
     } else {
-      if (options.verbose) console.error('No content to write for:', resourcePath)
+      throw new BashlibError(BashlibErrorMessage.cannotWriteResource, resourcePath, "No contents to write")
     }
     return resourcePath;
-  } catch (e:any) {
-    if (options.verbose) writeErrorString(`CouldCould not write file ${resourcePath}`, e);
-    return;
+  } catch (e: any) {
+    throw new BashlibError(BashlibErrorMessage.cannotWriteResource, resourcePath, e.message)
   }
 }
 

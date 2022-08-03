@@ -3,6 +3,8 @@ import { createDpopHeader, generateDpopKeyPair, buildAuthenticatedFetch } from '
 import { decodeIdToken, getOIDCConfig, readSessionTokenInfo, storeSessionTokenInfo, writeErrorString } from '../utils/authenticationUtils';
 import { getConfigCurrentToken, getConfigCurrentSession } from '../utils/configoptions';
 import { IClientCredentialsTokenAuthOptions, SessionInfo } from './CreateFetch';
+import BashlibError from '../utils/errors/BashlibError';
+import { BashlibErrorMessage } from '../utils/errors/BashlibError';
 
 const nodefetch = require('node-fetch')
 const fs = require('fs')
@@ -41,11 +43,11 @@ export async function authenticateToken(options?: IClientCredentialsTokenAuthOpt
 
 async function createFetchWithNewAccessToken(options?: IClientCredentialsTokenAuthOptions): Promise<SessionInfo>{
   let token = getConfigCurrentToken();
-  if (!token) throw new Error('Trying to authenticate with non-existing token.')
+  if (!token) throw new BashlibError(BashlibErrorMessage.noValidToken)
   let id = token.id;
   let secret = (token as any).secret;
   let idp = token.idp; // We stored this cheekily in the token file
-  if (!id || !secret) throw new Error('Could not discover valid authentication token.')
+  if (!id || !secret) throw new BashlibError(BashlibErrorMessage.noValidToken)
   
   // A key pair is needed for encryption.
   // This function from `solid-client-authn` generates such a pair for you.
@@ -86,7 +88,8 @@ export async function requestAccessToken(id: string, secret: string, dpopKey: Ke
     },
     body: 'grant_type=client_credentials&scope=webid',
   });
-  if (!response.ok) throw new Error(`HTTP Error Response requesting ${tokenUrl}: ${response.status} ${response.statusText}`);
+  if (!response.ok)
+    throw new BashlibError(BashlibErrorMessage.httpResponseError, tokenUrl, `${response.status} ${response.statusText}`)
 
   // This is the Access token that will be used to do an authenticated request to the server.
   // The JSON also contains an "expires_in" field in seconds, 
@@ -100,7 +103,8 @@ export async function requestAccessToken(id: string, secret: string, dpopKey: Ke
 
   let idTokenInfo = decodeIdToken(json.access_token);
   let webId = idTokenInfo.webid;
-  if (!idTokenInfo || !webId) throw new Error('Invalid id token received')
+  if (!idTokenInfo || !webId)
+    throw new BashlibError(BashlibErrorMessage.authFlowError, undefined, 'Invalid id token received')
   
   return { accessToken, expirationDate, webId } ;
 }

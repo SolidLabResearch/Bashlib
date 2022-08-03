@@ -45,9 +45,7 @@ export default async function authenticate(options: ILoginOptions): Promise<{ fe
     } catch (e) {
       if (options.verbose) writeErrorString(`Could not authenticate interactively`, e);
     }
-  } else {
-    throw new Error('Invalid authentication scheme. Please choose "token", "interactive" or "none" as your authentication option.')
-  }
+  } 
 
   let sessionInfo = builder.getSessionInfo();
   if (!sessionInfo || !sessionInfo.fetch) {

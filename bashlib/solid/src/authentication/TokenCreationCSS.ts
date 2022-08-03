@@ -1,3 +1,5 @@
+import BashlibError from '../utils/errors/BashlibError';
+import { BashlibErrorMessage } from '../utils/errors/BashlibError';
 
 export type IClientCredentialsTokenGenerationOptions = {
   name: string,
@@ -33,14 +35,15 @@ export async function generateCSSToken(options: IClientCredentialsTokenGeneratio
     // The name field will be used when generating the ID of your token.
     body: JSON.stringify({ email: options.email, password: options.password, name: options.name }),
   });
-  if (!response.ok) throw new Error(`HTTP Error Response requesting ${url}: ${response.status} ${response.statusText}`);
+  if (!response.ok) 
+    throw new BashlibError(BashlibErrorMessage.httpResponseError, url, `${response.status} ${response.statusText}`)
 
   // These are the identifier and secret of your token.
   // Store the secret somewhere safe as there is no way to request it again from the server!
 
   const token = await response.json();
   if (token.errorCode) {
-    throw new Error(`Error retrieving token from server: ${token.name}`)
+    throw new BashlibError(BashlibErrorMessage.authFlowError, undefined, `Error retrieving token from server: ${token.name}`)
   }
   token.name = options.name;
   token.email = options.email;
