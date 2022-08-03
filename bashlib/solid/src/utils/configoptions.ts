@@ -1,3 +1,4 @@
+import { getSolidDataset, getThing, getUrl } from '@inrupt/solid-client';
 const fs = require('fs')
 
 const homedir = require('os').homedir();
@@ -41,7 +42,30 @@ export function initializeConfig() {
   }
 }
 
-export function setConfigCurrentWebID(webId: string | undefined) { 
+export async function checkValidWebID(webId: string | undefined) { 
+  if (!webId) return false;
+  let webIdDocumentURL = webId.split('#')[0]
+  try {
+    let ds = await getSolidDataset(webId)
+    let documentThing = getThing(ds, webIdDocumentURL)
+    let webIdThing = getThing(ds, webId)
+    if (documentThing && getUrl(documentThing, "http://xmlns.com/foaf/0.1/PersonalProfileDocument")) { 
+      return true;
+    } else if (webIdThing && getUrl(webIdThing, "http://www.w3.org/ns/solid/terms#oidcIssuer")) { 
+      return true;
+    }
+
+  } catch (_ignored) { 
+    return false;
+  }
+  return false;
+}
+
+export async function setConfigCurrentWebID(webId: string | undefined) { 
+  if (!webId) throw new Error(`No WebID value provided`)
+  let valid = await checkValidWebID(webId)
+  if (!valid) throw new Error(`Invalid WebID value provided: "${webId}"`)
+    
   try {
     let config = loadConfig()
     config.currentWebID = webId
@@ -162,7 +186,9 @@ export function removeConfigSessionAll() {
 export function addConfigEmtpyEntry(webId: string) { 
   try {
     let config = loadConfig()
-    config.authInfo[webId] = {};
+    if (!config.authInfo[webId]) { 
+      config.authInfo[webId] = {};  
+    }
     fs.writeFileSync(BASHLIBCONFIGPATH, JSON.stringify(config, null, 2))
   }
   catch (e) { 

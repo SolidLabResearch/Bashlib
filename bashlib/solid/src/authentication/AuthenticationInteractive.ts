@@ -118,7 +118,7 @@ async function createFetchWithNewAccessToken(oidcIssuer: string, appName: string
       // fetch = await wrapFetchRefresh(fetch, expirationDate, webId, oidcIssuer, appName, port) as any;
 
       // Set the current WebID to the current session
-      setConfigCurrentWebID(webId)
+      await setConfigCurrentWebID(webId)
 
       server.close();
       resolve({

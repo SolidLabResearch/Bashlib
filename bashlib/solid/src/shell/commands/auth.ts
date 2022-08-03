@@ -7,7 +7,7 @@ import inquirer from 'inquirer';
 import cliSelect from "cli-select"
 import chalk from 'chalk';
 import { generateCSSToken } from '../../authentication/TokenCreationCSS';
-import { getPodRoot } from '../../utils/util';
+import { getPodRoot, writeErrorString } from '../../utils/util';
 import { generateDpopKeyPair } from '@inrupt/solid-client-authn-core';
 import { requestAccessToken } from '../../authentication/AuthenticationToken';
 const Table = require('cli-table');
@@ -23,32 +23,42 @@ export default class AuthCommand extends SolidCommand {
     authcommand
       .command('show')
       .description('Show current authentication settings.')
+      .option('-p, --pretty', 'Show listing in table format.')
       .action(async (options: any) => { 
-        await showAuthenticationOption(options)
+        try {
+          await showAuthenticationOption(options)
+        } catch (e) { writeErrorString('Could not show current authentication info', e) }
       })
     
     authcommand
       .command('list')
-      .description('Show current authentication options.')
-      .option('-i, --pretty', 'Show listing in table format.')
+      .description('List available authentication options.')
+      .option('-p, --pretty', 'Show listing in table format.')
       .action(async (options: any) => { 
-        await listAuthenticationOptions(options)
+        try {
+          await listAuthenticationOptions(options)
+        } catch (e) { writeErrorString('Could not list authentication options', e) }
       })
     
     authcommand
       .command('set')
-      .description('Show current authentication settings.')
+      .description('Set current authentication option.')
+      .option('-w, --webid <string>', 'Set active WebID directly, without requiring manual selection.')
       .action(async (options: any) => { 
-        await setAuthenticationOption(options)
+        try {
+          await setAuthenticationOption(options)
+        } catch (e) { writeErrorString('Could not set authentication option', e) }
       })
     
     authcommand
       .command('clear')
       .description('Clear authentication info.')
       .option('-a, -all', 'clear all entries')
-      .option('-w, --webid', 'clear specific WebID entry')
+      .option('-w, --webid <string>', 'clear specific WebID entry')
       .action(async (options: any) => { 
-        await clearAuthenticationOption(options)
+        try {
+          await clearAuthenticationOption(options)
+        } catch (e) { writeErrorString('Could not clear authentication option(s)', e) }
       })
     
     authcommand
@@ -60,7 +70,9 @@ export default class AuthCommand extends SolidCommand {
       .option('-p, --password <string>', 'User password')
       .option('-v, --verbose', 'Log actions')
       .action(async (options) => {
-        await createAuthenticationTokenCSS(options)
+        try {
+          await createAuthenticationTokenCSS(options)
+        } catch (e) { writeErrorString('Could not create authentication token', e) }
       })
     
     return program
@@ -68,16 +80,37 @@ export default class AuthCommand extends SolidCommand {
 }
 
 async function showAuthenticationOption(options: any) { 
-  let currentWebID = getConfigCurrentWebID();
-  let head = [
-    chalk.cyan.bold("WebID"), 
-  ] 
-  let table = new Table({ head });
-  table.push([currentWebID || "None"])
-  
-  console.log(`
+  let currentWebId = getConfigCurrentWebID();
+  if (options.pretty) {
+    let head = [
+      chalk.cyan.bold("WebID"),
+      "has auth token",
+      "has active session",
+      "session expires at"
+    ]
+    let table = new Table({ head });
+
+    let entries = getAllConfigEntries();
+    for (let webId of Object.keys(entries)) {
+      if (webId === currentWebId) table.push([webId, entries[webId].hasToken, !!entries[webId].session, entries[webId].session?.expirationDate?.toISOString()])
+    }
+    console.log(`
+Stored authentication data:
 ${table.toString()}`
-  )
+    )
+  } else { 
+    let entries = getAllConfigEntries();
+    for (let webId of Object.keys(entries)) {
+      if (webId === currentWebId) console.log(
+        chalk.cyan.bold(webId),
+        entries[webId].hasToken ? `- ${chalk.bold('auth token')}` : "",
+        !!entries[webId].session ? `- ${chalk.bold('active session')}` : "",
+        entries[webId].session?.expirationDate ? `- session expires at ${entries[webId].session?.expirationDate?.toISOString()}` : "",
+        !entries[webId].hasToken && !entries[webId].session ? "No active session or token found" : ""
+      )
+    }
+  }
+  
 }
 
 async function listAuthenticationOptions(options: any) {
@@ -110,45 +143,51 @@ ${table.toString()}`
       )
     }
   }
-  
 }
 
 async function setAuthenticationOption(options: any) {
-  let entries = getAllConfigEntries();
-  let values: Record<string, string> = {}
-  values["new"] = `${chalk.bold.blueBright("Authenticate using new WebID")}`
-  for (let webId of Object.keys(entries)) { 
-    values[webId] =
-`${chalk.bold.greenBright(getConfigCurrentWebID() === webId ? `*${webId}` : webId)} ${entries[webId].hasToken ? `- ${chalk.bold("auth token")}` : ""} ${entries[webId].session ? `- ${chalk.bold("existing session")} expiring at ${entries[webId].session?.expirationDate?.toISOString()}` : ""}`
-  }
-
-  let selected = await new Promise((resolve, reject) => { 
-    cliSelect({
-      values,
-      valueRenderer: (value, selected) => {
-        if (selected) {
-          return chalk.underline(value);
-        }
-        return value;
-      },
-    }).then(result => { 
-      resolve(result.id)
-    });
-  })
-
-  let selectedWebID = undefined;
-  // Add a new webId to the config
-  if (selected === "new") {
-    let answers = await inquirer.prompt([{ type: 'input', name: 'webid',  message: 'Use a new WebID to authenticate'}])
-    let newWebId = answers.webid;
-    setConfigCurrentWebID(newWebId)
-    addConfigEmtpyEntry(newWebId)
-    selectedWebID = newWebId
+  let webId = options.webid
+  if (webId) {  
+    await setConfigCurrentWebID(webId)
+    addConfigEmtpyEntry(webId)
+    console.log(`Authenticating for WebID: ${webId}`)
   } else { 
-    setConfigCurrentWebID(selected as unknown as string)
-    selectedWebID = selected
+    let entries = getAllConfigEntries();
+    let values: Record<string, string> = {}
+    values["new"] = `${chalk.bold.blueBright("Authenticate using new WebID")}`
+    for (let webId of Object.keys(entries)) { 
+      values[webId] =
+  `${chalk.bold.greenBright(getConfigCurrentWebID() === webId ? `*${webId}` : webId)} ${entries[webId].hasToken ? `- ${chalk.bold("auth token")}` : ""} ${entries[webId].session ? `- ${chalk.bold("existing session")} expiring at ${entries[webId].session?.expirationDate?.toISOString()}` : ""}`
+    }
+
+    let selected = await new Promise((resolve, reject) => { 
+      cliSelect({
+        values,
+        valueRenderer: (value, selected) => {
+          if (selected) {
+            return chalk.underline(value);
+          }
+          return value;
+        },
+      }).then(result => { 
+        resolve(result.id)
+      }).catch(e => reject(e));
+    })
+
+    let selectedWebID = undefined;
+    // Add a new webId to the config
+    if (selected === "new") {
+      let answers = await inquirer.prompt([{ type: 'input', name: 'webid',  message: 'Use a new WebID to authenticate'}])
+      let newWebId = answers.webid;
+      await setConfigCurrentWebID(newWebId)
+      addConfigEmtpyEntry(newWebId)
+      selectedWebID = newWebId
+    } else { 
+      await setConfigCurrentWebID(selected as unknown as string)
+      selectedWebID = selected
+    }
+    console.log(`Authenticating for WebID: ${selectedWebID}`)
   }
-  console.log(`Authenticating for WebID: ${selectedWebID}`)
 }
 
 async function clearAuthenticationOption(options: any) {
@@ -157,7 +196,7 @@ async function clearAuthenticationOption(options: any) {
   } else if (options.webid === 'all') { 
     removeConfigSession(options.webId)
   } else { 
-    setConfigCurrentWebID(undefined);
+    await setConfigCurrentWebID(undefined);
   } 
 }
 
