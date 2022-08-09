@@ -72,6 +72,16 @@ export async function getPodRoot(url: string, fetch: Function): Promise<string |
   return null;
 }
 
+export async function getWebIDIdentityProvider(webId: string) { 
+   // TODO:: MAKE SPEC COMPLIANT AND MORE FALLBACKS N STUFF
+  let ds = await getSolidDataset(webId);
+  if (!ds) return null;
+  let thing = await getThing(ds, webId);
+  if (!thing) return null;
+  let idp = getUrl(thing, "http://www.w3.org/ns/solid/terms#oidcIssuer")
+  return idp;
+}
+
 export async function getInbox(webId: string, fetch: Function) : Promise<string | null> {
   let dataset = await getSolidDataset(webId);
   if (!dataset) throw new Error('Could not retrieve profile document.')

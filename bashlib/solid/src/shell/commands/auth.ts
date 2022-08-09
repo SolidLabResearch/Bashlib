@@ -7,11 +7,10 @@ import inquirer from 'inquirer';
 import cliSelect from "cli-select"
 import chalk from 'chalk';
 import { generateCSSToken } from '../../authentication/TokenCreationCSS';
-import { getPodRoot, writeErrorString } from '../../utils/util';
+import { getWebIDIdentityProvider, writeErrorString } from '../../utils/util';
 import { generateDpopKeyPair } from '@inrupt/solid-client-authn-core';
 import { requestAccessToken } from '../../authentication/AuthenticationToken';
 const Table = require('cli-table');
-const nodeFetch = require('node-fetch')
 
 
 export default class AuthCommand extends SolidCommand { 
@@ -226,7 +225,7 @@ async function createAuthenticationTokenCSS(options: any) {
     let token = getConfigCurrentToken()
     let webId = getConfigCurrentWebID()
     if (!options.baseUrl && webId) { 
-      options.baseUrl = session?.idp || token?.idp || await getPodRoot(webId, nodeFetch)
+      options.baseUrl = session?.idp || token?.idp || await getWebIDIdentityProvider(webId)
     }
   }
 
