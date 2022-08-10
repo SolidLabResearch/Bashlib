@@ -1,5 +1,5 @@
 import SolidFetchBuilder from './CreateFetch';
-import { getPodRoot, writeErrorString } from '../utils/util';
+import { getPodRoot, getWebIDIdentityProvider, writeErrorString } from '../utils/util';
 import inquirer from 'inquirer';
 import { getConfigCurrentWebID, getConfigCurrentToken } from '../utils/configoptions';
 const nodeFetch = require('node-fetch')
@@ -87,7 +87,7 @@ export async function getUserIdp() {
   let idp;
   let webId = getConfigCurrentWebID()
   if (webId) { 
-    idp = await getPodRoot(webId, nodeFetch)
+    idp = await getWebIDIdentityProvider(webId)
   }
   if (!idp) { 
     let answers = await inquirer.prompt([{ type: 'input', name: 'idp', message: 'Please provide an identity provider to authenticate' }])
