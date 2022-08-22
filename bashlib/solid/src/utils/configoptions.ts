@@ -1,4 +1,4 @@
-import { getSolidDataset, getThing, getUrl } from '@inrupt/solid-client';
+import { getSolidDataset, getThing, getUrl, getUrlAll } from '@inrupt/solid-client';
 const fs = require('fs')
 
 const homedir = require('os').homedir();
@@ -49,7 +49,7 @@ export async function checkValidWebID(webId: string | undefined) {
     let ds = await getSolidDataset(webId)
     let documentThing = getThing(ds, webIdDocumentURL)
     let webIdThing = getThing(ds, webId)
-    if (documentThing && getUrl(documentThing, "http://xmlns.com/foaf/0.1/PersonalProfileDocument")) { 
+    if (documentThing && getUrlAll(documentThing, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type").includes('http://xmlns.com/foaf/0.1/PersonalProfileDocument')) { 
       return true;
     } else if (webIdThing && getUrl(webIdThing, "http://www.w3.org/ns/solid/terms#oidcIssuer")) { 
       return true;
