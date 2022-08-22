@@ -58,7 +58,7 @@ export async function getPodRoot(url: string, fetch: Function): Promise<string |
   let splitUrl = url.split('/')
   for (let index = splitUrl.length-1; index > 2; --index) {
     let currentUrl = splitUrl.slice(0, index).join('/') + '/'
-    let res = await fetch(currentUrl)
+    let res = await fetch(currentUrl, {method: "HEAD"})
     if (!res.ok) continue // throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`);
     let linkHeaders = res.headers.get('Link')
     if (!linkHeaders) continue // return null;
@@ -68,6 +68,15 @@ export async function getPodRoot(url: string, fetch: Function): Promise<string |
         return currentUrl.endsWith('/') ? currentUrl : currentUrl + '/';
       }
     }
+
+    try {
+    // Check in resource as fallback
+      let ds = await getSolidDataset(currentUrl)
+      let thing = ds && getThing(ds, url)
+      let storageUrl = thing && getUrl(thing, 'http://www.w3.org/ns/pim/space#Storage')
+      if (storageUrl) return storageUrl;
+
+    } catch (_ignored) { }
   }
   return null;
 }
