@@ -54,31 +54,36 @@ export function fixLocalPath(filePath: string) {
 }
 
 export async function getPodRoot(url: string, fetch: Function): Promise<string | null> {
-  // TODO:: MAKE SPEC COMPLIANT AND MORE FALLBACKS N STUFF
-  let splitUrl = url.split('/')
-  for (let index = splitUrl.length-1; index > 2; --index) {
-    let currentUrl = splitUrl.slice(0, index).join('/') + '/'
-    let res = await fetch(currentUrl, {method: "HEAD"})
-    if (!res.ok) continue // throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`);
-    let linkHeaders = res.headers.get('Link')
-    if (!linkHeaders) continue // return null;
+  // TODO:: MAKE MORE ROBUST
+
+  // Check current resource header
+  let res = await fetch(url, {method: "HEAD"})
+
+  if (!res.ok) return null // throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`);
+  let linkHeaders;
+  if (res.ok) linkHeaders = res.headers.get('Link')
+  if (linkHeaders) { 
     let headers = LinkHeader.parse(linkHeaders)
     for (let header of headers.refs) {
       if (header.uri === 'http://www.w3.org/ns/pim/space#Storage' && header.rel === 'type') {
-        return currentUrl.endsWith('/') ? currentUrl : currentUrl + '/';
+        return url.endsWith('/') ? url : url + '/';
       }
     }
-
-    try {
-    // Check in resource as fallback
-      let ds = await getSolidDataset(currentUrl)
-      let thing = ds && getThing(ds, url)
-      let storageUrl = thing && getUrl(thing, 'http://www.w3.org/ns/pim/space#Storage')
-      if (storageUrl) return storageUrl;
-
-    } catch (_ignored) { }
   }
-  return null;
+
+  // Check current resource for link
+  try {
+    let ds = await getSolidDataset(url)
+    let thing = ds && getThing(ds, url)
+    let storageUrl = thing && getUrl(thing, 'http://www.w3.org/ns/pim/space#storage')
+    if (storageUrl) return storageUrl;
+  } catch (_ignored) { }
+
+  let splitUrl = url.split('/')
+  let index = url.endsWith('/') ? splitUrl.length - 2 : splitUrl.length - 1
+  let nextUrl = splitUrl.slice(0, index).join('/') + '/'
+  
+  return getPodRoot(nextUrl, fetch)
 }
 
 export async function getWebIDIdentityProvider(webId: string) { 
