@@ -88,7 +88,7 @@ export async function requestAccessToken(id: string, secret: string, dpopKey: Ke
     },
     body: 'grant_type=client_credentials&scope=webid',
   });
-  if (!response.ok)
+  if (!response.ok) 
     throw new BashlibError(BashlibErrorMessage.httpResponseError, tokenUrl, `${response.status} ${response.statusText}`)
 
   // This is the Access token that will be used to do an authenticated request to the server.

@@ -245,7 +245,8 @@ async function createAuthenticationTokenCSS(options: any) {
     // Get token WebID by creating an access token (a bit wastefull but no other option sadly)
       if (!token.id || !token.secret) throw new Error('Could not create valid authentication token.')
     const dpopKey = await generateDpopKeyPair();
-    let { accessToken, expirationDate, webId } = await requestAccessToken(token.id, token.secret, dpopKey, options); 4
+    let { accessToken, expirationDate, webId } = await requestAccessToken(token.id, token.secret, dpopKey, options);
+
     if (!webId) throw new Error('Could not create valid authentication token.')
     setConfigToken(webId, token)
     console.log(`Successfully created new token ${options.name}`)
