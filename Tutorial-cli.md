@@ -103,7 +103,7 @@ e.g.
 ```
 This will result in the message that a pod for bob has been created succesfully on [http://localhost:3000/bob/profile/card#me](http://localhost:3000/bob/profile/card#me). If you navigate to this URL, you can now see the profile document of the newly created Solid account on the newly created Solid pod.
 
-If you do not want an interactive promt, you can use the command with all options enabled 
+If you do not want an interactive prompt, you can use the command with all options enabled 
 ```
 bashlib-css create-pod -b "http://localhost:3000/" -n Carol -e carol@test.edu -p carolIsTheBest123
 ```
