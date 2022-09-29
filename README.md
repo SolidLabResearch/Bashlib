@@ -15,7 +15,7 @@ bash setup.sh
 <hr>
 
 ## Tutorial
-A tutorial for the CLI interface for Bashlib can be found [here](https://github.com/SolidLabResearch/Bashlib/blob/master/Tutorial-cli.md).
+A tutorial for the CLI interface for Bashlib can be found [here](Tutorial-cli.md).
 
 
 <hr>
