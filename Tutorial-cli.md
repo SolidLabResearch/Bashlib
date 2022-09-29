@@ -193,7 +193,7 @@ We can now use the authenticated fetch command on private resources:
 *compatbility: all*
 
 Finally, you can just make use of the library without authenticating yourself.
-This is de the default option when no auth option is specified.
+This is the default option when no auth option is specified.
 ```
  bashlib-solid --auth none  <command> [options]
 ```
