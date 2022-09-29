@@ -101,7 +101,7 @@ e.g.
 ? User email              bob@test.edu
 ? User password           bobIsTheBest123 
 ```
-This will result in the message that a pod for bob has been created succesfully on [http://localhost:3000/Bob/profile/card#me](http://localhost:3000/Bob/profile/card#me). If you navigate to this URL, you can now see the profile document of the newly created Solid account on the newly created Solid pod.
+This will result in the message that a pod for bob has been created succesfully on [http://localhost:3000/bob/profile/card#me](http://localhost:3000/bob/profile/card#me). If you navigate to this URL, you can now see the profile document of the newly created Solid account on the newly created Solid pod.
 
 If you do not want an interactive promt, you can use the command with all options enabled 
 ```
