@@ -7,7 +7,7 @@ This tutorial only regards the CLI interface of the Bashlib library. For the Nod
 All aliases are calculated from the root of the cloned bashlib repo.
   - bashlib-css  - `alias bashlib-css="node bashlib/css/bin/css.js"`
   - bashlib-solid  - `alias bashlib-solid="node bashlib/solid/bin/solid.js"`
-  - bashlib-auth - `alias bashlib-auth="node bashlib/solid/bin/solid.js --auth interactive --idp <your pod identity provider>"`
+  - bashlib-auth - `alias bashlib-auth="node bashlib/solid/bin/solid.js --auth token -t .tokens/.bobs-auth-token"`
 Feel free to use a different authentication scheme for the `bashlib-auth` alias.
 
 
