@@ -48,7 +48,7 @@ export async function changeUrlPrefixes(authenticationInfo: any, url: string) {
 
   if (url.startsWith('webid:')) {
     if (!authenticationInfo.webId) throw new Error('Cannot process URL with "webid:" prefix, no WebID value currently known.')
-    return mergeStringsSingleSlash(authenticationInfo.webId, url.replace('webid:', '')) 
+    return authenticationInfo.webId as string
 
   } else if (url.startsWith('root:')) {
     if (!authenticationInfo.webId) throw new Error('Cannot process URL with "root:" prefix, no WebID value currently known.')
