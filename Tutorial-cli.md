@@ -296,7 +296,7 @@ Notes:
 
 #### move / mv
 The `move` or `mv` command moves resources between different locations on a data pod or between data pods. It is equal to a `cp` operation followed by a `rm` operation on the source. 
-**Make sure that the correct permissions are set to read and remove the source resources, and write to the desintation resources.**
+**Make sure that the correct permissions are set to read and remove the source resources, and write to the destination resources.**
 
 In the last section, we made a `contacts.ttl` resource in our `base:/test/` container. 
 We can now move the test resource we just made as a demonstration:
