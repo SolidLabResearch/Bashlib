@@ -377,7 +377,7 @@ The `perms` command provides three operations to list, edit and delete permissio
 
 To list the permissions of your profile resource, we can use the following command:
 ```
-bashlib-auth perms list webid:https://github.com/CommunitySolidServer/CommunitySolidServer
+bashlib-auth perms list webid:
 ```
 Here, we see the permissions written out for all agents, groups and the public for the given resource.
 This also works for containers. The following command prints the permissions of the pod root in a table format:
