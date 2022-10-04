@@ -351,7 +351,7 @@ This command looks to match all found files in the `base:` container with the gi
 We use the `--full` flag to match with and display the full url of the found resources.
 
 #### query
-The `query` command is a convenience command that lets the user query all files in a given container based on a given SPARQL query.
+The `query` command is a convenience command that lets the user query one file or all files in a container based on a given SPARQL query.
 
 To return all triples from our WebID, we can use the following command:
 ```
