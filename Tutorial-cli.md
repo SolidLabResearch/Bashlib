@@ -474,7 +474,7 @@ For all examples, we will make use of the following aliases:
 
 - bashlib-css - `alias bashlib-css="node bashlib/css/bin/css.js"`
 - bashlib-solid - `alias bashlib-auth="node bashlib/solid/bin/solid.js"`
-- bashlib-auth - `alias bashlib-auth="node bashlib/solid/bin/solid.js" --auth <your_preferred_auth_option`
+- bashlib-auth - `alias bashlib-auth="node bashlib/solid/bin/solid.js" --auth <your_preferred_auth_option>`
 
 
 ### Creating a new pod and authentication token 
