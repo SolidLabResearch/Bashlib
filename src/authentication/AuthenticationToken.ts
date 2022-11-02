@@ -78,7 +78,7 @@ export async function requestAccessToken(id: string, secret: string, dpopKey: Ke
   // http://localhost:3000/.well-known/openid-configuration
   // if your server is hosted at http://localhost:3000/.
 
-  const response = await fetch(tokenUrl, {
+  const response = await nodefetch(tokenUrl, {
     method: 'POST',
     headers: {
       // The header needs to be in base64 encoding.
