@@ -16,7 +16,8 @@ export default async function touch(url: string, options: any) {
     }
     else {
         let path = url.replace(/.*\//,'')
-        let contentType = path.endsWith('.acl') || path.endsWith('.meta') ? 'text/turtle' : mime.lookup(path)
+        let mimetype = mime.lookup(path)
+        let contentType = (path.endsWith('.acl') || path.endsWith('.meta') || !mimetype) ? 'text/turtle' : mimetype
 
         let res = await fetch(
             url, 
@@ -28,6 +29,7 @@ export default async function touch(url: string, options: any) {
               }
             }
         )
+        console.log(res.body)
         if (res.ok) {
             if (verbose) console.log(`Remote file created`)
         }
