@@ -29,7 +29,6 @@ export default async function touch(url: string, options: any) {
               }
             }
         )
-        console.log(res.body)
         if (res.ok) {
             if (verbose) console.log(`Remote file created`)
         }
