@@ -120,7 +120,7 @@ let options = {
   port?: number,                        // (optional) Port used for redirect url of OIDC login flow
   verbose?: boolean,                    // (optional) Log authentication errors
 }
-builder.buildInteractive(options);
+await builder.buildInteractive(options);
 let fetch = builder.getFetch()
 // OR let {fetch, webId} = builder.getSessionInfo();
 ```
@@ -140,7 +140,7 @@ let options = {
   sessionInfoStorageLocation?: string,             // (optional) Storage location of session information to reuse in subsequent runs of the application (defaults to ~/.solid/.session-info-token).
   verbose?: boolean,                               // (optional) Log authentication errors
 }
-builder.buildFromClientCredentialsToken(options);
+await builder.buildFromClientCredentialsToken(options);
 let fetch = builder.getFetch()
 // OR let {fetch, webId} = builder.getSessionInfo();
 ```
@@ -164,7 +164,7 @@ let options = {
   port?: number,     // (optional) Port used for redirect url of OIDC login flow
   verbose?: boolean, // (optional) Log authentication errors
 }
-builder.buildFromUserCredentials(options);
+await builder.buildFromUserCredentials(options);
 let fetch = builder.getFetch()
 // OR let {fetch, webId} = builder.getSessionInfo();
 ```
