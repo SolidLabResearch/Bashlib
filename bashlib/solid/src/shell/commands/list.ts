@@ -80,6 +80,7 @@ function formatListing(listings: any[], options: any) {
       
       if (listingInfo.isDir) return chalk.blue.bold(path)
       else if (path.endsWith('.acl')) return chalk.red(path)
+      else if (path.endsWith('.meta')) return chalk.greenBright(path)
       else return path
     })
     return columns(values)
@@ -90,6 +91,9 @@ function formatListing(listings: any[], options: any) {
 
     const aclLengths = listings.map(fileInfo => fileInfo.acl ? (options.full ? fileInfo.acl.url.length : fileInfo.acl.relativePath.length) : 0)
     const aclFieldLength = Math.max(...[Math.max(...aclLengths.map(x => x || 0)), 3])
+
+    const metaLengths = listings.map(fileInfo => fileInfo.metadata ? (options.full ? fileInfo.metadata.url.length : fileInfo.metadata.relativePath.length) : 0)
+    const metaFieldLength = Math.max(...[Math.max(...metaLengths.map(x => x || 0)), 4])
 
     const mtimeLength = listings.map(listingInfo => listingInfo.mtime ? listingInfo.mtime.toString().length : 0)
     const mtimeFieldLength = Math.max(...[Math.max(...mtimeLength), 5])
@@ -105,19 +109,21 @@ function formatListing(listings: any[], options: any) {
     const titleSizeString = "size".padEnd(sizeFieldLength)
     const titleModifiedString = "modified".padEnd(modifiedFieldLength)
     const titleAclString = "acl".padEnd(aclFieldLength)
+    const titleMetaString = "meta".padEnd(metaFieldLength)
 
     // SORT the listings
     listings.sort((a, b) => (a.url).localeCompare(b.url))
 
     let output = ''
-    output += `${titleFilenameString} | ${titleMTimeString} | ${titleSizeString} | ${titleModifiedString} | ${titleAclString}\n`
-    output += `${'-'.repeat(fileNameFieldLength + mtimeFieldLength + sizeFieldLength + modifiedFieldLength + aclFieldLength + 12)}\n`
+    output += `${titleFilenameString} | ${titleMTimeString} | ${titleSizeString} | ${titleModifiedString} | ${titleAclString} | ${titleMetaString}\n`
+    output += `${'-'.repeat(fileNameFieldLength + mtimeFieldLength + sizeFieldLength + modifiedFieldLength + aclFieldLength + metaFieldLength + 16)}\n`
     for (let listingInfo of listings) {
       const path = (options.full ? listingInfo.url : getResourceInfoRelativePath(listingInfo)) || ''
 
       let pathString = '';
       if (listingInfo.isDir) pathString = chalk.blue.bold(path.padEnd(fileNameFieldLength))
       else if (path.endsWith('.acl')) pathString = chalk.red(path.padEnd(fileNameFieldLength))
+      else if (path.endsWith('.meta')) pathString = chalk.greenBright(path.padEnd(fileNameFieldLength))
       else pathString = path.padEnd(fileNameFieldLength)
 
       const mtime = (listingInfo.mtime ? listingInfo.mtime.toString() : '').padEnd(mtimeFieldLength)         
@@ -125,7 +131,9 @@ function formatListing(listings: any[], options: any) {
       const modified = (listingInfo.modified ? listingInfo.modified.toISOString() : '').padEnd(modifiedFieldLength)
       const aclPath = listingInfo.acl ? (options.full ? listingInfo.acl.url : getResourceInfoRelativePath(listingInfo.acl)) : ''
       const acl = aclPath.padEnd(aclFieldLength)
-      output += `${pathString} | ${mtime} | ${size} | ${modified} | ${acl}\n`
+      const metaPath = listingInfo.metadata ? (options.full ? listingInfo.metadata.url : getResourceInfoRelativePath(listingInfo.metadata)) : ''
+      const meta = metaPath.padEnd(metaFieldLength)
+      output += `${pathString} | ${mtime} | ${size} | ${modified} | ${acl} | ${meta}\n`
     } 
     return(output)
   }

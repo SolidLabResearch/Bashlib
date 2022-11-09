@@ -2,6 +2,7 @@ import SolidFetchBuilder from './CreateFetch';
 import { getPodRoot, getWebIDIdentityProvider, writeErrorString } from '../utils/util';
 import inquirer from 'inquirer';
 import { getConfigCurrentWebID, getConfigCurrentToken } from '../utils/configoptions';
+import { getSessionFromStorage } from '@inrupt/solid-client-authn-node';
 const nodeFetch = require('node-fetch')
 
 export type ILoginOptions = {
@@ -90,9 +91,10 @@ export async function getUserIdp() {
     idp = await getWebIDIdentityProvider(webId)
   }
   if (!idp) { 
-    let answers = await inquirer.prompt([{ type: 'input', name: 'idp', message: 'Please provide an identity provider to authenticate' }])
-    idp = answers.idp.trim();
+    let answers = await inquirer.prompt([{ type: 'input', name: 'webid', message: 'Please provide a WebID to authenticate with.' }])
+    idp = await getWebIDIdentityProvider(answers.webid.trim())
   }
+  if (!idp) throw new Error('No valid WebID value provided.')
   return idp && (idp.endsWith('/') ? idp : idp + '/');
 }
   

@@ -5,7 +5,6 @@ import { Session } from '@inrupt/solid-client-authn-node';
 import open from 'open';
 import { SessionInfo, IInteractiveAuthOptions, DEFAULTPORT, APPNAME } from './CreateFetch';
 import { removeConfigSession, getConfigCurrentSession, getConfigCurrentWebID, ISessionEntry, setConfigCurrentWebID, setConfigSession } from '../utils/configoptions';
-import inquirer from 'inquirer';
 import chalk from 'chalk';
 import { getUserIdp } from './authenticate';
 import BashlibError from '../utils/errors/BashlibError';
@@ -209,15 +208,3 @@ async function requestAccessToken(p: {
 
   return { accessToken, expirationDate, dpopKey: p.dpopKey, webId };
 }
-
-// async function wrapFetchRefresh(fetch: Function, expirationDate: Date, webId: string, idp: string, appName: string, port: number) {
-//   try {
-//     var tokenTimeLeftInSeconds = (expirationDate.getTime() - new Date().getTime()) / 1000;
-//     if (tokenTimeLeftInSeconds > 20) {
-//       // Only reuse previous session tokens if we have enough time to work with, else continue to create a new access token.
-//       return (await createFetchWithNewAccessToken(idp, appName, port)).fetch
-//     }
-//   } catch (_ignored) {
-//     return fetch;
-//   }
-// }

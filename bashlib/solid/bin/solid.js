@@ -20,6 +20,7 @@ program
   .description('Utility toolings for interacting with a Solid server.')
   .version('0.2.0')
   .enablePositionalOptions()
+  .option('-n, --no-auth', 'continue unauthenticated')
   .option('-a, --auth <string>', 'token | credentials | interactive | none - Authentication type (defaults to "none")')
   .option('-i, --idp <string>', '(auth: any) URL of the Solid Identity Provider')
   .option('-e, --email <string>', '(auth: credentials) Email adres for the user. Default to <uname>@test.edu')
@@ -42,8 +43,8 @@ program = new c.FindCommand(undefined, true).addCommand(program)
 program = new c.QueryCommand(undefined, true).addCommand(program)
 program = new c.PermsCommand(undefined, true).addCommand(program)
 program = new c.EditCommand(undefined, true).addCommand(program)
-program = new c.ShellCommand(undefined, true).addCommand(program) 
-program = new c.ExitCommand(undefined, true).addCommand(program) 
+// program = new c.ShellCommand(undefined, true).addCommand(program) 
+// program = new c.ExitCommand(undefined, true).addCommand(program) 
 program = new c.AuthCommand(undefined, true).addCommand(program) 
 
 program
