@@ -85,13 +85,14 @@ async function showAuthenticationOption(options: any) {
       chalk.cyan.bold("WebID"),
       "has auth token",
       "has active session",
-      "session expires at"
     ]
     let table = new Table({ head });
 
     let entries = getAllConfigEntries();
     for (let webId of Object.keys(entries)) {
-      if (webId === currentWebId) table.push([webId, entries[webId].hasToken, !!entries[webId].session, entries[webId].session?.expirationDate?.toISOString()])
+      let activeSession = entries[webId]?.session
+      if (webId === currentWebId) table.push([chalk.cyan.bold(webId), entries[webId].hasToken, 
+        !!activeSession && !! activeSession.expirationDate && activeSession.expirationDate > new Date()])
     }
     console.log(`
 Stored authentication data:
@@ -100,12 +101,12 @@ ${table.toString()}`
   } else { 
     let entries = getAllConfigEntries();
     for (let webId of Object.keys(entries)) {
+      let activeSession = entries[webId]?.session
       if (webId === currentWebId) console.log(
         chalk.cyan.bold(webId),
         entries[webId].hasToken ? `- ${chalk.bold('auth token')}` : "",
-        !!entries[webId].session ? `- ${chalk.bold('active session')}` : "",
-        entries[webId].session?.expirationDate ? `- session expires at ${entries[webId].session?.expirationDate?.toISOString()}` : "",
-        !entries[webId].hasToken && !entries[webId].session ? "No active session or token found" : ""
+        !!activeSession && !! activeSession.expirationDate && 
+          activeSession.expirationDate > new Date() ? `- ${chalk.bold('active session')}` : ""
       )
     }
   }
@@ -118,13 +119,14 @@ async function listAuthenticationOptions(options: any) {
       chalk.cyan.bold("WebID"),
       "has auth token",
       "has active session",
-      "session expires at"
     ]
     let table = new Table({ head });
 
     let entries = getAllConfigEntries();
     for (let webId of Object.keys(entries)) {
-      table.push([getConfigCurrentWebID() === webId ? `*${webId}` : webId, entries[webId].hasToken, !!entries[webId].session, entries[webId].session?.expirationDate?.toISOString()])
+      let activeSession = entries[webId]?.session
+      table.push([webId, entries[webId].hasToken, 
+        !!activeSession && !! activeSession.expirationDate && activeSession.expirationDate > new Date()])
     }
     console.log(`
 Stored authentication data:
@@ -133,12 +135,12 @@ ${table.toString()}`
   } else { 
     let entries = getAllConfigEntries();
     for (let webId of Object.keys(entries)) {
+      let activeSession = entries[webId]?.session
       console.log(
-        chalk.cyan.bold(getConfigCurrentWebID() === webId ? `*${webId}` : webId),
+        colorWebID(webId),
         entries[webId].hasToken ? `- ${chalk.bold('auth token')}` : "",
-        !!entries[webId].session ? `- ${chalk.bold('active session')}` : "",
-        entries[webId].session?.expirationDate ? `- session expires at ${entries[webId].session?.expirationDate?.toISOString()}` : "",
-        !entries[webId].hasToken && !entries[webId].session ? "No active session or token found" : ""
+        !!activeSession && !! activeSession.expirationDate && 
+          activeSession.expirationDate > new Date() ? `- ${chalk.bold('active session')}` : ""
       )
     }
   }
@@ -153,10 +155,11 @@ async function setAuthenticationOption(options: any) {
   } else { 
     let entries = getAllConfigEntries();
     let values: Record<string, string> = {}
+    let activeSession = entries[webId]?.session
     values["new"] = `${chalk.bold.blueBright("Authenticate using new WebID")}`
     for (let webId of Object.keys(entries)) { 
       values[webId] =
-  `${chalk.bold.greenBright(getConfigCurrentWebID() === webId ? `*${webId}` : webId)} ${entries[webId].hasToken ? `- ${chalk.bold("auth token")}` : ""} ${entries[webId].session ? `- ${chalk.bold("existing session")} expiring at ${entries[webId].session?.expirationDate?.toISOString()}` : ""}`
+  `${colorWebID(webId)} ${entries[webId].hasToken ? `- ${chalk.bold("auth token")}` : ""} ${!!activeSession && !! activeSession?.expirationDate && activeSession.expirationDate > new Date() ? `- ${chalk.bold("active session")}` : ""}`
     }
 
     let selected = await new Promise((resolve, reject) => { 
@@ -256,3 +259,7 @@ async function createAuthenticationTokenCSS(options: any) {
   }
 }
 
+
+function colorWebID(webId: string) {
+  return getConfigCurrentWebID() === webId ? chalk.bold.cyan(webId) : chalk.bold(webId)
+}
