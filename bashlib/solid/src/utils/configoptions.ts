@@ -61,6 +61,18 @@ export async function checkValidWebID(webId: string | undefined) {
   return false;
 }
 
+export async function clearConfigCurrentWebID() { 
+  try {
+    let config = loadConfig()
+    delete config.currentWebID
+    fs.writeFileSync(BASHLIBCONFIGPATH, JSON.stringify(config, null, 2))
+  }
+  catch (e) { 
+    throw new Error('Could not read config.')
+  }
+}
+
+
 export async function setConfigCurrentWebID(webId: string | undefined) { 
   if (!webId) throw new Error(`No WebID value provided`)
   let valid = await checkValidWebID(webId)
@@ -162,7 +174,7 @@ export function getAllConfigEntries() {
 export function removeConfigSession(webId: string) {
   try {
     let config : IConfig = JSON.parse(fs.readFileSync(BASHLIBCONFIGPATH, { encoding: "utf8" }));
-    config.authInfo[webId].session = undefined;
+    delete config.authInfo[webId];
     fs.writeFileSync(BASHLIBCONFIGPATH, JSON.stringify(config, null, 2))
   }
   catch (e) { 
@@ -174,7 +186,7 @@ export function removeConfigSessionAll() {
   try {
     let config = loadConfig()
     for (let webId of Object.keys(config.authInfo)) { 
-      config.authInfo[webId].session = undefined;
+      delete config.authInfo[webId]
     }
     fs.writeFileSync(BASHLIBCONFIGPATH, JSON.stringify(config, null, 2))
   }

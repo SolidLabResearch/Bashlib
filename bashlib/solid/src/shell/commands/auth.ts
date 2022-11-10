@@ -1,7 +1,7 @@
 import SolidCommand from './SolidCommand';
 import { Command } from 'commander';
 
-import { getAllConfigEntries, getConfigCurrentWebID, getConfigCurrentSession, getConfigCurrentToken, setConfigToken, setConfigCurrentWebID, removeConfigSession, removeConfigSessionAll, addConfigEmtpyEntry } from '../../utils/configoptions';
+import { getAllConfigEntries, getConfigCurrentWebID, getConfigCurrentSession, getConfigCurrentToken, setConfigToken, setConfigCurrentWebID, removeConfigSession, removeConfigSessionAll, addConfigEmtpyEntry, clearConfigCurrentWebID } from '../../utils/configoptions';
 import inquirer from 'inquirer';
 
 import cliSelect from "cli-select"
@@ -42,23 +42,33 @@ export default class AuthCommand extends SolidCommand {
     authcommand
       .command('set')
       .description('Set current authentication option.')
-      .option('-w, --webid <string>', 'Set active WebID directly, without requiring manual selection.')
-      .action(async (options: any) => { 
+      .argument('[webid]', 'Set active WebID directly, without requiring manual selection.')
+      .action(async (webid: string | undefined, options: any) => { 
+        options.webid = webid;
         try {
           await setAuthenticationOption(options)
         } catch (e) { writeErrorString('Could not set authentication option', e) }
       })
     
     authcommand
-      .command('clear')
-      .description('Clear authentication info.')
-      .option('-a, -all', 'clear all entries')
-      .option('-w, --webid <string>', 'clear specific WebID entry')
-      .action(async (options: any) => { 
+      .command('remove')
+      .argument('[string]', 'webid | all')
+      .description('Removes the authentication information for a specific WebID or for all saved WebIDs.')
+      .action(async (webid, options: any) => { 
+        options.webid = webid;
         try {
-          await clearAuthenticationOption(options)
+          await removeAuthenticationOption(options)
         } catch (e) { writeErrorString('Could not clear authentication option(s)', e) }
       })
+
+      authcommand
+        .command('clear')
+        .description('Clear currently authenticated WebID')
+        .action(async (options: any) => { 
+          try {
+            await clearAuthenticationOption()
+          } catch (e) { writeErrorString('Could not clear authentication option(s)', e) }
+        })
     
     authcommand
       .command('create-token')
@@ -156,7 +166,9 @@ async function setAuthenticationOption(options: any) {
     let entries = getAllConfigEntries();
     let values: Record<string, string> = {}
     let activeSession = entries[webId]?.session
+    values["cancel"] = `${chalk.bold.redBright("Cancel operation")}`
     values["new"] = `${chalk.bold.blueBright("Authenticate using new WebID")}`
+    values["clear"] = `${chalk.bold.red("Clear current authentication option")}`
     for (let webId of Object.keys(entries)) { 
       values[webId] =
   `${colorWebID(webId)} ${entries[webId].hasToken ? `- ${chalk.bold("auth token")}` : ""} ${!!activeSession && !! activeSession?.expirationDate && activeSession.expirationDate > new Date() ? `- ${chalk.bold("active session")}` : ""}`
@@ -184,7 +196,16 @@ async function setAuthenticationOption(options: any) {
       await setConfigCurrentWebID(newWebId)
       addConfigEmtpyEntry(newWebId)
       selectedWebID = newWebId
+    } else if (selected === "cancel") {
+       // We just return from the function
+      return;
+    } else if (selected === "clear") {
+       // We clear the currently authenticated session
+      clearAuthenticationOption()
+      console.log(`Cleared authenticated WebID.`)
+      return;
     } else { 
+      // We set the selected WebID as the currently used one
       await setConfigCurrentWebID(selected as unknown as string)
       selectedWebID = selected
     }
@@ -192,14 +213,8 @@ async function setAuthenticationOption(options: any) {
   }
 }
 
-async function clearAuthenticationOption(options: any) {
-  if (options.all) {
-    removeConfigSessionAll();
-  } else if (options.webid === 'all') { 
-    removeConfigSession(options.webId)
-  } else { 
-    await setConfigCurrentWebID(undefined);
-  } 
+async function clearAuthenticationOption(options?: any) {
+  await clearConfigCurrentWebID();
 }
 
 async function createAuthenticationTokenCSS(options: any) { 
@@ -256,6 +271,116 @@ async function createAuthenticationTokenCSS(options: any) {
   } catch (e) {
     console.error(`Could not create token: ${(e as Error).message}`)
     console.error(`Please make sure the filled in email and password values are correct!`)
+  }
+}
+
+
+async function setAuthenticationOption_backup(options: any) {
+  let webId = options.webid
+  if (webId) {  
+    await setConfigCurrentWebID(webId)
+    addConfigEmtpyEntry(webId)
+    console.log(`Authenticating for WebID: ${webId}`)
+  } else { 
+    let entries = getAllConfigEntries();
+    let values: Record<string, string> = {}
+    let activeSession = entries[webId]?.session
+    values["cancel"] = `${chalk.bold.redBright("Cancel operation")}`
+    values["new"] = `${chalk.bold.blueBright("Authenticate using new WebID")}`
+    values["clear"] = `${chalk.bold.red("Clear current authentication option")}`
+    for (let webId of Object.keys(entries)) { 
+      values[webId] =
+  `${colorWebID(webId)} ${entries[webId].hasToken ? `- ${chalk.bold("auth token")}` : ""} ${!!activeSession && !! activeSession?.expirationDate && activeSession.expirationDate > new Date() ? `- ${chalk.bold("active session")}` : ""}`
+    }
+
+    let selected = await new Promise((resolve, reject) => { 
+      cliSelect({
+        values,
+        valueRenderer: (value, selected) => {
+          if (selected) {
+            return chalk.underline(value);
+          }
+          return value;
+        },
+      }).then(result => { 
+        resolve(result.id)
+      }).catch(e => reject(e));
+    })
+
+    let selectedWebID = undefined;
+    // Add a new webId to the config
+    if (selected === "new") {
+      let answers = await inquirer.prompt([{ type: 'input', name: 'webid',  message: 'Use a new WebID to authenticate'}])
+      let newWebId = answers.webid;
+      await setConfigCurrentWebID(newWebId)
+      addConfigEmtpyEntry(newWebId)
+      selectedWebID = newWebId
+    } else if (selected === "cancel") {
+       // We just return from the function
+      return;
+    } else if (selected === "clear") {
+       // We clear the currently authenticated session
+      clearAuthenticationOption()
+      console.log(`Cleared authenticated WebID.`)
+      return;
+    } else { 
+      // We set the selected WebID as the currently used one
+      await setConfigCurrentWebID(selected as unknown as string)
+      selectedWebID = selected
+    }
+    console.log(`Authenticating for WebID: ${selectedWebID}`)
+  }
+}
+
+async function removeAuthenticationOption(options?: any) {
+
+  let webId = options.webid
+  if (webId) {  
+    if (webId === "all") {
+      removeConfigSessionAll();
+      clearConfigCurrentWebID();
+      console.log('Removed all saved auth information.')
+    } else { 
+      removeConfigSession(webId)
+      if(webId === getConfigCurrentWebID) clearConfigCurrentWebID();
+      console.log(`Removed all saved auth information for ${webId}.`)
+    } 
+  } else { 
+    let entries = getAllConfigEntries();
+    let values: Record<string, string> = {}
+    let activeSession = entries[webId]?.session
+    values["all"] = `${chalk.bold.redBright("Delete all saved auth information (including tokens)")}`
+    for (let webId of Object.keys(entries)) { 
+      values[webId] =
+  `${colorWebID(webId)} ${entries[webId].hasToken ? `- ${chalk.bold("auth token")}` : ""} ${!!activeSession && !! activeSession?.expirationDate && activeSession.expirationDate > new Date() ? `- ${chalk.bold("active session")}` : ""}`
+    }
+
+    let selected = await new Promise((resolve, reject) => { 
+      cliSelect({
+        values,
+        valueRenderer: (value, selected) => {
+          if (selected) {
+            return chalk.underline(value);
+          }
+          return value;
+        },
+      }).then(result => { 
+        resolve(result.id)
+      }).catch(e => reject(e));
+    })
+
+    // Add a new webId to the config
+    if (selected === "all") {
+      removeConfigSessionAll();
+      console.log('Removed all saved auth information.')
+      clearConfigCurrentWebID();
+      return;
+    } else if (selected as string) { 
+      console.log('webid', selected)
+      removeConfigSession(selected as string)
+      if(selected === getConfigCurrentWebID()) clearConfigCurrentWebID();
+      console.log(`Removed all saved auth information for ${selected}.`)
+    }
   }
 }
 
