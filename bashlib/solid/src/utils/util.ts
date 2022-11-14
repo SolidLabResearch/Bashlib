@@ -9,13 +9,22 @@ export type DirInfo = {
   aclfiles: FileInfo[]
 }
 
+interface FileLoadingFunction {
+  (): Promise< {
+    buffer?: Buffer;
+    blob?: Blob;
+    contentType: string;
+  }>
+}
+
 export type FileInfo = { 
   absolutePath: string, 
   relativePath?: string,
   directory?: string, 
   contentType?: string,
   buffer?: Buffer,
-  blob?: Blob
+  blob?: Blob,
+  loadFile?: FileLoadingFunction
 }
 
 export type ResourceInfo = {

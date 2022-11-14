@@ -9,6 +9,7 @@
 - [X] Resource verification on edit (compare before / after hash and notify if something may have changed)
 - [ ] Interactive Solid shell
 - [ ] Make sure discovery of pim:storage and ldp:inbox are according to spec!
+- [ ] multi parameter removes: rm file1 file2 file3
 - [ ] TESTINGINGINGING
 - [ ] RELEASE ON NPM!
 
