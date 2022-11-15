@@ -21,7 +21,7 @@ export default class RemoveCommand extends SolidCommand {
     program
       .command('remove')
       .description('Utility to remove files or container on remote Solid pod.')
-      .argument('<url>', 'URL of container to be listed')
+      .argument('<urls...>', 'URL of container to be listed')
       .option('-r, --recursive', 'Recursively removes all files in given container (.acl files are removed on resource removal)') // Should this be default?
       .option('-v, --verbose', 'Log all operations') // Should this be default?
       .action(this.executeCommand)
@@ -29,17 +29,18 @@ export default class RemoveCommand extends SolidCommand {
     return program
   }
 
-  async executeCommand (url: string, options: any) {
+  async executeCommand (urls: string[], options: any) {
     let programOpts = addEnvOptions(this.programopts || {});
     const authenticationInfo = await authenticate(programOpts)
     options.fetch = authenticationInfo.fetch
-    try {
-      if (this.shell) url = getAndNormalizeURL(url, this.shell);
-      url = await changeUrlPrefixes(authenticationInfo, url)
-      await remove(url, options)
-    } catch (e) {
-      writeErrorString(`Could not remove ${url}`, e)
-      if (this.mayExit) process.exit(1)
+    for (let url of urls) {
+      try {
+        if (this.shell) url = getAndNormalizeURL(url, this.shell);
+        url = await changeUrlPrefixes(authenticationInfo, url)
+        await remove(url, options)
+      } catch (e) {
+        writeErrorString(`Could not remove ${url}`, e)
+      }
     }
     if (this.mayExit) process.exit(0)
   }
