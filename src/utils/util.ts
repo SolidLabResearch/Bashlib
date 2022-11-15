@@ -1,4 +1,5 @@
 import { getSolidDataset, getContainedResourceUrlAll, getUrl, getUrlAll, getThing, getThingAll, getDatetime, getInteger, SolidDataset } from '@inrupt/solid-client';
+import { requestUserIdp } from './userInteractions';
 const fs = require('fs')
 const path = require('path')
 var LinkHeader = require( 'http-link-header' )
@@ -102,6 +103,8 @@ export async function getWebIDIdentityProvider(webId: string) {
   let thing = await getThing(ds, webId);
   if (!thing) return null;
   let idp = getUrl(thing, "http://www.w3.org/ns/solid/terms#oidcIssuer")
+
+  if (!idp) idp = await requestUserIdp()
   return idp;
 }
 

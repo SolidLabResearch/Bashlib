@@ -1,8 +1,7 @@
 import SolidFetchBuilder from './CreateFetch';
-import { getPodRoot, getWebIDIdentityProvider, writeErrorString } from '../utils/util';
+import { getWebIDIdentityProvider, writeErrorString } from '../utils/util';
 import inquirer from 'inquirer';
 import { getConfigCurrentWebID, getConfigCurrentToken } from '../utils/configoptions';
-import { getSessionFromStorage } from '@inrupt/solid-client-authn-node';
 const nodeFetch = require('node-fetch')
 
 export type ILoginOptions = {
@@ -83,6 +82,7 @@ async function queryUserAuthentication(options: ILoginOptions) {
   }
   return options
 }
+
 
 export async function getUserIdp() { 
   let idp;
