@@ -147,7 +147,7 @@ export function getConfigCurrentToken() {
   let config : IConfig = JSON.parse(fs.readFileSync(BASHLIBCONFIGPATH, { encoding: "utf8" }));
   let webId = config.currentWebID
   if (!webId) return null;
-  return config.authInfo[webId].token 
+  return config.authInfo[webId]?.token 
 }
 
 export function getAllConfigEntries() { 
