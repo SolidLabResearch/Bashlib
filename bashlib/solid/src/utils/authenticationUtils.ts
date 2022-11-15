@@ -3,7 +3,14 @@ import path from 'path'
 import { KeyPair } from '@inrupt/solid-client-authn-core';
 import { KeyLike, JWK, importJWK, exportJWK } from 'jose';
 import jwt_decode from 'jwt-decode';
+import { randomUUID } from 'crypto';
+import { setConfigSession, getConfigCurrentSession } from './configoptions';
 const nodefetch = require('node-fetch')
+
+export type SessionInfo = {
+  fetch: (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
+  webId?: string
+}
 
 export type OIDCConfig = {
   authorization_endpoint: string,
@@ -158,16 +165,21 @@ type SessionTokenInfo = {
   idp?: string,
 }
 
-export async function storeSessionTokenInfo(sessionDataLocation: string, accessToken: string, dpopKey: KeyPair, expirationDate: Date, webId?: string, idp?: string ) {
+export async function storeSessionTokenInfo(accessToken: string, dpopKey: KeyPair, expirationDate: Date, webId?: string, idp?: string) {
+  let id = randomUUID();
   let privateKeyJWK = await exportJWK(dpopKey.privateKey)
   let expirationDateString = expirationDate.toISOString();
-  let exportedObject = { accessToken, dpopKey : { privateKey: privateKeyJWK, publicKey: dpopKey.publicKey }, expirationDate: expirationDateString, webId, idp }
-  fs.writeFileSync(sessionDataLocation, JSON.stringify(exportedObject, null, 2))  
+  let exportedObject = { id, accessToken, dpopKey: { privateKey: privateKeyJWK, publicKey: dpopKey.publicKey }, expirationDate: expirationDateString, webId, idp }
+  // Add the session to the config
+  if (webId) {
+    setConfigSession(webId, exportedObject);
+  } 
+  
  return; 
 }
 
-export async function readSessionTokenInfo(sessionDataLocation: string) : Promise<SessionTokenInfo> {
-  let sessionInfo : SessionTokenInfo = JSON.parse(fs.readFileSync(sessionDataLocation, {encoding: "utf-8"}))
+export async function readSessionTokenInfo() : Promise<SessionTokenInfo> {
+  let sessionInfo: SessionTokenInfo = getConfigCurrentSession() as unknown as SessionTokenInfo; // TODO:: Double check this?
   sessionInfo.expirationDate = new Date(sessionInfo.expirationDate);
   sessionInfo.dpopKey = await fixKeyPairType(sessionInfo.dpopKey);
   return sessionInfo;

@@ -23,6 +23,10 @@ export default async function list(url: string, options: ListingOptions) {
       let resourceInfo = await getResourceInfoFromHeaders(headerInfo.acl, url, options.fetch)
       if(resourceInfo) resourceInfos.push(resourceInfo)
     }
+    if (headerInfo.meta) {
+      let resourceInfo = await getResourceInfoFromHeaders(headerInfo.meta, url, options.fetch)
+      if(resourceInfo) resourceInfos.push(resourceInfo)
+    }
   }
   
   for (let containedResourceUrl of containedResources) {
@@ -35,6 +39,7 @@ export default async function list(url: string, options: ListingOptions) {
         metaResourceInfo = await getResourceInfoFromHeaders(headerInfo.meta, url, options.fetch)
         if(metaResourceInfo) {
           resourceInfo.metadata = metaResourceInfo;
+          resourceInfos.push(metaResourceInfo)
         }
       }
       if (headerInfo.acl) {

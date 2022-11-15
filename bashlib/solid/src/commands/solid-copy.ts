@@ -4,6 +4,8 @@ import { getFile, overwriteFile, getContentType, getContainedResourceUrlAll, get
 import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively, checkRemoteFileExists, writeErrorString } from '../utils/util';
 import Blob = require("fetch-blob")
 import { requestUserCLIConfirmation } from '../utils/userInteractions';
+import BashlibError from '../utils/errors/BashlibError';
+import { BashlibErrorMessage } from '../utils/errors/BashlibError';
 
 const mime = require('mime-types');
 
@@ -171,25 +173,19 @@ async function getLocalSourceFiles(source: srcOptions, verbose: boolean, all: bo
   if (source.isDir) {
     let filePathInfos = readLocalDirectoryRecursively(source.path, undefined, {verbose, all} )
     let files = await Promise.all(filePathInfos.files.map(async fileInfo => {
-      let fileData = await readLocalFile(fileInfo.absolutePath, verbose) 
-      fileInfo.buffer = fileData.buffer
-      fileInfo.contentType = fileData.contentType
+      fileInfo.loadFile = async () => readLocalFile(fileInfo.absolutePath, verbose) 
       return fileInfo
     }))
     let aclfiles = await Promise.all(filePathInfos.aclfiles.map(async fileInfo => {
-      let fileData = await readLocalFile(fileInfo.absolutePath, verbose) 
-      fileInfo.buffer = fileData.buffer
-      fileInfo.contentType = fileData.contentType
+      fileInfo.loadFile = async () => readLocalFile(fileInfo.absolutePath, verbose) 
       return fileInfo
     }))
     return { files, aclfiles, directories: filePathInfos.directories }
   } else {
-    let fileData = await readLocalFile(source.path, verbose) 
     return { files: [ {
       absolutePath: source.path,
       relativePath: '',
-      contentType: fileData.contentType,
-      buffer: fileData.buffer,
+      loadFile: async () => readLocalFile(source.path, verbose)
     } ], aclfiles: [], directories: [] }
   }
 }
@@ -200,39 +196,23 @@ async function getRemoteSourceFiles(source: srcOptions, fetch: Function, verbose
 
     // Filter out files that return errors (e.g no authentication privileges)
     let files = (await Promise.all(discoveredResources.files.map(async fileInfo => {
-      try {
-        const fileData = await readRemoteFile(fileInfo.absolutePath, fetch, verbose) 
-        fileInfo.blob = fileData.blob as any;
-        fileInfo.contentType = fileData.contentType
-        return fileInfo
-      } catch (e) {
-        if (verbose) writeErrorString(`Could not read remote file ${fileInfo.absolutePath}`, e);
-        return null;
-      }
+      fileInfo.loadFile = async () => readRemoteFile(fileInfo.absolutePath, fetch, verbose) 
+      return fileInfo
     }))).filter(f => f) as FileInfo[]
 
     let aclfiles : FileInfo[] = []
     if (all) {
       aclfiles = (await Promise.all(discoveredResources.aclfiles.map(async fileInfo => {
-        try {
-          const fileData = await readRemoteFile(fileInfo.absolutePath, fetch, verbose) 
-          fileInfo.blob = fileData.blob as any;
-          fileInfo.contentType = fileData.contentType
-          return fileInfo
-        } catch (e) {
-          if (verbose) writeErrorString(`Could not read remote file ${fileInfo.absolutePath}`, e);
-          return null;
-        }
+        fileInfo.loadFile = async () => readRemoteFile(fileInfo.absolutePath, fetch, verbose) 
+        return fileInfo
       }))).filter(f => f) as FileInfo[]
     }
     return { files, aclfiles, directories: discoveredResources.directories }
   } else {
-    let fileData = await readRemoteFile(source.path, fetch, verbose) 
     return { files: [ {
       absolutePath: source.path,
       relativePath: '',
-      contentType: fileData.contentType,
-      blob: fileData.blob as any,
+      loadFile: async () => readRemoteFile(source.path, fetch, verbose) 
     }] , aclfiles: [], directories: [] }
   }
 
@@ -245,7 +225,7 @@ function readLocalFile(path: string, verbose: boolean): { buffer: Buffer, conten
   return { buffer: file, contentType };
 }
 
-async function readRemoteFile(path: string, fetch: any, verbose: boolean) : Promise<{ blob: Blob, contentType: string}> {
+async function readRemoteFile(path: string, fetch: any, verbose: boolean) : Promise<{ blob: any, contentType: string}> {
   if (verbose) console.log('Reading remote file:', path)
   const file = await getFile(path, { fetch })
   const contentType = await getContentType(file) as string // TODO:: error handling?
@@ -294,12 +274,14 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options:
     return undefined;
   }
 
-  if (options.verbose) console.log('Writing local file:', resourcePath)
+  if (options.verbose) console.log('processing local file:', resourcePath)
   try {
-    if (fileInfo.buffer) {
-      fs.writeFileSync(resourcePath, fileInfo.buffer)
-    } else if (fileInfo.blob) {
-      let buffer = Buffer.from(await fileInfo.blob.arrayBuffer())
+    if (!fileInfo.loadFile) throw new Error(`Could not load file at location: ${fileInfo.absolutePath}`)
+    let fileData = await fileInfo.loadFile();
+    if (fileData.buffer) {
+      fs.writeFileSync(resourcePath, fileData.buffer)
+    } else if (fileData.blob) {
+      let buffer = Buffer.from(await fileData.blob.arrayBuffer())
       fs.writeFileSync(resourcePath, buffer)
     } else {
       console.error('No content to write for:', resourcePath)
@@ -330,40 +312,43 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
   }
 
   try {
-    if (fileInfo.buffer) {
-      let blob = new Blob([toArrayBuffer(fileInfo.buffer)], {type: fileInfo.contentType})
+    if (!fileInfo.loadFile) throw new Error(`Could not load file at location: ${fileInfo.absolutePath}`)
+    let fileData = await fileInfo.loadFile();
+    if (fileData.buffer) {
+      let blob = new Blob([toArrayBuffer(fileData.buffer)], {type: fileData.contentType})
       let res = await fetch(
         resourcePath, 
         {
           method: 'PUT',
           body: blob,
           headers: { 
-            'Content-Type': fileInfo.contentType
+            'Content-Type': fileData.contentType
           }
 
         }
       )
-      if (!res.ok) throw new Error(`HTTP Error Response requesting ${resourcePath}: ${res.status} ${res.statusText}`);
+      if (!res.ok)
+        throw new BashlibError(BashlibErrorMessage.httpResponseError, resourcePath, `${res.status} ${res.statusText}`)
 
-    } else if (fileInfo.blob) {
+    } else if (fileData.blob) {
       let res = await fetch(
         resourcePath, 
         {
           method: 'PUT',
-          body: fileInfo.blob,
+          body: fileData.blob,
           headers: { 
-            'Content-Type': fileInfo.contentType
+            'Content-Type': fileData.contentType
           }
         }
       )
-      if (!res.ok) throw new Error(`HTTP Error Response requesting ${resourcePath}: ${res.status} ${res.statusText}`);
+      if (!res.ok)
+        throw new BashlibError(BashlibErrorMessage.httpResponseError, resourcePath, `${res.status} ${res.statusText}`)
     } else {
-      if (options.verbose) console.error('No content to write for:', resourcePath)
+      throw new BashlibError(BashlibErrorMessage.cannotWriteResource, resourcePath, "No contents to write")
     }
     return resourcePath;
-  } catch (e:any) {
-    if (options.verbose) writeErrorString(`CouldCould not write file ${resourcePath}`, e);
-    return;
+  } catch (e: any) {
+    throw new BashlibError(BashlibErrorMessage.cannotWriteResource, resourcePath, e.message)
   }
 }
 

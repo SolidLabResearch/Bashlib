@@ -1,44 +1,72 @@
-import { getOIDCConfig, getSessionInfoFromStorage, StorageHandler, OIDCConfig, readSessionTokenInfo, storeSessionTokenInfo, decodeIdToken, writeErrorString } from '../utils/util';
+import { getOIDCConfig, getSessionInfoFromStorage, StorageHandler, OIDCConfig, readSessionTokenInfo, storeSessionTokenInfo, decodeIdToken, writeErrorString } from '../utils/authenticationUtils';
 import { generateDpopKeyPair, KeyPair, createDpopHeader, buildAuthenticatedFetch } from '@inrupt/solid-client-authn-core';
 import formurlencoded from 'form-urlencoded';
 import { Session } from '@inrupt/solid-client-authn-node';
 import open from 'open';
-import fs from 'fs';
 import { SessionInfo, IInteractiveAuthOptions, DEFAULTPORT, APPNAME } from './CreateFetch';
+import { removeConfigSession, getConfigCurrentSession, getConfigCurrentWebID, ISessionEntry, setConfigCurrentWebID, setConfigSession } from '../utils/configoptions';
+import chalk from 'chalk';
+import { getUserIdp } from './authenticate';
+import BashlibError from '../utils/errors/BashlibError';
+import { BashlibErrorMessage } from '../utils/errors/BashlibError';
 
 const nodefetch = require("node-fetch")
 const express = require('express')
-const homedir = require('os').homedir();
-const SOLIDDIR = `${homedir}/.solid/`
-const SESSIONINFOSTORAGELOCATION = `${SOLIDDIR}.session-info-interactive`
 
-export default async function createAuthenticatedSessionInteractive(options: IInteractiveAuthOptions) : Promise<SessionInfo> {
-  let sessionInfoStorageLocation = options?.sessionInfoStorageLocation || SESSIONINFOSTORAGELOCATION;
+export default async function authenticateInteractive(options: IInteractiveAuthOptions) : Promise<SessionInfo> {
 
+  let appName = APPNAME
+  let port = options.port || DEFAULTPORT
+
+  let currentSession = getConfigCurrentSession();
   try {
-    if (fs.existsSync(sessionInfoStorageLocation)) {
-      let sessionInfo = await readSessionTokenInfo(sessionInfoStorageLocation);
-      if (options.idp && (!sessionInfo.idp || sessionInfo.idp !== options.idp )) throw new Error('Falling back on interactive login as stored session idp does not match current value')
+    if (currentSession) {
+      let sessionInfo = await readSessionTokenInfo();
+      if (options.idp && (!sessionInfo.idp || sessionInfo.idp !== options.idp))
+        throw new BashlibError(BashlibErrorMessage.cannotRestoreSession)
       if (sessionInfo) {
         var tokenTimeLeftInSeconds = (sessionInfo.expirationDate.getTime() - new Date().getTime()) / 1000;
         if (tokenTimeLeftInSeconds > 60) {
           // Only reuse previous session tokens if we have enough time to work with, else continue to create a new access token.
           let fetch = await buildAuthenticatedFetch(nodefetch, sessionInfo.accessToken, { dpopKey: sessionInfo.dpopKey });
           let webId = sessionInfo.webId;
+          // fetch = await wrapFetchRefresh(fetch, sessionInfo.expirationDate, webId as string, options.idp as string, appName, port) as any;
           return { fetch, webId }
+        } else { 
+          // remove timed out session
+          let webId = getConfigCurrentWebID();
+          if (webId) { removeConfigSession(webId) }
         }
       }
     }
   } catch (e) {
     if (options?.verbose) writeErrorString('Could not load existing session', e);
   }
-  
-  if (!options.idp) throw new Error('Cannot login: no identity provider value given.')
-  let appName = APPNAME
-  let port = options.port || DEFAULTPORT
+
+
+  // Check for available IDP. If not, require one from the user.
+  if (!options.idp) { 
+    if (currentSession && currentSession.idp) {
+      console.log(`Continue authenticating with ${chalk.bold(currentSession.idp)} ? [Y/n] `);
+      options.idp = await new Promise((resolve, reject) => {
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+        process.stdin.on('data', (chk) => {
+          if (chk.toString('utf8') === "n") {
+            resolve(undefined);
+          } else {
+            resolve((currentSession as ISessionEntry).idp);
+          }
+        });
+      });
+    }
+  }
+
+  if (!options.idp) { options.idp = await getUserIdp() }
+  if (!options.idp) throw new BashlibError(BashlibErrorMessage.noIDPOption)
 
   try {
-    return await createFetchWithNewAccessToken(options.idp, appName, port, sessionInfoStorageLocation)
+    return await createFetchWithNewAccessToken(options.idp, appName, port)
   } catch (e) {
     if (options?.verbose) writeErrorString('Error creating new session', e);
     return { fetch: nodefetch }
@@ -55,7 +83,7 @@ export default async function createAuthenticatedSessionInteractive(options: IIn
  * @param storageLocation 
  * @returns 
  */
-async function createFetchWithNewAccessToken(oidcIssuer: string, appName: string, port: number, sessionInfoStorageLocation: string) : Promise<SessionInfo> {
+async function createFetchWithNewAccessToken(oidcIssuer: string, appName: string, port: number) : Promise<SessionInfo> {
   return new Promise( async (resolve, reject) => {
     const config = await getOIDCConfig(oidcIssuer);
     if (!config) reject(new Error("Could not read oidc config"));
@@ -84,12 +112,15 @@ async function createFetchWithNewAccessToken(oidcIssuer: string, appName: string
     app.get("/", async (_req: any, res: any) => {
       
       const code = new URL(_req.url, redirectUrl).searchParams.get('code');
-      if (!code) throw new Error('No code parameter received in authentication flow.')
+      if (!code) throw new BashlibError(BashlibErrorMessage.authFlowError, undefined, 'Server did not return code.')
       let { accessToken, expirationDate, dpopKey, webId } = await handleIncomingRedirect(oidcIssuer, redirectUrl, code, storage)
-
-
-      storeSessionTokenInfo(sessionInfoStorageLocation, accessToken, dpopKey, expirationDate, webId, oidcIssuer)
+      
+      // Store the session info
+      storeSessionTokenInfo(accessToken, dpopKey, expirationDate, webId, oidcIssuer)
       let fetch = await buildAuthenticatedFetch(nodefetch, accessToken, { dpopKey });
+
+      // Set the current WebID to the current session
+      await setConfigCurrentWebID(webId)
 
       server.close();
       resolve({
@@ -113,7 +144,8 @@ async function handleIncomingRedirect(idp: string, redirectUrl: string, code: st
   let config = await getOIDCConfig(idp)
   let dpopKey = await generateDpopKeyPair();
   let sessionInfo = await getSessionInfoFromStorage(storage);
-  if (!sessionInfo || !sessionInfo.clientId || !sessionInfo.clientSecret || !(sessionInfo as any).codeVerifier) throw new Error('Could not create an authenticated session.')
+  if (!sessionInfo || !sessionInfo.clientId || !sessionInfo.clientSecret || !(sessionInfo as any).codeVerifier)
+    throw new BashlibError(BashlibErrorMessage.cannotCreateSession)
 
   return await requestAccessToken({
     dpopKey,
@@ -160,7 +192,7 @@ async function requestAccessToken(p: {
 
   let json = await response.json()
   if (json.error) {
-    throw new Error(`Could not retrieve access token: ${json.error} - ${json.error_description}`)
+    throw new BashlibError(BashlibErrorMessage.authFlowError, undefined, json.error)
   }
 
   let accessToken = json.access_token;
@@ -170,8 +202,9 @@ async function requestAccessToken(p: {
   let expirationDate = new Date(currentDate.getTime() + (1000 * tokenExpiratationInSeconds))
 
   let idTokenInfo = decodeIdToken(json.id_token);
-  let webId = idTokenInfo.webid;
-  if (!idTokenInfo || !webId) throw new Error('Invalid id token received')
+  let webId = idTokenInfo.webid || idTokenInfo.sub;
+  if (!idTokenInfo || !webId) 
+    throw new BashlibError(BashlibErrorMessage.authFlowError, undefined, 'Cannot retrieve webid from id token.')
 
   return { accessToken, expirationDate, dpopKey: p.dpopKey, webId };
 }

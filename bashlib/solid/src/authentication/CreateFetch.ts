@@ -1,12 +1,11 @@
-import { createAuthenticatedSessionInfoCSSv4 } from "./SessionCreationCSSv4"
-import createAuthenticatedSessionInfoCSSv2 from './SessionCreationCSSv2';
-import createAuthenticatedSessionInteractive from './SessionCreationInteractive';
+import authenticateInteractive from "./AuthenticationInteractive";
+import { authenticateToken } from "./AuthenticationToken";
 
 export const DEFAULTPORT = 3435
 export const APPNAME = "Solid-cli"
 
 export type IInteractiveAuthOptions = {
-  idp: string,
+  idp?: string,
   sessionInfoStorageLocation?: string, // Storage location of session information to reuse in subsequent runs of the application.
   port?: number, // Used for redirect url of Solid login sequence
   verbose?: boolean,
@@ -44,20 +43,14 @@ class SolidFetchBuilder {
   private webId: undefined | string;
   private fetch: undefined | ((input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>);
 
-  buildFromUserCredentials = async (options: IUserCredentialsAuthOptions) => {
-    const sessionInfo = await createAuthenticatedSessionInfoCSSv2(options);
-    this.webId = sessionInfo.webId;
-    this.fetch = sessionInfo.fetch;
-  }
-
   buildFromClientCredentialsToken = async (options: IClientCredentialsTokenAuthOptions) => {
-    const sessionInfo = await createAuthenticatedSessionInfoCSSv4(options);
+    const sessionInfo = await authenticateToken(options);
     this.webId = sessionInfo.webId;
     this.fetch = sessionInfo.fetch;
   }
 
   buildInteractive = async (options: IInteractiveAuthOptions) => {
-    const sessionInfo = await createAuthenticatedSessionInteractive(options);
+    const sessionInfo = await authenticateInteractive(options);
     this.webId = sessionInfo.webId;
     this.fetch = sessionInfo.fetch;
   }

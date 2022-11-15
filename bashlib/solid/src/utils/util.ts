@@ -1,15 +1,20 @@
 import { getSolidDataset, getContainedResourceUrlAll, getUrl, getUrlAll, getThing, getThingAll, getDatetime, getInteger, SolidDataset } from '@inrupt/solid-client';
-import chalk from 'chalk';
-import { resolve } from 'path';
 const fs = require('fs')
 const path = require('path')
 var LinkHeader = require( 'http-link-header' )
-var Queue = require('tiny-queue');
 
 export type DirInfo = {
   files: FileInfo[], 
   directories: FileInfo[], 
   aclfiles: FileInfo[]
+}
+
+interface FileLoadingFunction {
+  (): Promise< {
+    buffer?: Buffer;
+    blob?: Blob;
+    contentType: string;
+  }>
 }
 
 export type FileInfo = { 
@@ -18,7 +23,8 @@ export type FileInfo = {
   directory?: string, 
   contentType?: string,
   buffer?: Buffer,
-  blob?: Blob
+  blob?: Blob,
+  loadFile?: FileLoadingFunction
 }
 
 export type ResourceInfo = {
@@ -57,21 +63,46 @@ export function fixLocalPath(filePath: string) {
 }
 
 export async function getPodRoot(url: string, fetch: Function): Promise<string | null> {
-  let splitUrl = url.split('/')
-  for (let index = splitUrl.length-1; index > 2; --index) {
-    let currentUrl = splitUrl.slice(0, index).join('/') + '/'
-    let res = await fetch(currentUrl)
-    if (!res.ok) throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`);
-    let linkHeaders = res.headers.get('Link')
-    if (!linkHeaders) return null;
+  // TODO:: MAKE MORE ROBUST
+
+  // Check current resource header
+  let res = await fetch(url, {method: "HEAD"})
+
+  if (!res.ok) return null // throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`);
+  let linkHeaders;
+  if (res.ok) linkHeaders = res.headers.get('Link')
+  if (linkHeaders) { 
     let headers = LinkHeader.parse(linkHeaders)
     for (let header of headers.refs) {
       if (header.uri === 'http://www.w3.org/ns/pim/space#Storage' && header.rel === 'type') {
-        return currentUrl.endsWith('/') ? currentUrl : currentUrl + '/';
+        return url.endsWith('/') ? url : url + '/';
       }
     }
   }
-  return null;
+
+  // Check current resource for link
+  try {
+    let ds = await getSolidDataset(url)
+    let thing = ds && getThing(ds, url)
+    let storageUrl = thing && getUrl(thing, 'http://www.w3.org/ns/pim/space#storage')
+    if (storageUrl) return storageUrl;
+  } catch (_ignored) { }
+
+  let splitUrl = url.split('/')
+  let index = url.endsWith('/') ? splitUrl.length - 2 : splitUrl.length - 1
+  let nextUrl = splitUrl.slice(0, index).join('/') + '/'
+  
+  return getPodRoot(nextUrl, fetch)
+}
+
+export async function getWebIDIdentityProvider(webId: string) { 
+   // TODO:: MAKE SPEC COMPLIANT AND MORE FALLBACKS N STUFF
+  let ds = await getSolidDataset(webId);
+  if (!ds) return null;
+  let thing = await getThing(ds, webId);
+  if (!thing) return null;
+  let idp = getUrl(thing, "http://www.w3.org/ns/solid/terms#oidcIssuer")
+  return idp;
 }
 
 export async function getInbox(webId: string, fetch: Function) : Promise<string | null> {
