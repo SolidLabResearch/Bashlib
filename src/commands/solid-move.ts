@@ -3,7 +3,7 @@ import { isDirectory, isRemote } from '../utils/util';
 import remove from './solid-remove';
 
 export type MoveOptions = {
-  fetch: any
+  fetch: any,
   all: boolean,
   verbose: boolean,
 }

@@ -1,18 +1,3 @@
-# Bashlib-solid
-The Bashlib-solid library provides a set of functions for interacting with Solid environments from Node.JS and the CLI. The aim is to provide shell-like functionality to facility the use of and development for the Solid ecosystem with a low requirement of specific knowledge of Solid and LDP.
-This library makes heavy use of the [Developer tools by inrupt for Solid](https://docs.inrupt.com/developer-tools/javascript/client-libraries/using-libraries/).
-
-*note: `Access Control Policies (ACP)` files `(.acp)`, used by the Enterprised Solid Server and on the Inrupt Pod Spaces, are not supported by this lib! Only `Web Access Controls (WAC)` files `(.acl)` are supported.
-
-## Installing
-Navigate to the `bashlib/solid` folder and run the following command
-```
-npm run build;
-```
-
-## Usage
-The developed functionality can be accessed from both the **[CLI](#cli)**, as well as in **[Node.js](#nodejs)**
-
 
 ## CLI
 All available commands are presented through the CLI interface found in `bin/solid.js`

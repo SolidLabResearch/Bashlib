@@ -13,3 +13,9 @@
 - [ ] Write concrete test cases and spin up local pod server to test
 - [ ] RELEASE ON NPM!
 
+
+
+- [ ] Fix return type for copy to void
+- [ ] Fix src - source mismatch between copy and move
+- [ ] add noOverride interaciveOverride options for move funtion
+- [ ] 

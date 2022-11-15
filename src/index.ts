@@ -5,7 +5,7 @@ import move from "./commands/solid-move"
 import find from "./commands/solid-find"
 import query from './commands/solid-query'
 import makeDirectory from "./commands/solid-mkdir"
-import shell from "./commands/solid-shell"
+// import shell from "./commands/solid-shell"
 import { listPermissions, changePermissions, deletePermissions } from './commands/solid-perms'
 
 export { copy, list, remove, move, find, query, listPermissions, changePermissions, deletePermissions, makeDirectory, shell }

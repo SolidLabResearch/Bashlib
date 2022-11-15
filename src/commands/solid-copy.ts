@@ -22,8 +22,8 @@ type CopyOptions = {
   fetch: Function,
   verbose?: boolean,
   all?: boolean,
-  interactiveOverride?: boolean,
-  noOverride?: boolean,
+  interactiveOverwrite?: boolean,
+  noOverwrite?: boolean,
 }
 
 export default async function copy(src: string, dst: string, options: CopyOptions) : Promise<{
@@ -33,8 +33,8 @@ export default async function copy(src: string, dst: string, options: CopyOption
   let fetch = options.fetch;
   options.verbose = options.verbose || false;
   options.all = options.all || false;
-  options.interactiveOverride = options.interactiveOverride || false;
-  options.noOverride = options.noOverride || false;
+  options.interactiveOverwrite = options.interactiveOverwrite || false;
+  options.noOverwrite = options.noOverwrite || false;
   
   /*********************
    * Processing Source *
@@ -260,11 +260,11 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options:
   }
 
   let executeWrite = true
-  if (options.interactiveOverride || options.noOverride) {
+  if (options.interactiveOverwrite || options.noOverwrite) {
     if (fs.existsSync(resourcePath)) { 
-      if (options.noOverride) {
+      if (options.noOverwrite) {
         executeWrite = false;
-      } else if (options.interactiveOverride) { 
+      } else if (options.interactiveOverwrite) { 
         executeWrite = await requestUserCLIConfirmation(`Overwrite local file: ${resourcePath}`)
       }
     }
@@ -297,11 +297,11 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
   resourcePath = resourcePath.split('$.')[0];
 
   let executeWrite = true
-  if (options.interactiveOverride || options.noOverride) {
+  if (options.interactiveOverwrite || options.noOverwrite) {
     if (fs.existsSync(resourcePath)) { 
-      if (options.noOverride) {
+      if (options.noOverwrite) {
         executeWrite = false;
-      } else if (options.interactiveOverride) { 
+      } else if (options.interactiveOverwrite) { 
         executeWrite = await requestUserCLIConfirmation(`Overwrite local file: ${resourcePath}`)
       }
     }
