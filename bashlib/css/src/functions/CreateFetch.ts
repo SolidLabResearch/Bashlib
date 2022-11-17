@@ -36,13 +36,13 @@ export type IClientCredentialsTokenGenerationOptions = {
 }
 
 export type SessionInfo = {
-  fetch: (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
+  fetch: typeof fetch
   webId?: string
 }
 
 class SolidFetchBuilder {
   private webId: undefined | string;
-  private fetch: undefined | ((input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>);
+  private fetch: undefined | typeof fetch;
 
   buildFromUserCredentials = async (options: IUserCredentialsAuthOptions) => {
     const sessionInfo = await createAuthenticatedSessionInfoCSSv2(options);
