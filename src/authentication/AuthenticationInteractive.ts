@@ -106,26 +106,32 @@ async function createFetchWithNewAccessToken(oidcIssuer: string, appName: string
         tokenType: "DPoP" as "DPoP", // typescript fix
         handleRedirect,
       };
-      await session.login(loginOptions)
+      try {
+        await session.login(loginOptions)
+      } catch (e) {
+        reject (e)
+      }
     });
     
     app.get("/", async (_req: any, res: any) => {
-      
-      const code = new URL(_req.url, redirectUrl).searchParams.get('code');
-      if (!code) throw new BashlibError(BashlibErrorMessage.authFlowError, undefined, 'Server did not return code.')
-      let { accessToken, expirationDate, dpopKey, webId } = await handleIncomingRedirect(oidcIssuer, redirectUrl, code, storage)
-      
-      // Store the session info
-      storeSessionTokenInfo(accessToken, dpopKey, expirationDate, webId, oidcIssuer)
-      let fetch = await buildAuthenticatedFetch(nodefetch, accessToken, { dpopKey });
+      try {
+        const code = new URL(_req.url, redirectUrl).searchParams.get('code');
+        if (!code) throw new BashlibError(BashlibErrorMessage.authFlowError, undefined, 'Server did not return code.')
+        let { accessToken, expirationDate, dpopKey, webId } = await handleIncomingRedirect(oidcIssuer, redirectUrl, code, storage)
+        
+        // Store the session info
+        storeSessionTokenInfo(accessToken, dpopKey, expirationDate, webId, oidcIssuer)
+        let fetch = await buildAuthenticatedFetch(nodefetch, accessToken, { dpopKey });
 
-      // Set the current WebID to the current session
-      await setConfigCurrentWebID(webId)
-
-      server.close();
-      resolve({
-        fetch, webId
-      })
+        // Set the current WebID to the current session
+        await setConfigCurrentWebID(webId)
+        server.close();
+        resolve({
+          fetch, webId
+        })
+      } catch (e) {
+        reject(new Error('Error authenticating with received token. Please double check your system clock is synced correctly.'))
+      }
     });
   })
 }

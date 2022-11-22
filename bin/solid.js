@@ -8,7 +8,7 @@ const initConfig = require('../dist/utils/configoptions').initializeConfig
 // Fix for console error in Inrupt lib.
 let consoleErrorFunction = console.error;
 console.error = function(errorString){
-  if (!errorString.includes('DraftWarning') && !errorString.includes('ExperimentalWarning')) {
+  if (errorString && !errorString.includes('DraftWarning') && !errorString.includes('ExperimentalWarning')) {
     consoleErrorFunction(errorString)
   }
 };

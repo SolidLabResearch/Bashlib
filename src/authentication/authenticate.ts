@@ -18,7 +18,6 @@ export type ILoginOptions = {
 
 
 export default async function authenticate(options: ILoginOptions): Promise<{ fetch: any, webId?: string }> {
-
   let builder = new SolidFetchBuilder;
 
   options.idp = options.idp || options.identityprovider; // TODO:: make this not necessary :p
@@ -49,7 +48,7 @@ export default async function authenticate(options: ILoginOptions): Promise<{ fe
 
   let sessionInfo = builder.getSessionInfo();
   if (!sessionInfo || !sessionInfo.fetch) {
-    if (options.verbose) console.error('Continuing unauthenticated')
+    console.error('Continuing unauthenticated')
     return { fetch: nodeFetch }
   } else {
     return sessionInfo
