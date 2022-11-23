@@ -59,7 +59,7 @@ export default async function authenticate(options: ILoginOptions): Promise<{ fe
 async function queryUserAuthentication(options: ILoginOptions) { 
   let currentWebID = getConfigCurrentWebID();
   if (!currentWebID && !options.idp) { 
-    // Ask the user if they want to authenticate. If not, use node-fetch, else give them a prompt to provide an idp
+    // Ask the user if they want to authenticate. If not, use cross-fetch, else give them a prompt to provide an idp
     console.log(`Do you want to authenticate the current request? [y, N] `);
     let userWantsToAuthenticate = await new Promise((resolve, reject) => {
       process.stdin.setRawMode(true);

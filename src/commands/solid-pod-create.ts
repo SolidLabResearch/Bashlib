@@ -1,5 +1,4 @@
-// import * as fetch from "node-fetch";
-const fetch = require('node-fetch')
+import fetch from 'cross-fetch';
 
 export type AccountData = {
   name: string,
