@@ -8,7 +8,7 @@ import { setConfigSession, getConfigCurrentSession } from './configoptions';
 const nodefetch = require('node-fetch')
 
 export type SessionInfo = {
-  fetch: (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
+  fetch: typeof fetch
   webId?: string
 }
 
