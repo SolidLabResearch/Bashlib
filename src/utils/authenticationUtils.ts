@@ -5,7 +5,7 @@ import { KeyLike, JWK, importJWK, exportJWK } from 'jose';
 import jwt_decode from 'jwt-decode';
 import { randomUUID } from 'crypto';
 import { setConfigSession, getConfigCurrentSession } from './configoptions';
-const nodefetch = require('node-fetch')
+import crossfetch from 'cross-fetch';
 
 export type SessionInfo = {
   fetch: (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
@@ -51,7 +51,7 @@ export async function getOIDCConfig(idp: string): Promise<OIDCConfig> {
   try {
     idp = idp.endsWith('/') ? idp : idp + '/';
     let oidclocation = idp + '.well-known/openid-configuration'
-    let res = await nodefetch(oidclocation)
+    let res = await crossfetch(oidclocation)
     if (!res.ok) throw new Error(`HTTP Error Response requesting ${oidclocation}: ${res.status} ${res.statusText}`);
     let json = await res.json();
     return json;

@@ -5,12 +5,7 @@ import { getConfigCurrentToken, getConfigCurrentSession } from '../utils/configo
 import { IClientCredentialsTokenAuthOptions, SessionInfo } from './CreateFetch';
 import BashlibError from '../utils/errors/BashlibError';
 import { BashlibErrorMessage } from '../utils/errors/BashlibError';
-
-const nodefetch = require('node-fetch')
-const fs = require('fs')
-
-
-
+import crossfetch from 'cross-fetch';
 
 export async function authenticateToken(options?: IClientCredentialsTokenAuthOptions) : Promise<SessionInfo>{
 
@@ -24,7 +19,7 @@ export async function authenticateToken(options?: IClientCredentialsTokenAuthOpt
         var tokenTimeLeftInSeconds = (sessionInfo.expirationDate.getTime() - new Date().getTime()) / 1000;
         if (tokenTimeLeftInSeconds > 60) {
           // Only reuse previous session tokens if we have enough time to work with, else continue to create a new access token.
-          let fetch = await buildAuthenticatedFetch(nodefetch, sessionInfo.accessToken, { dpopKey: sessionInfo.dpopKey });
+          let fetch = await buildAuthenticatedFetch(crossfetch, sessionInfo.accessToken, { dpopKey: sessionInfo.dpopKey });
           let webId = sessionInfo.webId;
           return { fetch, webId }
         }
@@ -37,7 +32,7 @@ export async function authenticateToken(options?: IClientCredentialsTokenAuthOpt
     return createFetchWithNewAccessToken(options);
   } catch (e) {
     if (options?.verbose) writeErrorString('Could not create new session', e);
-    return { fetch: nodefetch}
+    return { fetch: crossfetch}
   }
 }
 
@@ -59,7 +54,7 @@ async function createFetchWithNewAccessToken(options?: IClientCredentialsTokenAu
   let { accessToken, expirationDate, webId } = await requestAccessToken(id, secret, dpopKey, options);
 
   await storeSessionTokenInfo(accessToken, dpopKey, expirationDate, webId, idp)
-  let fetch = await buildAuthenticatedFetch(nodefetch, accessToken, { dpopKey });
+  let fetch = await buildAuthenticatedFetch(crossfetch, accessToken, { dpopKey });
 
   return { fetch, webId }
 }
