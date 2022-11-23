@@ -15,4 +15,6 @@ import TreeCommand from './commands/tree';
 import ExitCommand from './commands/exit';
 import AuthCommand from './commands/auth';
 
-export { FetchCommand, ListCommand, CopyCommand, MoveCommand, RemoveCommand, FindCommand, QueryCommand, EditCommand, MkdirCommand, PermsCommand, ShellCommand, TouchCommand, TreeCommand, ExitCommand, ChangedirectoryCommand, AuthCommand }
+import CreatePodCommand from './commands/css-specific/create-pod';
+
+export { FetchCommand, ListCommand, CopyCommand, MoveCommand, RemoveCommand, FindCommand, QueryCommand, EditCommand, MkdirCommand, PermsCommand, ShellCommand, TouchCommand, TreeCommand, ExitCommand, ChangedirectoryCommand, AuthCommand, CreatePodCommand }
