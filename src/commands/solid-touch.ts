@@ -18,6 +18,10 @@ export default async function touch(url: string, options: any) {
         let path = url.replace(/.*\//,'')
         let contentType = path.endsWith('.acl') || path.endsWith('.meta') ? 'text/turtle' : mime.lookup(path)
 
+        if (!contentType) {
+            throw new Error('Could not discover content type for the touched resource. Please add a file extension to the touched resource.')
+        }
+
         let res = await fetch(
             url, 
             {
