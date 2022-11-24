@@ -26,7 +26,11 @@ export default class AuthCommand extends SolidCommand {
       .action(async (options: any) => { 
         try {
           await showAuthenticationOption(options)
-        } catch (e) { writeErrorString('Could not show current authentication info', e) }
+        } catch (e) { 
+          writeErrorString('Could not show current authentication info', e)
+          if (this.mayExit) process.exit(1)
+        }
+        if (this.mayExit) process.exit(0)
       })
     
     authcommand
@@ -36,7 +40,11 @@ export default class AuthCommand extends SolidCommand {
       .action(async (options: any) => { 
         try {
           await listAuthenticationOptions(options)
-        } catch (e) { writeErrorString('Could not list authentication options', e) }
+        } catch (e) { 
+          writeErrorString('Could not list authentication options', e) 
+          if (this.mayExit) process.exit(1)
+        }
+      if (this.mayExit) process.exit(0)
       })
     
     authcommand
@@ -47,7 +55,11 @@ export default class AuthCommand extends SolidCommand {
         options.webid = webid;
         try {
           await setAuthenticationOption(options)
-        } catch (e) { writeErrorString('Could not set authentication option', e) }
+        } catch (e) { 
+          writeErrorString('Could not set authentication option', e) 
+          if (this.mayExit) process.exit(1)
+        }
+        if (this.mayExit) process.exit(0)
       })
     
     authcommand
@@ -58,7 +70,11 @@ export default class AuthCommand extends SolidCommand {
         options.webid = webid;
         try {
           await removeAuthenticationOption(options)
-        } catch (e) { writeErrorString('Could not clear authentication option(s)', e) }
+        } catch (e) { 
+          writeErrorString('Could not clear authentication option(s)', e) 
+          if (this.mayExit) process.exit(1)
+        }
+        if (this.mayExit) process.exit(0)
       })
 
       authcommand
@@ -67,7 +83,11 @@ export default class AuthCommand extends SolidCommand {
         .action(async (options: any) => { 
           try {
             await clearAuthenticationOption()
-          } catch (e) { writeErrorString('Could not clear authentication option(s)', e) }
+          } catch (e) { 
+            writeErrorString('Could not clear authentication option(s)', e) 
+            if (this.mayExit) process.exit(1)
+          }
+          if (this.mayExit) process.exit(0)
         })
     
     authcommand
@@ -81,7 +101,11 @@ export default class AuthCommand extends SolidCommand {
       .action(async (options) => {
         try {
           await createAuthenticationTokenCSS(options)
-        } catch (e) { writeErrorString('Could not create authentication token', e) }
+        } catch (e) { 
+          writeErrorString('Could not create authentication token', e) 
+          if (this.mayExit) process.exit(1)
+        }
+        if (this.mayExit) process.exit(0)
       })
     
     return program
