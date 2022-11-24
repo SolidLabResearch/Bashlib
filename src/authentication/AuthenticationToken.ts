@@ -10,6 +10,22 @@ const nodefetch = require('node-fetch')
 const fs = require('fs')
 
 
+export async function authenticateWithTokenFromJavascript(token: {id: string, secret: string}, idp: string) : Promise<SessionInfo>{
+  if (!token) throw new BashlibError(BashlibErrorMessage.noValidToken)
+  let id = token.id;
+  let secret = (token as any).secret;
+  if (!id || !secret) throw new BashlibError(BashlibErrorMessage.noValidToken)
+  
+  // A key pair is needed for encryption.
+  // This function from `solid-client-authn` generates such a pair for you.
+  const dpopKey = await generateDpopKeyPair();
+
+  let { accessToken, expirationDate, webId } = await requestAccessToken(id, secret, dpopKey, { idp });
+
+  let fetch = await buildAuthenticatedFetch(nodefetch, accessToken, { dpopKey });
+
+  return { fetch, webId }
+}
 
 
 export async function authenticateToken(options?: IClientCredentialsTokenAuthOptions) : Promise<SessionInfo>{
