@@ -107,3 +107,9 @@ The [perms](/bashlib/solid#perms) function provides functionality for the listin
 #### [Edit](/bashlib/solid#edit)
 The [edit](/bashlib/solid#edit) function is only available on the CLI interface! 
 It can be used to fetch a remote resource, edit it locally in your editor, and put the result back on the resource location.
+
+## Contributors: how to release
+
+This repo uses [release-it](https://www.npmjs.com/package/release-it) to manage SemVer version numbers, create GitHub releases and publish to npm.
+
+Run `npm run release` and follow the intructions on the CLI. Don't forget to create a [personal access token](https://github.com/settings/tokens) and expose it through the `GITHUB_TOKEN` environment variable, or the github release won't work. For more information, visit the `release-it` docs.
