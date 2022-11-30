@@ -1,7 +1,7 @@
 # Bashlib
 This repository contains a suite of functionality to facilitate use and development for Solid, mainly focused on supporting the [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer).
 The **[Bashlib-css](/bashlib/css)** library provides functionality for pod-creation and authentication options that are mostly restricted in compatilibty with the [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer).
-The **[Bashlib-solid](/bashlib/solid)** library provides functionality to interact with Solid environments from Node.JS and the CLI, providing shell-like functionality to facilitate the use of and development for Solid for people without knowledge of Solid or LDP.
+The **[Bashlib-solid](/bashlib/solid)** library provides functionality to interact with Solid environments from Node.JS and the CLI, providing shell-like functionality to facilitate the use of and development for Solid for people without knowledge of Solid or Linked Data Platform (LDP).
 
 
 ## Setup
@@ -15,7 +15,7 @@ bash setup.sh
 <hr>
 
 ## Tutorial
-A tutorial for the CLI interface for Bashlib can be found [here](https://github.com/SolidLabResearch/Bashlib/blob/master/Tutorial-cli.md).
+A tutorial for the CLI interface for Bashlib can be found [here](Tutorial-cli.md).
 
 
 <hr>

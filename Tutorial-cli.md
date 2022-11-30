@@ -7,7 +7,7 @@ This tutorial only regards the CLI interface of the Bashlib library. For the Nod
 All aliases are calculated from the root of the cloned bashlib repo.
   - bashlib-css  - `alias bashlib-css="node bashlib/css/bin/css.js"`
   - bashlib-solid  - `alias bashlib-solid="node bashlib/solid/bin/solid.js"`
-  - bashlib-auth - `alias bashlib-auth="node bashlib/solid/bin/solid.js --auth interactive --idp <your pod identity provider>"`
+  - bashlib-auth - `alias bashlib-auth="node bashlib/solid/bin/solid.js --auth token -t .tokens/.bobs-auth-token"`
 Feel free to use a different authentication scheme for the `bashlib-auth` alias.
 
 
@@ -101,9 +101,9 @@ e.g.
 ? User email              bob@test.edu
 ? User password           bobIsTheBest123 
 ```
-This will result in the message that a pod for bob has been created succesfully on [http://localhost:3000/Bob/profile/card#me](http://localhost:3000/Bob/profile/card#me). If you navigate to this URL, you can now see the profile document of the newly created Solid account on the newly created Solid pod.
+This will result in the message that a pod for bob has been created succesfully on [http://localhost:3000/bob/profile/card#me](http://localhost:3000/bob/profile/card#me). If you navigate to this URL, you can now see the profile document of the newly created Solid account on the newly created Solid pod.
 
-If you do not want an interactive promt, you can use the command with all options enabled 
+If you do not want an interactive prompt, you can use the command with all options enabled 
 ```
 bashlib-css create-pod -b "http://localhost:3000/" -n Carol -e carol@test.edu -p carolIsTheBest123
 ```
@@ -193,7 +193,7 @@ We can now use the authenticated fetch command on private resources:
 *compatbility: all*
 
 Finally, you can just make use of the library without authenticating yourself.
-This is de the default option when no auth option is specified.
+This is the default option when no auth option is specified.
 ```
  bashlib-solid --auth none  <command> [options]
 ```
@@ -296,7 +296,7 @@ Notes:
 
 #### move / mv
 The `move` or `mv` command moves resources between different locations on a data pod or between data pods. It is equal to a `cp` operation followed by a `rm` operation on the source. 
-**Make sure that the correct permissions are set to read and remove the source resources, and write to the desintation resources.**
+**Make sure that the correct permissions are set to read and remove the source resources, and write to the destination resources.**
 
 In the last section, we made a `contacts.ttl` resource in our `base:/test/` container. 
 We can now move the test resource we just made as a demonstration:
@@ -351,7 +351,7 @@ This command looks to match all found files in the `base:` container with the gi
 We use the `--full` flag to match with and display the full url of the found resources.
 
 #### query
-The `query` command is a convenience command that lets the user query all files in a given container based on a given SPARQL query.
+The `query` command is a convenience command that lets the user query one file or all files in a container based on a given SPARQL query.
 
 To return all triples from our WebID, we can use the following command:
 ```
@@ -377,7 +377,7 @@ The `perms` command provides three operations to list, edit and delete permissio
 
 To list the permissions of your profile resource, we can use the following command:
 ```
-bashlib-auth perms list webid:https://github.com/CommunitySolidServer/CommunitySolidServer
+bashlib-auth perms list webid:
 ```
 Here, we see the permissions written out for all agents, groups and the public for the given resource.
 This also works for containers. The following command prints the permissions of the pod root in a table format:
@@ -474,7 +474,7 @@ For all examples, we will make use of the following aliases:
 
 - bashlib-css - `alias bashlib-css="node bashlib/css/bin/css.js"`
 - bashlib-solid - `alias bashlib-auth="node bashlib/solid/bin/solid.js"`
-- bashlib-auth - `alias bashlib-auth="node bashlib/solid/bin/solid.js" --auth <your_preferred_auth_option`
+- bashlib-auth - `alias bashlib-auth="node bashlib/solid/bin/solid.js" --auth <your_preferred_auth_option>`
 
 
 ### Creating a new pod and authentication token 
