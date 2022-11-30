@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf dist/ && tsc"
+    "build": "rm -rf dist/ && tsc",
+    "release": "release-it"
   },
   "author": "",
   "license": "ISC",
@@ -40,6 +41,7 @@
     "@types/crypto-js": "^4.1.1",
     "@types/inquirer": "^8.2.1",
     "@types/set-cookie-parser": "^2.4.2",
+    "release-it": "^15.5.0",
     "typescript": "^4.9.3"
   }
 }
