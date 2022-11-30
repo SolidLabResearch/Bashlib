@@ -7,12 +7,12 @@ import BashlibError from '../utils/errors/BashlibError';
 import { BashlibErrorMessage } from '../utils/errors/BashlibError';
 import crossfetch from 'cross-fetch';
 
-export async function authenticateWithTokenFromJavascript(token: {id: string, secret: string}, idp: string) : Promise<SessionInfo>{
+export async function authenticateWithTokenFromJavascript(token: { id: string, secret: string }, idp: string): Promise<SessionInfo> {
   if (!token) throw new BashlibError(BashlibErrorMessage.noValidToken)
   let id = token.id;
   let secret = (token as any).secret;
   if (!id || !secret) throw new BashlibError(BashlibErrorMessage.noValidToken)
-  
+
   // A key pair is needed for encryption.
   // This function from `solid-client-authn` generates such a pair for you.
   const dpopKey = await generateDpopKeyPair();
@@ -24,7 +24,7 @@ export async function authenticateWithTokenFromJavascript(token: {id: string, se
   return { fetch, webId }
 }
 
-export async function authenticateToken(options?: IClientCredentialsTokenAuthOptions) : Promise<SessionInfo>{
+export async function authenticateToken(options?: IClientCredentialsTokenAuthOptions): Promise<SessionInfo> {
 
   let session = getConfigCurrentSession();
   let token = getConfigCurrentToken();
@@ -49,23 +49,23 @@ export async function authenticateToken(options?: IClientCredentialsTokenAuthOpt
     return createFetchWithNewAccessToken(options);
   } catch (e) {
     if (options?.verbose) writeErrorString('Could not create new session', e);
-    return { fetch: crossfetch}
+    return { fetch: crossfetch }
   }
 }
 
-async function createFetchWithNewAccessToken(options?: IClientCredentialsTokenAuthOptions): Promise<SessionInfo>{
+async function createFetchWithNewAccessToken(options?: IClientCredentialsTokenAuthOptions): Promise<SessionInfo> {
   let token = getConfigCurrentToken();
   if (!token) throw new BashlibError(BashlibErrorMessage.noValidToken)
   let id = token.id;
   let secret = (token as any).secret;
   let idp = token.idp; // We stored this cheekily in the token file
   if (!id || !secret) throw new BashlibError(BashlibErrorMessage.noValidToken)
-  
+
   // A key pair is needed for encryption.
   // This function from `solid-client-authn` generates such a pair for you.
   const dpopKey = await generateDpopKeyPair();
 
-  if (!options) { options = { idp }}
+  if (!options) { options = { idp } }
   else if (!options.idp) options.idp = idp;
 
   let { accessToken, expirationDate, webId } = await requestAccessToken(id, secret, dpopKey, options);
@@ -100,7 +100,7 @@ export async function requestAccessToken(id: string, secret: string, dpopKey: Ke
     },
     body: 'grant_type=client_credentials&scope=webid',
   });
-  if (!response.ok) 
+  if (!response.ok)
     throw new BashlibError(BashlibErrorMessage.httpResponseError, tokenUrl, `${response.status} ${response.statusText}`)
 
   // This is the Access token that will be used to do an authenticated request to the server.
@@ -109,7 +109,7 @@ export async function requestAccessToken(id: string, secret: string, dpopKey: Ke
   let json = await response.json();
   let accessToken = json.access_token;
   let tokenExpiratationInSeconds = json.expires_in;
-  
+
   let currentDate = new Date();
   let expirationDate = new Date(currentDate.getTime() + (1000 * tokenExpiratationInSeconds))
 
@@ -117,6 +117,6 @@ export async function requestAccessToken(id: string, secret: string, dpopKey: Ke
   let webId = idTokenInfo.webid;
   if (!idTokenInfo || !webId)
     throw new BashlibError(BashlibErrorMessage.authFlowError, undefined, 'Invalid id token received')
-  
-  return { accessToken, expirationDate, webId } ;
+
+  return { accessToken, expirationDate, webId };
 }
