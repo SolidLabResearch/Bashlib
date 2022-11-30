@@ -22,6 +22,7 @@
     "cli-table": "^0.3.11",
     "commander": "^9.0.0",
     "cookie-session": "^2.0.0",
+    "cross-fetch": "^3.1.5",
     "express": "^4.17.3",
     "form-urlencoded": "^6.0.6",
     "getmac": "^5.20.0",
@@ -31,7 +32,6 @@
     "jwt-decode": "^3.1.2",
     "md5": "^2.3.0",
     "mime-types": "^2.1.35",
-    "node-fetch": "^2.6.7",
     "open": "^8.4.0",
     "set-cookie-parser": "^2.4.8",
     "tiny-queue": "^0.2.1"

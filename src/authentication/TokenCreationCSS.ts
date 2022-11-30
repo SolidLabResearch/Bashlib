@@ -18,7 +18,7 @@ export type CSSToken = {
   email: string,
 }
 
-const nodefetch = require('node-fetch')
+import crossfetch from 'cross-fetch';
 
 export async function generateCSSToken(options: IClientCredentialsTokenGenerationOptions) {
   
@@ -28,7 +28,7 @@ export async function generateCSSToken(options: IClientCredentialsTokenGeneratio
   // This URL can also be found by checking the controls in JSON responses when interacting with the IDP API,
   // as described in the Identity Provider section.
   let url = `${options.idp}idp/credentials/`
-  const response = await nodefetch(url, {
+  const response = await crossfetch(url, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     // The email/password fields are those of your account.

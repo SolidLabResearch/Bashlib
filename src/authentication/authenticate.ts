@@ -2,7 +2,7 @@ import SolidFetchBuilder from './CreateFetch';
 import { getWebIDIdentityProvider, writeErrorString } from '../utils/util';
 import inquirer from 'inquirer';
 import { getConfigCurrentWebID, getConfigCurrentToken } from '../utils/configoptions';
-const nodeFetch = require('node-fetch')
+import crossfetch from 'cross-fetch';
 
 export type ILoginOptions = {
   auth?: string,
@@ -28,7 +28,7 @@ export default async function authenticate(options: ILoginOptions): Promise<{ fe
   else if (getConfigCurrentWebID() || options.idp) authType = 'interactive'
 
   if (authType === 'none') {
-    return { fetch: nodeFetch }
+    return { fetch: crossfetch }
 
   } else if (authType === 'token') {
     try {
@@ -49,7 +49,7 @@ export default async function authenticate(options: ILoginOptions): Promise<{ fe
   let sessionInfo = builder.getSessionInfo();
   if (!sessionInfo || !sessionInfo.fetch) {
     console.error('Continuing unauthenticated')
-    return { fetch: nodeFetch }
+    return { fetch: crossfetch }
   } else {
     return sessionInfo
   }
@@ -59,7 +59,7 @@ export default async function authenticate(options: ILoginOptions): Promise<{ fe
 async function queryUserAuthentication(options: ILoginOptions) { 
   let currentWebID = getConfigCurrentWebID();
   if (!currentWebID && !options.idp) { 
-    // Ask the user if they want to authenticate. If not, use node-fetch, else give them a prompt to provide an idp
+    // Ask the user if they want to authenticate. If not, use cross-fetch, else give them a prompt to provide an idp
     console.log(`Do you want to authenticate the current request? [y, N] `);
     let userWantsToAuthenticate = await new Promise((resolve, reject) => {
       process.stdin.setRawMode(true);

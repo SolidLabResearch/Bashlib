@@ -9,8 +9,8 @@ import chalk from 'chalk';
 import { getUserIdp } from './authenticate';
 import BashlibError from '../utils/errors/BashlibError';
 import { BashlibErrorMessage } from '../utils/errors/BashlibError';
+import crossfetch from 'cross-fetch';
 
-const nodefetch = require("node-fetch")
 const express = require('express')
 
 export default async function authenticateInteractive(options: IInteractiveAuthOptions) : Promise<SessionInfo> {
@@ -28,7 +28,7 @@ export default async function authenticateInteractive(options: IInteractiveAuthO
         var tokenTimeLeftInSeconds = (sessionInfo.expirationDate.getTime() - new Date().getTime()) / 1000;
         if (tokenTimeLeftInSeconds > 60) {
           // Only reuse previous session tokens if we have enough time to work with, else continue to create a new access token.
-          let fetch = await buildAuthenticatedFetch(nodefetch, sessionInfo.accessToken, { dpopKey: sessionInfo.dpopKey });
+          let fetch = await buildAuthenticatedFetch(crossfetch, sessionInfo.accessToken, { dpopKey: sessionInfo.dpopKey });
           let webId = sessionInfo.webId;
           // fetch = await wrapFetchRefresh(fetch, sessionInfo.expirationDate, webId as string, options.idp as string, appName, port) as any;
           return { fetch, webId }
@@ -69,7 +69,7 @@ export default async function authenticateInteractive(options: IInteractiveAuthO
     return await createFetchWithNewAccessToken(options.idp, appName, port)
   } catch (e) {
     if (options?.verbose) writeErrorString('Error creating new session', e);
-    return { fetch: nodefetch }
+    return { fetch: crossfetch }
   }
   
 
@@ -121,7 +121,7 @@ async function createFetchWithNewAccessToken(oidcIssuer: string, appName: string
         
         // Store the session info
         storeSessionTokenInfo(accessToken, dpopKey, expirationDate, webId, oidcIssuer)
-        let fetch = await buildAuthenticatedFetch(nodefetch, accessToken, { dpopKey });
+        let fetch = await buildAuthenticatedFetch(crossfetch, accessToken, { dpopKey });
 
         // Set the current WebID to the current session
         await setConfigCurrentWebID(webId)
