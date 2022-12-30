@@ -250,15 +250,7 @@ async function writeRemoteDirectory(path: string, fileInfo: FileInfo, fetch: any
 
 async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options: CopyOptions): Promise<string | undefined> {
   ensureDirectoryExistence(resourcePath);
-  let ext = path.extname(resourcePath) 
-  // Hardcode missing common extensions
-  if (resourcePath.endsWith('.acl')) ext = '.acl'
-  if (resourcePath.endsWith('.meta')) ext = '.meta'
-  if (!ext) {
-    const extension = mime.extension(fileInfo.contentType)
-    if (extension) resourcePath = `${resourcePath}$.${extension}`
-  }
-
+  
   let executeWrite = true
   if (options.interactiveOverride || options.noOverride) {
     if (fs.existsSync(resourcePath)) { 
@@ -278,6 +270,17 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options:
   try {
     if (!fileInfo.loadFile) throw new Error(`Could not load file at location: ${fileInfo.absolutePath}`)
     let fileData = await fileInfo.loadFile();
+
+    // Handle writing data with the correct extension if no extension in the resource path    
+    let ext = path.extname(resourcePath) 
+    // Hardcode missing common extensions
+    if (resourcePath.endsWith('.acl')) ext = '.acl'
+    if (resourcePath.endsWith('.meta')) ext = '.meta'
+    if (!ext) {
+      const extension = mime.extension(fileData.contentType)
+      if (extension) resourcePath = `${resourcePath}$.${extension}`
+    }
+    
     if (fileData.buffer) {
       fs.writeFileSync(resourcePath, fileData.buffer)
     } else if (fileData.blob) {
