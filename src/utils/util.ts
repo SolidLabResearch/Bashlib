@@ -345,6 +345,12 @@ export function getResourceInfoFromDataset(dataset: SolidDataset, resourceUrl: s
       isDir: types.indexOf('http://www.w3.org/ns/ldp#Container') !== -1 || types.indexOf('http://www.w3.org/ns/ldp#BasicContainer') !== -1,
       modified, mtime, size, types
     }
+  } else {
+    resourceInfo = {
+      url: resourceUrl,
+      relativePath: baseUrl ? resourceUrl.slice(baseUrl.length) : undefined, 
+      isDir: resourceUrl.endsWith('/') // Note: it might be best to dereference the URL to check for sure, but this saves an extra request.
+    }
   }
   return resourceInfo
 }
