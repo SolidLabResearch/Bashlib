@@ -1,8 +1,8 @@
 import fs from 'fs'
 import path from 'path'
-import { getFile, overwriteFile, getContentType, getContainedResourceUrlAll, getSolidDataset, createContainerAt } from "@inrupt/solid-client"
+import { getFile, getContentType, createContainerAt } from "@inrupt/solid-client"
 import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively, checkRemoteFileExists, writeErrorString } from '../utils/util';
-import Blob = require("fetch-blob")
+import Blob from 'fetch-blob'
 import { requestUserCLIConfirmation } from '../utils/userInteractions';
 import BashlibError from '../utils/errors/BashlibError';
 import { BashlibErrorMessage } from '../utils/errors/BashlibError';
