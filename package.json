@@ -15,7 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "@comunica/query-sparql": "^2.1.0",
-    "@inrupt/solid-client": "^1.21.0",
+    "@inrupt/solid-client": "1.23.3",
     "@inrupt/solid-client-authn-node": "^1.11.7",
     "chalk": "^4.1.2",
     "cli-columns": "^4.0.0",
