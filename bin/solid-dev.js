@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 
 const { Command } = require('commander');
 let program = new Command();
