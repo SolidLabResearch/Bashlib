@@ -62,7 +62,7 @@ export default class PermsCommand extends SolidCommand {
         let parsedPermissions = permissions.map(permission => {
           const splitPerm = permission.split('=')
           if (! (splitPerm.length === 2)) { 
-            writeErrorString('Incorrect permission format.', 'Please format your permissions as <id>=[d][a][c][r][w].') 
+            writeErrorString('Incorrect permission format.', 'Please format your permissions as <id>=[d][a][c][r][w].', options) 
             process.exit(0)
           }
           let id = splitPerm[0]
@@ -72,7 +72,7 @@ export default class PermsCommand extends SolidCommand {
             type = 'public'
           } else if (id === 'u') {
             if (!authenticationInfo.webId) { 
-              writeErrorString('Could not autmatically fill in webId of authenticated user.', 'Please make sure you have an authenticated session to auto-fill your webId');
+              writeErrorString('Could not autmatically fill in webId of authenticated user.', 'Please make sure you have an authenticated session to auto-fill your webId', options);
               process.exit(0)
             }
             type = 'agent'
@@ -90,20 +90,20 @@ export default class PermsCommand extends SolidCommand {
         try {
           await changePermissions(url, parsedPermissions, options)
         } catch (e) {
-          if (options.verbose) writeErrorString(`Could not update permissions for resource at ${url}`, e)
+          if (options.verbose) writeErrorString(`Could not update permissions for resource at ${url}`, e, options)
         }
       } else if (operation === 'delete') {
         try {
           await deletePermissions(url, options)
         } catch (e) {
-          if (options.verbose) writeErrorString(`Could not delete permissions for resource at ${url}`, e)
+          if (options.verbose) writeErrorString(`Could not delete permissions for resource at ${url}`, e, options)
         }
       } else {
         console.error('Invalid operation.')
       }
     }
     catch (e) {
-      writeErrorString(`Could not evaluate permissions for ${url}`, e)
+      writeErrorString(`Could not evaluate permissions for ${url}`, e, options)
       if (this.mayExit) process.exit(1)
     }
     if (this.mayExit) process.exit(0)

@@ -5,7 +5,8 @@ import find from './solid-find';
 export type QueryOptions = {
   fetch: any
   all?: boolean,
-  verbose?: boolean
+  verbose?: boolean,
+  logger?: Logger,
 }
 
 
@@ -16,7 +17,7 @@ export default async function* query(resourceUrl: string, query: string, options
         const bindings = await queryResource(query, [fileInfo.absolutePath], options.fetch)
         yield({ fileName: fileInfo.absolutePath, bindings })
       } catch (e) {
-        if (options.verbose) writeErrorString('Could not query file', e)
+        if (options.verbose) writeErrorString('Could not query file', e, options)
       }
     }
   } else {
@@ -25,7 +26,7 @@ export default async function* query(resourceUrl: string, query: string, options
       yield({ fileName: resourceUrl, bindings })
       return
     } catch (e) {
-      writeErrorString('Could not query file', e)
+      writeErrorString('Could not query file', e, options)
       return
     }
   }

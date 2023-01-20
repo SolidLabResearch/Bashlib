@@ -46,7 +46,7 @@ export default class CopyCommand extends SolidCommand {
       dst = await changeUrlPrefixes(authenticationInfo, dst)
       await copy(src, dst, { ...options, ...opts})  
     } catch (e) {
-      writeErrorString(`Could not copy requested resources from ${src} to ${dst}`, e)
+      writeErrorString(`Could not copy requested resources from ${src} to ${dst}`, e, options)
       if (this.mayExit) process.exit(1)
     }
     if (this.mayExit) process.exit(0)

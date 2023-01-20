@@ -23,7 +23,7 @@ export function addEnvOptions(options: any) {
       }
     } catch (e) {
       // Dirty solution to prevent extra error handling everywhere :)
-      writeErrorString(`Error parsing config file at ${options.config}.`, e);
+      writeErrorString(`Error parsing config file at ${options.config}.`, e, options);
       process.exit(1);
     }
   }

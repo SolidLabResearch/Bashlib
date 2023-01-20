@@ -34,6 +34,7 @@ import { writeErrorString } from '../utils/util';
 export type QueryOptions = {
   fetch: any
   verbose?: boolean
+  logger?: Logger
 }
 
 type Record<K extends keyof any, T> = {
@@ -83,7 +84,7 @@ export async function listPermissions(resourceUrl: string, options: QueryOptions
     }
     return permissions
   } catch (e) {
-    if (options.verbose) writeErrorString(`Could not retrieve permissions for ${resourceUrl}`, e)
+    if (options.verbose) writeErrorString(`Could not retrieve permissions for ${resourceUrl}`, e, options)
   }
 }
 
@@ -147,13 +148,13 @@ export async function changePermissions(resourceUrl: string, operations: Permiss
       if (operation.default) aclDataset = await setPublicDefaultAccess(aclDataset, access)
       aclDataset = await setPublicResourceAccess(aclDataset, access)
     } else { 
-      if (options.verbose) writeErrorString("Incorrect operation type", 'Please provide an operation type of agent, group or public.')
+      if (options.verbose) writeErrorString("Incorrect operation type", 'Please provide an operation type of agent, group or public.', options)
     }
   }
   // Post updated acl to pod
   if (aclDataset && await hasAccessibleAcl(resourceInfo)) {
     await saveAclFor(resourceInfo as WithAccessibleAcl, aclDataset, {fetch: options.fetch})
-    if (options.verbose) console.log(`Updated permissions for: ${resourceUrl}`)
+    if (options.verbose) (options.logger || console).log(`Updated permissions for: ${resourceUrl}`)
   }
 }
 
@@ -161,7 +162,7 @@ export async function deletePermissions(resourceUrl: string, options: QueryOptio
   let resourceInfo = await getResourceInfoWithAcl(resourceUrl, {fetch: options.fetch})
   if (hasAccessibleAcl(resourceInfo)) {
     await deleteAclFor(resourceInfo, {fetch: options.fetch})
-    if (options.verbose) console.log(`Deleted resource at ${resourceUrl}`)
+    if (options.verbose) (options.logger || console).log(`Deleted resource at ${resourceUrl}`)
   } else {
     throw Error(`Resource at ${resourceUrl} does not have an accessible ACL resource`)
   }

@@ -4,9 +4,10 @@ import chalk from 'chalk';
 import { deleteContainer, deleteFile } from '@inrupt/solid-client';
 
 export type RemoveOptions = {
-  fetch: any,
+  fetch: typeof globalThis.fetch,
   recursive?: boolean,
   verbose?: boolean,
+  logger?: Logger,
 }
 
 export default async function remove(url: string, options: RemoveOptions) {
@@ -16,7 +17,7 @@ export default async function remove(url: string, options: RemoveOptions) {
       // Remove single directory
       await removeContainer(url, options)
     } else if (!options.recursive) {
-      console.error('Please use the recursive option when removing containers')
+      (options.logger || console).error('Please use the recursive option when removing containers')
       return;
     } else {
       await removeContainerRecursively(url, options)
@@ -28,13 +29,13 @@ export default async function remove(url: string, options: RemoveOptions) {
 
 async function removeFile(url: string, options: RemoveOptions) {
   await deleteFile(url, { fetch: options.fetch })
-  if (options.verbose) console.log(`Removed ${url}`)
+  if (options.verbose) (options.logger || console).log(`Removed ${url}`)
   return;
 }
 
 async function removeContainer(url: string, options: RemoveOptions) {
   await deleteContainer(url, { fetch: options.fetch })
-  if (options.verbose) console.log(`Removed ${chalk.blue.bold(url)}`)
+  if (options.verbose) (options.logger || console).log(`Removed ${chalk.blue.bold(url)}`)
   return;
 
 }

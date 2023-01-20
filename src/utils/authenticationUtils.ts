@@ -221,7 +221,7 @@ export function decodeIdToken(idToken: string): IdToken {
   return jwt_decode(idToken);
 }
 
-export function writeErrorString(explanation: string, e: any) {
+export function writeErrorString(explanation: string, e: any, options?: { logger?: Logger }) {
   let message = (e instanceof Error) ? e.message : String(e);
-  console.error(`${explanation}: ${message}`)
+  (options?.logger || console).error(`${explanation}: ${message}`)
 }

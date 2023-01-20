@@ -12,7 +12,7 @@ export default async function touch(url: string, options: any) {
     let urlExists = await resourceExists(url, options);
     
     if (urlExists) {
-        if (verbose) console.log(`Remote file already exists`)
+        if (verbose) (options.logger || console).log(`Remote file already exists`)
     }
     else {
         let path = url.replace(/.*\//,'')
@@ -34,7 +34,7 @@ export default async function touch(url: string, options: any) {
             }
         )
         if (res.ok) {
-            if (verbose) console.log(`Remote file created`)
+            if (verbose) (options.logger || console).log(`Remote file created`)
         }
         else {
             throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`)

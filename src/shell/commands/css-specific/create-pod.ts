@@ -34,7 +34,7 @@ export default class CreatePodCommand extends SolidCommand {
         try {
           await createSolidPods(options.url, accountDataArray)
         } catch (e) {
-          writeErrorString(`Could not create pod`, e)
+          writeErrorString(`Could not create pod`, e, options)
         }
       })
 

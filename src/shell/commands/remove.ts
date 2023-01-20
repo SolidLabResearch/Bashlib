@@ -39,7 +39,7 @@ export default class RemoveCommand extends SolidCommand {
         url = await changeUrlPrefixes(authenticationInfo, url)
         await remove(url, options)
       } catch (e) {
-        writeErrorString(`Could not remove ${url}`, e)
+        writeErrorString(`Could not remove ${url}`, e, options)
       }
     }
     if (this.mayExit) process.exit(0)

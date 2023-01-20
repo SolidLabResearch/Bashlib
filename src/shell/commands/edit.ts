@@ -34,7 +34,7 @@ export default class EditCommand extends SolidCommand {
           }
           await edit(url, options)
         } catch (e) {
-          writeErrorString(`Could not edit resource at ${url}`, e)
+          writeErrorString(`Could not edit resource at ${url}`, e, options)
           if (this.mayExit) process.exit(1)
         }
         if (this.mayExit) process.exit(0)

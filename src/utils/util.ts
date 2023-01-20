@@ -431,7 +431,7 @@ export function getRelativePath(path: string, basePath: string) {
   return path.slice(basePath.length);
 }
 
-export function writeErrorString(explanation: string, e: any) {
+export function writeErrorString(explanation: string, e: any, options?: { logger?: Logger }) {
   let message = (e instanceof Error) ? e.message : String(e);
-  console.error(`${explanation}: ${message}`)
+  (options?.logger || console).error(`${explanation}: ${message}`);
 }

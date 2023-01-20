@@ -43,12 +43,12 @@ export async function authenticateToken(options?: IClientCredentialsTokenAuthOpt
       }
     }
   } catch (e) {
-    if (options?.verbose) writeErrorString('Could not load existing session', e);
+    if (options?.verbose) writeErrorString('Could not load existing session', e, options);
   }
   try {
     return createFetchWithNewAccessToken(options);
   } catch (e) {
-    if (options?.verbose) writeErrorString('Could not create new session', e);
+    if (options?.verbose) writeErrorString('Could not create new session', e, options);
     return { fetch: crossfetch }
   }
 }

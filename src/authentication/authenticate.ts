@@ -13,7 +13,8 @@ export type ILoginOptions = {
   config?: string, 
   clientCredentialsTokenStorageLocation?: string,  // Storage location of the stored client credentials token.
   sessionInfoStorageLocation?: string, 
-  verbose?: boolean, 
+  verbose?: boolean,
+  logger?: Logger,
 }
 
 
@@ -34,7 +35,7 @@ export default async function authenticate(options: ILoginOptions): Promise<{ fe
     try {
       await builder.buildFromClientCredentialsToken(options)
     } catch (e) {
-      if (options.verbose) writeErrorString(`Could not authenticate using client credentials token`, e);
+      if (options.verbose) writeErrorString(`Could not authenticate using client credentials token`, e, options);
     }
 
   } else if (authType === 'interactive') {
@@ -42,7 +43,7 @@ export default async function authenticate(options: ILoginOptions): Promise<{ fe
     try {
       await builder.buildInteractive(options);
     } catch (e) {
-      if (options.verbose) writeErrorString(`Could not authenticate interactively`, e);
+      if (options.verbose) writeErrorString(`Could not authenticate interactively`, e, options);
     }
   } 
 

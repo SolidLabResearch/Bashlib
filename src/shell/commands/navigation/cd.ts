@@ -47,7 +47,7 @@ export default class ChangedirectoryCommand extends SolidCommand {
         if (this.mayExit) process.exit(1)
       }
     } catch (e) { 
-      writeErrorString(`Could not change working container to ${url}`, e)
+      writeErrorString(`Could not change working container to ${url}`, e, options)
       if (this.mayExit) process.exit(1)
     }
     if (this.mayExit) process.exit(0)
