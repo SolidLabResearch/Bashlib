@@ -18,7 +18,7 @@ npm run build
 
 Using NPM
 ```
-
+npm install solid-bashlib
 ```
 
 ## Synopsis
@@ -79,6 +79,7 @@ Run `npm run release` and follow the intructions on the CLI. Don't forget to cre
 - [X] Resource verification on edit (compare before / after hash and notify if something may have changed)
 - [ ] Write concrete test cases and spin up local pod server to test
 - [ ] Improve consistency of internal logging
+- [ ] Improve consistency of exported Javascript interface
 - [ ] Interactive Solid shell? -> Not sure if this will be useful.
 - [X] npm release
 
