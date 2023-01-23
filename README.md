@@ -8,12 +8,17 @@ The **[Bashlib-solid](/bashlib/solid)** library provides functionality to intera
 - Node >= 16.0.0
 
 ## Setup
-
+Using github
 ``` 
 git clone git@github.com:SolidLabResearch/Bashlib.git
 cd Bashlib
 nmp install 
 npm run build
+```
+
+Using NPM
+```
+
 ```
 
 ## Synopsis
@@ -61,3 +66,19 @@ node bin/solid.js cp local.txt root:/private/
 This repo uses [release-it](https://www.npmjs.com/package/release-it) to manage SemVer version numbers, create GitHub releases and publish to npm.
 
 Run `npm run release` and follow the intructions on the CLI. Don't forget to create a [personal access token](https://github.com/settings/tokens) and expose it through the `GITHUB_TOKEN` environment variable, or the github release won't work. For more information, visit the `release-it` docs.
+
+### Bashlib features in progress
+
+- [X] Improve token management
+- [X] Improve session management
+- [X] Handle metadata
+- [ ] Handling multiple pods for a given WebID (pim:storage)
+- [X] multi parameter removes: rm file1 file2 file3
+- [ ] Session refreshing on longer commands where session may time-out in the middle of command!
+- [ ] Make sure discovery of pim:storage and ldp:inbox are according to spec!
+- [X] Resource verification on edit (compare before / after hash and notify if something may have changed)
+- [ ] Write concrete test cases and spin up local pod server to test
+- [ ] Improve consistency of internal logging
+- [ ] Interactive Solid shell? -> Not sure if this will be useful.
+- [X] npm release
+
