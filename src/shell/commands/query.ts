@@ -37,7 +37,7 @@ export default class QueryCommand extends SolidCommand {
             formatBindings(result.fileName, result.bindings, options)
           }
         } catch (e) {
-          writeErrorString(`Could not query resource at ${url}`, e)
+          writeErrorString(`Could not query resource at ${url}`, e, options)
           if (this.mayExit) process.exit(1)
         }
         if (this.mayExit) process.exit(0)
@@ -54,7 +54,7 @@ function formatBindings(fileName: string, bindings: any, options: any) {
     let table;
     if (!bindings.length) {
       if (options.verbose) console.log(chalk.bold(`> ${fileName}`))
-      if (options.verbose) writeErrorString(`No results for resource ${fileName}`, '-')
+      if (options.verbose) writeErrorString(`No results for resource ${fileName}`, '-', options)
       return;
     }
     for (let binding of bindings) {
@@ -73,7 +73,7 @@ ${table.toString()}
     let bindingsString = ""
     if (!bindings.length) {
       if (options.verbose) console.log(chalk.bold(`> ${fileName}`))
-      if (options.verbose) writeErrorString(`No results for resource ${fileName}`, '-')
+      if (options.verbose) writeErrorString(`No results for resource ${fileName}`, '-', options)
       return;
     }
     for (let binding of bindings) {

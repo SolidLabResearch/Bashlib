@@ -1,4 +1,5 @@
 import fetch from 'cross-fetch';
+import type { Logger } from '../logger';
 
 export type AccountData = {
   name: string,
@@ -10,7 +11,7 @@ export type AccountData = {
  * @description
  * Function to initialize an array of data pods on a CSS instance.
  */
-export default async function createSolidPods(url: string, accountData: AccountData[]) {
+export default async function createSolidPods(url: string, accountData: AccountData[], options?: { logger?: Logger }) {
   if (!url) throw new Error('Please pass a value for the CSS pod hosting service');
 
   // Uses hardcoded URL. Not sure if this URL can be discovered dynamically?
@@ -38,9 +39,9 @@ export default async function createSolidPods(url: string, accountData: AccountD
     // See server response or error text
     let jsonResponse = await res.json()
     if (jsonResponse.name && jsonResponse.name.includes('Error')) {
-      console.error(`${jsonResponse.name} - Creating pod for ${account.name} failed: ${jsonResponse.message}`)
+      (options?.logger || console).error(`${jsonResponse.name} - Creating pod for ${account.name} failed: ${jsonResponse.message}`)
     } else {
-      console.log(`Pod for ${account.name} created succesfully on ${jsonResponse.webId}`)
+      (options?.logger || console).log(`Pod for ${account.name} created succesfully on ${jsonResponse.webId}`)
       responses.push(jsonResponse)
     }
   }

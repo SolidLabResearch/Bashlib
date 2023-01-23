@@ -6,6 +6,7 @@ import jwt_decode from 'jwt-decode';
 import { randomUUID } from 'crypto';
 import { setConfigSession, getConfigCurrentSession } from './configoptions';
 import crossfetch from 'cross-fetch';
+import type { Logger } from '../logger';
 
 export type SessionInfo = {
   fetch: typeof fetch
@@ -221,7 +222,7 @@ export function decodeIdToken(idToken: string): IdToken {
   return jwt_decode(idToken);
 }
 
-export function writeErrorString(explanation: string, e: any) {
+export function writeErrorString(explanation: string, e: any, options?: { logger?: Logger }) {
   let message = (e instanceof Error) ? e.message : String(e);
-  console.error(`${explanation}: ${message}`)
+  (options?.logger || console).error(`${explanation}: ${message}`)
 }

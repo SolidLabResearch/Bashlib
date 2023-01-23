@@ -24,7 +24,7 @@ export default class TouchCommand extends SolidCommand {
           url = await changeUrlPrefixes(authenticationInfo, url)
           await touch(url, options)
         } catch (e) {
-          writeErrorString(`Could not touch ${url}`, e)
+          writeErrorString(`Could not touch ${url}`, e, options)
           if (this.mayExit) process.exit(1)
         }
         if (this.mayExit) process.exit(0)

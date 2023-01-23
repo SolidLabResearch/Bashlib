@@ -32,7 +32,7 @@ export default class FindCommand extends SolidCommand {
             console.log(name)
           }
         } catch (e) {
-          writeErrorString(`Could not find match in ${url}`, e)
+          writeErrorString(`Could not find match in ${url}`, e, options)
           if (this.mayExit) process.exit(1)
         }
         if (this.mayExit) process.exit(0)

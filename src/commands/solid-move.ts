@@ -1,17 +1,19 @@
 import copy from './solid-copy';
 import { isDirectory, isRemote } from '../utils/util';
 import remove from './solid-remove';
+import type { Logger } from '../logger';
 
 export type MoveOptions = {
   fetch: any
   all: boolean,
   verbose: boolean,
+  logger?: Logger,
 }
 export default async function move(source: string, destination: string, options: MoveOptions) {
   let source_is_dir = isDirectory(source)
   let dest_is_dir = isDirectory(destination)
   if (source_is_dir && !dest_is_dir) {
-    console.error('Cannot move directory to a file')
+    (options.logger || console).error('Cannot move directory to a file')
     return;
   } 
 

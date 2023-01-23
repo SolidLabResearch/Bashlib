@@ -6,6 +6,7 @@ import Blob from 'fetch-blob'
 import { requestUserCLIConfirmation } from '../utils/userInteractions';
 import BashlibError from '../utils/errors/BashlibError';
 import { BashlibErrorMessage } from '../utils/errors/BashlibError';
+import type { Logger } from '../logger';
 
 const mime = require('mime-types');
 
@@ -24,6 +25,7 @@ type CopyOptions = {
   all?: boolean,
   interactiveOverride?: boolean,
   noOverride?: boolean,
+  logger?: Logger
 }
 
 export default async function copy(src: string, dst: string, options: CopyOptions) : Promise<{
@@ -69,15 +71,15 @@ export default async function copy(src: string, dst: string, options: CopyOption
    **********************/
 
   if (source.isDir && !destination.isDir) {
-    console.error('Cannot copy a directory to a file')
+    (options.logger || console).error('Cannot copy a directory to a file')
     process.exit(1);
   } 
 
   let resourcesToTransfer : { files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[] };
   if (source.isRemote) {
-    resourcesToTransfer = await getRemoteSourceFiles(source, fetch, options.verbose, options.all)
+    resourcesToTransfer = await getRemoteSourceFiles(source, fetch, options.verbose, options.all, options)
   } else {
-    resourcesToTransfer = await getLocalSourceFiles(source, options.verbose, options.all)
+    resourcesToTransfer = await getLocalSourceFiles(source, options.verbose, options.all, options)
   }  
 
   let destinationInfo: { files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[] } = {
@@ -169,15 +171,15 @@ export default async function copy(src: string, dst: string, options: CopyOption
  * UTILITY FUNCTIONS *
  *********************/
 
-async function getLocalSourceFiles(source: srcOptions, verbose: boolean, all: boolean): Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
+async function getLocalSourceFiles(source: srcOptions, verbose: boolean, all: boolean, options?: { logger?: Logger }): Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
   if (source.isDir) {
     let filePathInfos = readLocalDirectoryRecursively(source.path, undefined, {verbose, all} )
     let files = await Promise.all(filePathInfos.files.map(async fileInfo => {
-      fileInfo.loadFile = async () => readLocalFile(fileInfo.absolutePath, verbose) 
+      fileInfo.loadFile = async () => readLocalFile(fileInfo.absolutePath, verbose, options) 
       return fileInfo
     }))
     let aclfiles = await Promise.all(filePathInfos.aclfiles.map(async fileInfo => {
-      fileInfo.loadFile = async () => readLocalFile(fileInfo.absolutePath, verbose) 
+      fileInfo.loadFile = async () => readLocalFile(fileInfo.absolutePath, verbose, options) 
       return fileInfo
     }))
     return { files, aclfiles, directories: filePathInfos.directories }
@@ -185,25 +187,25 @@ async function getLocalSourceFiles(source: srcOptions, verbose: boolean, all: bo
     return { files: [ {
       absolutePath: source.path,
       relativePath: '',
-      loadFile: async () => readLocalFile(source.path, verbose)
+      loadFile: async () => readLocalFile(source.path, verbose, options)
     } ], aclfiles: [], directories: [] }
   }
 }
 
-async function getRemoteSourceFiles(source: srcOptions, fetch: Function, verbose: boolean, all: boolean) : Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
+async function getRemoteSourceFiles(source: srcOptions, fetch: Function, verbose: boolean, all: boolean, options?: { logger?: Logger }) : Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
   if (source.isDir) {
     let discoveredResources = await readRemoteDirectoryRecursively(source.path, { fetch, verbose, all})
 
     // Filter out files that return errors (e.g no authentication privileges)
     let files = (await Promise.all(discoveredResources.files.map(async fileInfo => {
-      fileInfo.loadFile = async () => readRemoteFile(fileInfo.absolutePath, fetch, verbose) 
+      fileInfo.loadFile = async () => readRemoteFile(fileInfo.absolutePath, fetch, verbose, options) 
       return fileInfo
     }))).filter(f => f) as FileInfo[]
 
     let aclfiles : FileInfo[] = []
     if (all) {
       aclfiles = (await Promise.all(discoveredResources.aclfiles.map(async fileInfo => {
-        fileInfo.loadFile = async () => readRemoteFile(fileInfo.absolutePath, fetch, verbose) 
+        fileInfo.loadFile = async () => readRemoteFile(fileInfo.absolutePath, fetch, verbose, options) 
         return fileInfo
       }))).filter(f => f) as FileInfo[]
     }
@@ -212,21 +214,21 @@ async function getRemoteSourceFiles(source: srcOptions, fetch: Function, verbose
     return { files: [ {
       absolutePath: source.path,
       relativePath: '',
-      loadFile: async () => readRemoteFile(source.path, fetch, verbose) 
+      loadFile: async () => readRemoteFile(source.path, fetch, verbose, options) 
     }] , aclfiles: [], directories: [] }
   }
 
 }
 
-function readLocalFile(path: string, verbose: boolean): { buffer: Buffer, contentType: string} {
-  if (verbose) console.log('Reading local file:', path)
+function readLocalFile(path: string, verbose: boolean, options?: { logger?: Logger }): { buffer: Buffer, contentType: string} {
+  if (verbose) (options?.logger || console).log('Reading local file:', path)
   const file = fs.readFileSync(path)
   let contentType = path.endsWith('.acl') || path.endsWith('.meta') ? 'text/turtle' : mime.lookup(path)
   return { buffer: file, contentType };
 }
 
-async function readRemoteFile(path: string, fetch: any, verbose: boolean) : Promise<{ blob: any, contentType: string}> {
-  if (verbose) console.log('Reading remote file:', path)
+async function readRemoteFile(path: string, fetch: any, verbose: boolean, options?: { logger?: Logger }) : Promise<{ blob: any, contentType: string}> {
+  if (verbose) (options?.logger || console).log('Reading remote file:', path)
   const file = await getFile(path, { fetch })
   const contentType = await getContentType(file) as string // TODO:: error handling?
   return { blob: file as any, contentType };
@@ -234,17 +236,17 @@ async function readRemoteFile(path: string, fetch: any, verbose: boolean) : Prom
 }
 
 async function writeLocalDirectory(path: string, fileInfo: FileInfo, options: CopyOptions): Promise<any> {
-  if (options.verbose) console.log('Writing local directory:', path)
+  if (options.verbose) (options.logger || console).log('Writing local directory:', path)
   fs.mkdirSync(path, { recursive: true })
   return true;
 }
 
 async function writeRemoteDirectory(path: string, fileInfo: FileInfo, fetch: any, options: CopyOptions): Promise<any> {
-  if (options.verbose) console.log('Writing remote directory:', path)
+  if (options.verbose) (options.logger || console).log('Writing remote directory:', path)
   try {
     await createContainerAt(path, { fetch })
   } catch (e) {
-    if (options.verbose) writeErrorString(`Could not write directory for ${path}`, e);
+    if (options.verbose) writeErrorString(`Could not write directory for ${path}`, e, options);
   }
 }
 
@@ -262,11 +264,11 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options:
     }
   }
   if (!executeWrite) {
-    if (options.verbose) console.log('Skipping existing local file:', resourcePath)
+    if (options.verbose) (options.logger || console).log('Skipping existing local file:', resourcePath)
     return undefined;
   }
 
-  if (options.verbose) console.log('processing local file:', resourcePath)
+  if (options.verbose) (options.logger || console).log('processing local file:', resourcePath)
   try {
     if (!fileInfo.loadFile) throw new Error(`Could not load file at location: ${fileInfo.absolutePath}`)
     let fileData = await fileInfo.loadFile();
@@ -287,11 +289,11 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options:
       let buffer = Buffer.from(await fileData.blob.arrayBuffer())
       fs.writeFileSync(resourcePath, buffer)
     } else {
-      console.error('No content to write for:', resourcePath)
+      (options.logger || console).error('No content to write for:', resourcePath)
     }
     return resourcePath;
   } catch (e) {
-    if (options.verbose) writeErrorString(`Could not save local file ${resourcePath}`, e);
+    if (options.verbose) writeErrorString(`Could not save local file ${resourcePath}`, e, options);
     return undefined;
   }
 }
@@ -310,7 +312,7 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
     }
   }
   if (!executeWrite) {
-    if (options.verbose) console.log('Skipping existing local file:', resourcePath)
+    if (options.verbose) (options.logger || console).log('Skipping existing local file:', resourcePath)
     return undefined;
   }
 

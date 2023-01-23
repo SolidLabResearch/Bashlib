@@ -3,6 +3,8 @@ import path from "path"
 import copy from "./solid-copy";
 import fs from 'fs';
 import { checkRemoteFileAccess, checkRemoteFileExists, getPodRoot } from "../utils/util";
+import type { Logger } from '../logger';
+
 const md5 = require('md5');
 const child_process = require('child_process')
 
@@ -11,6 +13,7 @@ type CommandOptionEdit = {
   editor?: string,
   touch?: boolean,
   verbose?: boolean,
+  logger?: Logger,
 }
 
 export default async function edit(url: string, options: CommandOptionEdit) { 
@@ -49,10 +52,10 @@ async function editRemoteFile(url: string, options: CommandOptionEdit) {
       child.on('exit', function (e: any, code: any) {
         resolve();
       });
-    })
+    });
 
     // Wait for the user to finish editing the
-    console.log('Press any key to continue');
+    (options.logger || console).log('Press any key to continue');
     await new Promise<void>((resolve, reject) => {
       process.stdin.setRawMode(true);
       process.stdin.resume();
@@ -64,7 +67,7 @@ async function editRemoteFile(url: string, options: CommandOptionEdit) {
     let updateChanges = true;
     // Request user update -> required for editors that leave the terminal and continue the program.
     if (oldMd5 === newMd5) {
-      console.log('Update without changes? [y/N] ');
+      (options.logger || console).log('Update without changes? [y/N] ');
       updateChanges = await new Promise((resolve, reject) => {
         process.stdin.setRawMode(true);
         process.stdin.resume();
@@ -80,17 +83,17 @@ async function editRemoteFile(url: string, options: CommandOptionEdit) {
 
     if (updateChanges) {
       await copy(tmpFilePath, remoteFileUrl, options)
-      if (options.verbose) console.log('Remote file updated!');
+      if (options.verbose) (options.logger || console).log('Remote file updated!');
     }
     else {
-      if (options.verbose) console.log('Remote file untouched');
+      if (options.verbose) (options.logger || console).log('Remote file untouched');
     }
   } catch (e) { 
     throw e
     // TODO::
   } finally { 
     if(tmpFilePath) fs.unlinkSync(tmpFilePath);
-    if (options.verbose) console.log(`Removing local file file ${tmpFilePath}!`);
+    if (options.verbose) (options.logger || console).log(`Removing local file file ${tmpFilePath}!`);
   }
 }
 
@@ -114,10 +117,10 @@ async function editNewFile(url: string, options: CommandOptionEdit) {
       child.on('exit', function (e: any, code: any) {
         resolve();
       });
-    })
+    });
 
     // Wait for the user to finish editing the
-    console.log('Press any key to continue');
+    (options.logger || console).log('Press any key to continue');
     await new Promise<void>((resolve, reject) => {
       process.stdin.setRawMode(true);
       process.stdin.resume();
@@ -125,13 +128,13 @@ async function editNewFile(url: string, options: CommandOptionEdit) {
     })
 
     await copy(tmpFilePath, url, options)
-    if (options.verbose) console.log('Remote file updated!');
+    if (options.verbose) (options.logger || console).log('Remote file updated!');
   } catch (e) { 
     throw e
     // TODO::
   } finally { 
     if(tmpFilePath) fs.unlinkSync(tmpFilePath);
-    if (options.verbose) console.log(`Removing local file file ${tmpFilePath}!`);
+    if (options.verbose) (options.logger || console).log(`Removing local file file ${tmpFilePath}!`);
   }
 }
 

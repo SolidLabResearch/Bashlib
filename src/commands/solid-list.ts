@@ -1,16 +1,18 @@
 import { isDirectory, checkHeadersForAclAndMetadata, getResourceInfoFromDataset, getResourceInfoFromHeaders, ResourceInfo } from '../utils/util';
 import { getContainedResourceUrlAll, getSolidDataset } from '@inrupt/solid-client';
+import type { Logger } from '../logger';
 
 type ListingOptions = {
   fetch: any,
   all?: boolean,
   full?: boolean,
   verbose?: boolean,
+  logger?: Logger,
 }
 
 export default async function list(url: string, options: ListingOptions) {
   if (!isDirectory(url)) {
-    console.error('List can only be called on containers. Please write containers with their trailing slash.')
+    (options.logger || console).error('List can only be called on containers. Please write containers with their trailing slash.')
   }
   let dataset = await getSolidDataset(url, { fetch: options.fetch })
   let containedResources = getContainedResourceUrlAll(dataset)

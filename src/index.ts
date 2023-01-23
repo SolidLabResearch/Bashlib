@@ -13,3 +13,6 @@ export { copy, list, remove, move, find, query, listPermissions, changePermissio
 import { authenticateWithTokenFromJavascript } from "./authentication/AuthenticationToken"
 import { generateCSSToken } from "./authentication/TokenCreationCSS"
 export { authenticateWithTokenFromJavascript as authenticateToken, generateCSSToken }
+
+// Type exports
+export type { Logger } from './logger';

@@ -40,7 +40,7 @@ export default async function authenticateInteractive(options: IInteractiveAuthO
       }
     }
   } catch (e) {
-    if (options?.verbose) writeErrorString('Could not load existing session', e);
+    if (options?.verbose) writeErrorString('Could not load existing session', e, options);
   }
 
 
@@ -68,7 +68,7 @@ export default async function authenticateInteractive(options: IInteractiveAuthO
   try {
     return await createFetchWithNewAccessToken(options.idp, appName, port)
   } catch (e) {
-    if (options?.verbose) writeErrorString('Error creating new session', e);
+    if (options?.verbose) writeErrorString('Error creating new session', e, options);
     return { fetch: crossfetch }
   }
   

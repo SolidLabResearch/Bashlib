@@ -46,7 +46,7 @@ export default class MkdirCommand extends SolidCommand {
       dst = await changeUrlPrefixes(authenticationInfo, dst)
       await move(src, dst, options)
     } catch (e) {
-      writeErrorString(`Could not move requested resources from ${src} to ${dst}`, e)
+      writeErrorString(`Could not move requested resources from ${src} to ${dst}`, e, options)
       if (this.mayExit) process.exit(1)
     }
     if (this.mayExit) process.exit(0)

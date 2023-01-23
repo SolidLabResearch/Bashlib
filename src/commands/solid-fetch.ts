@@ -1,4 +1,6 @@
 import fs from 'fs';
+import type { Logger } from '../logger';
+
 type FetchOptions = {
   fetch: Function,
   header?: string[],
@@ -7,6 +9,7 @@ type FetchOptions = {
   file?: string, // File containing the body
   verbose?: boolean,
   onlyHeaders?: boolean,
+  logger?: Logger,
 }
 export default async function authenticatedFetch(url: string, options: FetchOptions) {
   const fetch = options.fetch
@@ -54,14 +57,14 @@ export default async function authenticatedFetch(url: string, options: FetchOpti
 
   // Log to command line
   if (options.verbose) {
-    console.error(methodString)
-    console.error(requestHeaderString)
-    console.error(responseHeaderString)
+    (options.logger || console).error(methodString);
+    (options.logger || console).error(requestHeaderString);
+    (options.logger || console).error(responseHeaderString);
   } else if (options.onlyHeaders) {
-    console.error(requestHeaderString)
-    console.error(responseHeaderString)
+    (options.logger || console).error(requestHeaderString);
+    (options.logger || console).error(responseHeaderString);
   }
   if (!options.onlyHeaders) {
-    console.log(text.trim())
+    (options.logger || console).log(text.trim());
   }
 }

@@ -1,5 +1,6 @@
 import authenticateInteractive from "./AuthenticationInteractive";
 import { authenticateToken } from "./AuthenticationToken";
+import type { Logger } from '../logger';
 
 export const DEFAULTPORT = 3435
 export const APPNAME = "Solid-cli"
@@ -9,6 +10,7 @@ export type IInteractiveAuthOptions = {
   sessionInfoStorageLocation?: string, // Storage location of session information to reuse in subsequent runs of the application.
   port?: number, // Used for redirect url of Solid login sequence
   verbose?: boolean,
+  logger?: Logger,
 }
 
 export type IUserCredentialsAuthOptions = {
@@ -17,6 +19,7 @@ export type IUserCredentialsAuthOptions = {
   password: string,
   port?: number, // Used for redirect url of Solid login sequence
   verbose?: boolean,
+  logger?: Logger,
 }
 
 export type IClientCredentialsTokenAuthOptions = {
@@ -24,6 +27,7 @@ export type IClientCredentialsTokenAuthOptions = {
   sessionInfoStorageLocation?: string, // Storage location of session information to reuse in subsequent runs of the application.
   clientCredentialsTokenStorageLocation?: string,  // Storage location of the stored client credentials token.
   verbose?: boolean,
+  logger?: Logger,
 }
 
 export type IClientCredentialsTokenGenerationOptions = {
@@ -32,6 +36,7 @@ export type IClientCredentialsTokenGenerationOptions = {
   password: string,
   idp: string,
   clientCredentialsTokenStorageLocation?: string // Storage location of the output client credentials token.
+  logger?: Logger,
 }
 
 export type SessionInfo = {

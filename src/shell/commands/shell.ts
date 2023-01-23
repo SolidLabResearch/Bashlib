@@ -15,7 +15,7 @@ export default class ShellCommand extends SolidCommand {
     //     try {
     //       await shell(program.opts());
     //     } catch (e) {
-    //       writeErrorString(`Could not open Solid Shell`, e)
+    //       writeErrorString(`Could not open Solid Shell`, e, options)
     //       if (this.mayExit) process.exit(1)
     //     }
     //     if (this.mayExit) process.exit(0)

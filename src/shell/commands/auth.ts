@@ -27,7 +27,7 @@ export default class AuthCommand extends SolidCommand {
         try {
           await showAuthenticationOption(options)
         } catch (e) { 
-          writeErrorString('Could not show current authentication info', e)
+          writeErrorString('Could not show current authentication info', e, options)
           if (this.mayExit) process.exit(1)
         }
         if (this.mayExit) process.exit(0)
@@ -41,7 +41,7 @@ export default class AuthCommand extends SolidCommand {
         try {
           await listAuthenticationOptions(options)
         } catch (e) { 
-          writeErrorString('Could not list authentication options', e) 
+          writeErrorString('Could not list authentication options', e, options) 
           if (this.mayExit) process.exit(1)
         }
       if (this.mayExit) process.exit(0)
@@ -56,7 +56,7 @@ export default class AuthCommand extends SolidCommand {
         try {
           await setAuthenticationOption(options)
         } catch (e) { 
-          writeErrorString('Could not set authentication option', e) 
+          writeErrorString('Could not set authentication option', e, options) 
           if (this.mayExit) process.exit(1)
         }
         if (this.mayExit) process.exit(0)
@@ -71,7 +71,7 @@ export default class AuthCommand extends SolidCommand {
         try {
           await removeAuthenticationOption(options)
         } catch (e) { 
-          writeErrorString('Could not clear authentication option(s)', e) 
+          writeErrorString('Could not clear authentication option(s)', e, options) 
           if (this.mayExit) process.exit(1)
         }
         if (this.mayExit) process.exit(0)
@@ -84,7 +84,7 @@ export default class AuthCommand extends SolidCommand {
           try {
             await clearAuthenticationOption()
           } catch (e) { 
-            writeErrorString('Could not clear authentication option(s)', e) 
+            writeErrorString('Could not clear authentication option(s)', e, options) 
             if (this.mayExit) process.exit(1)
           }
           if (this.mayExit) process.exit(0)
@@ -102,7 +102,7 @@ export default class AuthCommand extends SolidCommand {
         try {
           await createAuthenticationTokenCSS(options)
         } catch (e) { 
-          writeErrorString('Could not create authentication token', e) 
+          writeErrorString('Could not create authentication token', e, options) 
           if (this.mayExit) process.exit(1)
         }
         if (this.mayExit) process.exit(0)

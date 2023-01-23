@@ -24,7 +24,7 @@ export default class MkdirCommand extends SolidCommand {
           url = await changeUrlPrefixes(authenticationInfo, url)
           await makeDirectory(url, options)
         } catch (e) {
-          writeErrorString(`Could not create container at ${url}`, e)
+          writeErrorString(`Could not create container at ${url}`, e, options)
           if (this.mayExit) process.exit(1)
         }
         if (this.mayExit) process.exit(0)

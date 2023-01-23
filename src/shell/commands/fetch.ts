@@ -46,7 +46,7 @@ export default class FetchCommand extends SolidCommand {
       url = await changeUrlPrefixes(authenticationInfo, url)
       await authenticatedFetch(url, options)
     } catch (e) {
-      writeErrorString(`Could not fetch resource at ${url}`, e)
+      writeErrorString(`Could not fetch resource at ${url}`, e, options)
       if (this.mayExit) process.exit(1)
     }
     if (this.mayExit) process.exit(0)
