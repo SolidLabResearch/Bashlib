@@ -30,6 +30,7 @@ import {
   createAcl,
 } from '@inrupt/solid-client';
 import { writeErrorString } from '../utils/util';
+import type { Logger } from '../logger';
 
 export type QueryOptions = {
   fetch: any

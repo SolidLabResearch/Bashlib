@@ -1,6 +1,7 @@
 import { QueryEngine } from '@comunica/query-sparql';
 import { isDirectory, writeErrorString, FileInfo } from '../utils/util';
 import find from './solid-find';
+import type { Logger } from '../logger';
 
 export type QueryOptions = {
   fetch: any

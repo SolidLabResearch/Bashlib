@@ -2,6 +2,7 @@ import SolidFetchBuilder from './CreateFetch';
 import { getWebIDIdentityProvider, writeErrorString } from '../utils/util';
 import inquirer from 'inquirer';
 import { getConfigCurrentWebID, getConfigCurrentToken } from '../utils/configoptions';
+import type { Logger } from '../logger';
 import crossfetch from 'cross-fetch';
 
 export type ILoginOptions = {

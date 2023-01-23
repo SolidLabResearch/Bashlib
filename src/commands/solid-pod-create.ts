@@ -1,4 +1,5 @@
 import fetch from 'cross-fetch';
+import type { Logger } from '../logger';
 
 export type AccountData = {
   name: string,

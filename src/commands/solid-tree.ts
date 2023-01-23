@@ -1,6 +1,7 @@
 import find from './solid-find'
 import { isDirectory, FileInfo, writeErrorString } from '../utils/util';
 import chalk from 'chalk';
+import type { Logger } from '../logger';
 
 export type TreeOptions = {
   fetch: any

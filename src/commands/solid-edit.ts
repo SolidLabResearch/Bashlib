@@ -3,6 +3,8 @@ import path from "path"
 import copy from "./solid-copy";
 import fs from 'fs';
 import { checkRemoteFileAccess, checkRemoteFileExists, getPodRoot } from "../utils/util";
+import type { Logger } from '../logger';
+
 const md5 = require('md5');
 const child_process = require('child_process')
 

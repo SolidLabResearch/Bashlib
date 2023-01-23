@@ -1,6 +1,7 @@
 import copy from './solid-copy';
 import { isDirectory, isRemote } from '../utils/util';
 import remove from './solid-remove';
+import type { Logger } from '../logger';
 
 export type MoveOptions = {
   fetch: any

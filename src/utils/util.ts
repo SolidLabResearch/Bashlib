@@ -1,5 +1,7 @@
 import { getSolidDataset, getContainedResourceUrlAll, getUrl, getUrlAll, getThing, getThingAll, getDatetime, getInteger, SolidDataset } from '@inrupt/solid-client';
 import { requestUserIdp } from './userInteractions';
+import type { Logger } from '../logger';
+
 const fs = require('fs')
 const path = require('path')
 var LinkHeader = require( 'http-link-header' )

@@ -6,6 +6,7 @@ import jwt_decode from 'jwt-decode';
 import { randomUUID } from 'crypto';
 import { setConfigSession, getConfigCurrentSession } from './configoptions';
 import crossfetch from 'cross-fetch';
+import type { Logger } from '../logger';
 
 export type SessionInfo = {
   fetch: typeof fetch

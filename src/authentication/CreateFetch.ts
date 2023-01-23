@@ -1,5 +1,6 @@
 import authenticateInteractive from "./AuthenticationInteractive";
 import { authenticateToken } from "./AuthenticationToken";
+import type { Logger } from '../logger';
 
 export const DEFAULTPORT = 3435
 export const APPNAME = "Solid-cli"

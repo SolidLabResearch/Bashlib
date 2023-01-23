@@ -6,6 +6,7 @@ import Blob from 'fetch-blob'
 import { requestUserCLIConfirmation } from '../utils/userInteractions';
 import BashlibError from '../utils/errors/BashlibError';
 import { BashlibErrorMessage } from '../utils/errors/BashlibError';
+import type { Logger } from '../logger';
 
 const mime = require('mime-types');
 
