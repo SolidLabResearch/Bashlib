@@ -12,7 +12,7 @@ Using github
 ``` 
 git clone git@github.com:SolidLabResearch/Bashlib.git
 cd Bashlib
-nmp install 
+npm install 
 npm run build
 ```
 
