@@ -31,6 +31,9 @@ export type ISessionEntry = {
 }
 
 export function initializeConfig() { 
+  if (!fs.existsSync(SOLIDDIR)) {
+    fs.mkdirSync(SOLIDDIR)
+  }
   if (!fs.existsSync(BASHLIBCONFIGPATH)) { 
     let config: IConfig = {
       currentWebID: undefined,
