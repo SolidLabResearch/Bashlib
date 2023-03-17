@@ -18,11 +18,11 @@ export default class PermsCommand extends SolidCommand {
       .argument('<operation>', 'list, edit, delete')
       .argument('<url>', 'Resource URL')
       .argument('[permissions...]', `Permission operations to edit resource permissions. 
-      Formatted according to <id>=[d][g][a][c][r][w]. 
-      For public permissions please set <id> to "p". 
-      For the current authenticated user please set <id> to "u".
-      To set updated permissions as default, please add the [d] option as follows: <id>=d[g][a][c][r][w]
-      To indicate the id as a group id, please add the [g] option as follows: <id>=g[d][a][c][r][w]
+      Formatted according to id=[d][g][a][c][r][w]. 
+      For public permissions please set id to "p". 
+      For the current authenticated user please set id to "u".
+      To set updated permissions as default, please add the [d] option as follows: id=d[g][a][c][r][w]
+      To indicate the id as a group id, please add the [g] option as follows: id=g[d][a][c][r][w]
       `)
       .option('-p, --pretty', 'Pretty format')
       .option('-v, --verbose', 'Log all operations') // Should this be default?
@@ -34,11 +34,11 @@ export default class PermsCommand extends SolidCommand {
       .argument('<operation>', 'list, edit, delete')
       .argument('<url>', 'Resource URL')
       .argument('[permissions...]', `Permission operations to edit resource permissions. 
-      Formatted according to <id>=[d][g][a][c][r][w]. 
-      For public permissions please set <id> to "p". 
-      For the current authenticated user please set <id> to "u".
-      To set updated permissions as default, please add the [d] option as follows: <id>=d[g][a][c][r][w]
-      To indicate the id as a group id, please add the [g] option as follows: <id>=g[d][a][c][r][w]
+      Formatted according to id=[d][g][a][c][r][w]. 
+      For public permissions please set id to "p". 
+      For the current authenticated user please set id to "u".
+      To set updated permissions as default, please add the [d] option as follows: id=d[g][a][c][r][w]
+      To indicate the id as a group id, please add the [g] option as follows: id=g[d][a][c][r][w]
       `)
       .option('-p, --pretty', 'Pretty format')
       .option('-v, --verbose', 'Log all operations') // Should this be default?
@@ -62,7 +62,7 @@ export default class PermsCommand extends SolidCommand {
         let parsedPermissions = permissions.map(permission => {
           const splitPerm = permission.split('=')
           if (! (splitPerm.length === 2)) { 
-            writeErrorString('Incorrect permission format.', 'Please format your permissions as <id>=[d][a][c][r][w].', options) 
+            writeErrorString('Incorrect permission format.', 'Please format your permissions as id=[d][a][c][r][w].', options) 
             process.exit(0)
           }
           let id = splitPerm[0]
