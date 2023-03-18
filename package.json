@@ -13,10 +13,8 @@
     "build": "rm -rf dist/ && tsc",
     "prepare": "npm run build",
     "release": "release-it",
-    "mkdocs": "npm run mkdocs:docker || npm run mkdocs:pip",
-    "mkdocs:docker": "docker run --rm -it -p 8000:8000 -v ${PWD}/documentation:/docs squidfunk/mkdocs-material",
-    "mkdocs:pip": "pip install mkdocs mkdocs-material && cd documentation && mkdocs serve",
-    "typedocs": "typedoc --customCss ./documentation/typedoc.css"
+    "mkdocs":"pip install mkdocs mkdocs-material && cd docs && mkdocs serve",
+    "typedocs": "typedoc --customCss ./docs/typedoc.css"
   },
   "author": "",
   "license": "ISC",

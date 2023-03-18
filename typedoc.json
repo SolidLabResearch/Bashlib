@@ -3,5 +3,5 @@
   "hideGenerator": true,
   "entryPoints": "src",
   "includeVersion": true,
-  "out": "docs"
+  "out": "typedocs"
 }
