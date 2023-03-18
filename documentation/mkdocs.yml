@@ -1,0 +1,99 @@
+docs_dir: markdown
+
+theme:
+  name: "material"
+  custom_dir: overrides
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+      primary: deep purple
+      accent: deep orange
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+      primary: deep purple
+      accent: deep orange
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.top
+    - navigation.indexes
+
+site_name: "Bashlib"
+site_url: https://SolidLabResearch.github.io/Bashlib
+
+repo_url: https://github.com/SolidLabResearch/Bashlib
+repo_name: Bashlib
+edit_uri: ""
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - def_list
+  - footnotes
+  - meta
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.tilde
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        # need to fork the theme to make changes https://github.com/squidfunk/mkdocs-material/issues/3665#issuecomment-1060019924
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/SolidLabResearch/Bashlib
+    - icon: fontawesome/brands/npm
+      link: https://www.npmjs.com/package/solid-bashlib
+
+nav:
+  - Welcome:
+      - README.md
+  - Documentation:
+      - CLI Interface: documentation/cli-interface.md
+      - Typescript Interface: documentation/typescript-interface.md
+  - Tutorial: tutorial.md
+  - Usage:
+      - Overview: usage/overview.md
+      - CLI:
+          - Overview: usage/cli/overview.md
+          - Environment Variables: usage/cli/environment-variables.md
+          - Authentication: usage/cli/authentication.md
+          - Example requests: usage/cli/example-requests.md
+          - Metadata: usage/cli/metadata.md
+          - CSS specific features: usage/cli/css-specific.md
+      - Typescript:
+          - Overview: usage/typescript/overview.md
+          - Authentication: usage/typescript/authentication.md
+          - Example requests: usage/typescript/example-requests.md
+          - Metadata: usage/typescript/metadata.md
+          - CSS specific features: usage/typescript/css-specific.md
+  - Contributing:
+      - Pull requests: contributing/making-changes.md
+  # - API: ./typedocs/" target="_blank_blank
+# To write documentation locally, execute the next line and browse to http://localhost:8000
+# npm run mkdocs

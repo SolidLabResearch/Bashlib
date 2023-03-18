@@ -12,7 +12,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist/ && tsc",
     "prepare": "npm run build",
-    "release": "release-it"
+    "release": "release-it",
+    "mkdocs":"pip install mkdocs mkdocs-material && cd docs && mkdocs serve",
+    "typedocs": "typedoc --customCss ./documentation/typedoc.css",
+    "updatesite": "npm run typedocs; mkdocs gh-deploy -f documentation/mkdocs.yml"
   },
   "author": "",
   "license": "ISC",
@@ -46,6 +49,7 @@
     "@types/inquirer": "^8.2.1",
     "@types/set-cookie-parser": "^2.4.2",
     "release-it": "^15.5.0",
+    "typedoc": "^0.23.27",
     "typescript": "^4.9.3"
   }
 }
