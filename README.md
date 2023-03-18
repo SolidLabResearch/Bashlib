@@ -468,11 +468,7 @@ node bin/solid.js edit [options] <url>
 The commands above are nearly all exported as functions by the `Bashlib-solid` library in Node.JS. For more information on the working of the functions, please look above in the explanation of the CLI commands. 
 
 ### Functions
-Here a list of the available functions exposed by the lib in Node.JS is given.
-
-#### fetch
-An authenticated fetch function can be created using the `Bashlib-css` library.
-
+The following is a list of available functions that are exported by the Node.js library.
 #### list
 
 *usage*
@@ -490,7 +486,7 @@ let options = {
 await list(url, options)
 ```
 
-*returns*
+*returns* an object of the ```ResourceInfo``` interface:
 ```
 ResourceInfo: {
   url: string,              // the resource full url
@@ -529,7 +525,7 @@ TODO::
 ```
 
 
-#### move / mv
+#### move
 
 *usage*
 ```
@@ -576,7 +572,7 @@ TODO::
 ```
 
 
-#### mkdir (makeDirectory)
+#### makeDirectory
 
 *usage*
 ```
@@ -604,7 +600,7 @@ TODO::
 import { find } from "/install/location"
 
 let container = ...
-let filename = ... (string that is converted into a regex internally to match filenames)
+let filename = ... (string that is converted into a RegEx internally to match filenames)
 
 let options = {
   fetch: any,                 // an (authenticated) fetch function
@@ -722,3 +718,7 @@ await deletePermissions(url, options)
 ```
 TODO::
 ```
+
+##### authenticateWithTokenFromJavascript
+
+##### generateCSSToken

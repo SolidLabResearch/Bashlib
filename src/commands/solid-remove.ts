@@ -1,5 +1,5 @@
 import { isDirectory, readRemoteDirectoryRecursively } from '../utils/util';
-import { list } from '..';
+import { list } from '../';
 import chalk from 'chalk';
 import { deleteContainer, deleteFile } from '@inrupt/solid-client';
 import type { Logger } from '../logger';
