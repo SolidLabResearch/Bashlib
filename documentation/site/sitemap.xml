@@ -6,6 +6,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://SolidLabResearch.github.io/Bashlib/tutorial/</loc>
+         <lastmod>2023-03-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://SolidLabResearch.github.io/Bashlib/contributing/making-changes/</loc>
          <lastmod>2023-03-18</lastmod>
          <changefreq>daily</changefreq>

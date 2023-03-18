@@ -15,7 +15,6 @@ export default async function list(url: string, options: ListingOptions) {
   if (!isDirectory(url)) {
     (options.logger || console).error('List can only be called on containers. Please write containers with their trailing slash.')
     throw new Error('List can only be called on containers.');
-    return;
   }
   let dataset = await getSolidDataset(url, { fetch: options.fetch })
   let containedResources = getContainedResourceUrlAll(dataset)

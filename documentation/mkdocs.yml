@@ -94,6 +94,6 @@ nav:
           - CSS specific features: usage/typescript/css-specific.md
   - Contributing:
       - Pull requests: contributing/making-changes.md
-  - API: ./typedocs/" target="_blank_blank
+  # - API: ./typedocs/" target="_blank_blank
 # To write documentation locally, execute the next line and browse to http://localhost:8000
 # npm run mkdocs
