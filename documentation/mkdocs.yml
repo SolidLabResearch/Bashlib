@@ -76,6 +76,7 @@ nav:
   - Documentation:
       - CLI Interface: documentation/cli-interface.md
       - Typescript Interface: documentation/typescript-interface.md
+  - Tutorial: tutorial.md
   - Usage:
       - Overview: usage/overview.md
       - CLI:
