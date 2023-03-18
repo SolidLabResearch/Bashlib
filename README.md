@@ -470,38 +470,43 @@ The commands above are nearly all exported as functions by the `Bashlib-solid` l
 ### Functions
 The following is a list of available functions that are exported by the Node.js library.
 #### list
+Returns a list, containing information about the contents of the given container.
 
 *usage*
 ```
 import { list } from "/install/location"
 
-let url = ...
+let url = ...         // Enter a container URL
 let options = {
-  fetch: any,         // an (authenticated) fetch function
-  all?: boolean,      // include .acl resources in the listing
-  full?: boolean,     // return full urls instead of relative urls
-  verbose?: boolean,  // log all operations
+  fetch: any,         // An (authenticated) fetch function
+  all?: boolean,      // Include .acl resources in the listing
+  full?: boolean,     // Return full URL's instead of relative URL's
+  verbose?: boolean,  // Log all operations
+  logger?: Logger     // Custom logging object, logs are sent to the terminal if this is left empty
 } 
 
 await list(url, options)
 ```
 
-*returns* an object of the ```ResourceInfo``` interface:
+*returns*
+
+An array of objects of the ```ResourceInfo``` interface:
 ```
 ResourceInfo: {
-  url: string,              // the resource full url
-  relativePath?: string,    // the resource relative url
+  url: string,              // the full resource URL
+  relativePath?: string,    // the resource relative URL
   isDir: boolean,           // flag if directory or not
   modified?: Date | null,   // last modified date
   mtime?: number | null,    // last modified date as mtime
   size?: number | null,     // resource size
   types?: string[],         // resource types
   metadata?: ResourceInfo   // resourceInfo of metadata resource
-  acl?: ResourceInfo,       // resourceInfo of acl resource
+  acl?: ResourceInfo,       // resourceInfo of .acl resource
 }
 ```
 
 #### copy
+<!-- todo: hier verderwerken -->
 
 *usage*
 ```
@@ -511,10 +516,13 @@ let src = ...
 let dst = ...
 
 let options = {
-  fetch: any,         // an (authenticated) fetch function
-  all?: boolean,      // include .acl resources in the listing
-  verbose?: boolean,  // log all operations
-} 
+  fetch: Function,                // an (authenticated) fetch function
+  verbose?: boolean,              // log all operations
+  all?: boolean,                  // include .acl resources in the listing
+  interactiveOverride?: boolean,  // Determine which if the file should be overwritten, using CLI
+  noOverride?: boolean,           // don't override files that already exist
+  logger?: Logger                 // Custom logging object, logs are sent to the terminal if this is left empty
+}
 
 await copy(src, dst, options)
 ```

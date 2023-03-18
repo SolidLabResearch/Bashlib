@@ -11,3 +11,6 @@
     - [ ] verwijderen wat er niet meer is
     - [ ] toevoegen wat nieuw is
 - [ ] documentatie per command nagaan
+## site
+- [ ] documentation updaten
+- [ ] tutoril fixen
