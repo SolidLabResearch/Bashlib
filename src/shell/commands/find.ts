@@ -15,7 +15,7 @@ export default class FindCommand extends SolidCommand {
       .command('find')
       .description('Utility to find resoures on your data pod.')
       .argument('<url>', 'Container to start the search')
-      .argument('<filename>', 'Filename to match, processed as RegExp(filename)')
+      .argument('<filename>', 'Filename to match, processed as JavaScript RegExp(filename) function')
       .option('-a, --all', 'Match .acl and .meta files')
       .option('-f, --full', 'Match full filename.')
       .option('-v, --verbose', 'Log all operations')

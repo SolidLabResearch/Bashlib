@@ -13,7 +13,7 @@ export default class TouchCommand extends SolidCommand {
     program
       .command('touch')
       .description('Utility to create an empty resource on your data pod (if doesn\'t exist yet)')
-      .argument('<url>', 'file to be created')
+      .argument('<url>', 'URL of the file to be created')
       .option('-v, --verbose', 'Log all operations')
       .action(async (url, options) => {
         let programOpts = addEnvOptions(program.opts() || {});

@@ -13,16 +13,16 @@ export default class RemoveCommand extends SolidCommand {
     program
       .command('rm')
       .description('Utility to remove files or container on remote Solid pod.')
-      .argument('<urls...>', 'URL of container to be listed')
-      .option('-r, --recursive', 'Recursively removes all files in given container (.acl files are removed on resource removal)') // Should this be default?
+      .argument('<urls...>', 'URL\'s of resources to be listed')
+      .option('-r, --recursive', 'Recursively removes all files in given container') // Should this be default?
       .option('-v, --verbose', 'Log all operations') // Should this be default?
       .action(this.executeCommand)
     
     program
       .command('remove')
       .description('Utility to remove files or container on remote Solid pod.')
-      .argument('<urls...>', 'URL of container to be listed')
-      .option('-r, --recursive', 'Recursively removes all files in given container (.acl files are removed on resource removal)') // Should this be default?
+      .argument('<urls...>', 'URL\'s of resources to be listed')
+      .option('-r, --recursive', 'Recursively removes all files in given container') // Should this be default?
       .option('-v, --verbose', 'Log all operations') // Should this be default?
       .action(this.executeCommand)
 

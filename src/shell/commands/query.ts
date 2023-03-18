@@ -16,11 +16,11 @@ export default class QueryCommand extends SolidCommand {
     program
       .command('query')
       .description('Utility to query RDF resoures on your data pod.')
-      .argument('<url>', 'Resource to query. In case of container recursively queries all contained files.')
+      .argument('<url>', 'Resource to query. In case of container recursively queries all contained files')
       .argument('<query>', 'SPARQL query string | file path containing SPARQL query when -q flag is active')
       .option('-a, --all', 'Match .acl and .meta files')
       .option('-q, --queryfile', 'Process query parameter as file path of SPARQL query')
-      .option('-p, --pretty', 'Pretty format')
+      .option('-p, --pretty', 'Return the results in a table format')
       .option('-f, --full', 'Return containing files using full filename.')
       .option('-v, --verbose', 'Log all operations') // Should this be default?
       .action(async (url, queryString, options) => {

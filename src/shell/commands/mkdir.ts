@@ -13,7 +13,7 @@ export default class MkdirCommand extends SolidCommand {
     program
       .command('mkdir')
       .description('Utility to add an empty container to your pod.')
-      .argument('<url>', 'Container to start the search')
+      .argument('<url>', 'URL of the new container to be created')
       .option('-v, --verbose', 'Log all operations')
       .action(async (url, options) => {
         let programOpts = addEnvOptions(program.opts() || {});

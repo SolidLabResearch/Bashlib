@@ -24,7 +24,7 @@ export default class PermsCommand extends SolidCommand {
       To set updated permissions as default, please add the [d] option as follows: id=d[g][a][c][r][w]
       To indicate the id as a group id, please add the [g] option as follows: id=g[d][a][c][r][w]
       `)
-      .option('-p, --pretty', 'Pretty format')
+      .option('-p, --pretty', 'Return the results in a table format')
       .option('-v, --verbose', 'Log all operations') // Should this be default?
       .action(this.executeCommand)
     
