@@ -82,7 +82,7 @@ export default async function copy(src: string, dst: string, options: CopyOption
     resourcesToTransfer = await getLocalSourceFiles(source, options.verbose, options.all, options)
   }  
 
-  let destinationInfo: { files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[] } = {
+  let destinationInfo : { files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[] } = {
     files: [],
     directories: [],
     aclfiles: [],

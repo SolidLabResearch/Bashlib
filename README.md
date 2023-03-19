@@ -470,7 +470,7 @@ The commands above are nearly all exported as functions by the `Bashlib-solid` l
 ### Functions
 The following is a list of available functions that are exported by the Node.js library.
 #### list
-Returns a list, containing information about the contents of the given container.
+Returns an array, containing information about the contents of the given container.
 
 *usage*
 ```
@@ -506,8 +506,8 @@ ResourceInfo: {
 ```
 
 #### copy
-<!-- todo: hier verderwerken -->
-
+<!-- todo: nog aanvullen wat dit exact doet -->
+This command copies files/resources from and to both the local filesystem and solid pods.
 *usage*
 ```
 import { copy } from "/install/location"
@@ -528,14 +528,29 @@ await copy(src, dst, options)
 ```
 
 *returns*
+
+`copy` returns an object with a property `source`, that consists of a `resourceToTransfer` object, and a property `destination`, that consists of a `destinationInfo` object. Below is some more information about these two objects:
 ```
-TODO::
+let resourcesToTransfer : { 
+  files: FileInfo[],            // an array of files that have been copied
+  directories: FileInfo[],      // an array of directories that have been copied
+  aclfiles: FileInfo[]          // an array of .acl files that have been copied
+};
+
+let destinationInfo : { 
+  files: FileInfo[],            // an array of info about the destination of the files that have been copied
+  directories: FileInfo[],      // an array of info about the destination of the directories that have been copied
+  aclfiles: FileInfo[]          // an array of info about the destination of the .acl files that have been copied
+};
 ```
 
 
 #### move
 
 *usage*
+
+<!-- todo: uitleg nog aanvullen -->
+
 ```
 import { move } from "/install/location"
 
@@ -546,19 +561,19 @@ let options = {
   fetch: any,         // an (authenticated) fetch function
   all?: boolean,      // include .acl resources in the listing
   verbose?: boolean,  // log all operations
+  logger?:            // Custom logging object, logs are sent to the terminal if this is left empty
 } 
 
 await move(src, dst, options)
 ```
 
 *returns*
-```
-TODO::
-```
+<!-- todo: er wordt nooit een value teruggegeven, hoe verwoord ik dit best? -->
+
 
 
 #### remove
-
+<!-- todo: uitleg fixen -->
 *usage*
 ```
 import { remove } from "/install/location"
@@ -569,18 +584,19 @@ let options = {
   fetch: any,          // an (authenticated) fetch function
   recursive?: boolean, // include .acl resources in the listing
   verbose?: boolean,   // log all operations
+  logger?: Logger      // Custom logging object, logs are sent to the terminal if this is left empty
 } 
 
 await remove(url, options)
 ```
 
 *returns*
-```
-TODO::
-```
+
+<!-- todo: geeft niks terug: wat hier -->
 
 
 #### makeDirectory
+<!-- todo: uitleg hier fixen -->
 
 *usage*
 ```
@@ -591,17 +607,18 @@ let url = ...
 let options = {
   fetch: any,         // an (authenticated) fetch function
   verbose?: boolean,  // log all operations
+  logger?: Logger     // Custom logging object, logs are sent to the terminal if this is left empty
 } 
 
 await makeDirectory(url, options)
 ```
 
 *returns*
-```
-TODO::
-```
+<!-- TODO: geen idee wat een promise is -->
 
 #### find
+
+Given a container, the find function will look for all the files that have a matching filename to the provided filename.
 
 *usage*
 ```
@@ -622,29 +639,46 @@ await find(url, options)
 ```
 
 *returns*
+
+`find` returns an iterator of FileInfo objects, where the filename of the file matches the `filename` provided when calling the function. Nothing is returned whan no files are found with a matching name in `container`. More info about the structure of `FileInfo` is listed below:
 ```
-TODO::
+type FileInfo = { 
+  absolutePath: string, 
+  relativePath?: string,
+  directory?: string, 
+  contentType?: string,
+  buffer?: Buffer,
+  blob?: Blob,
+  loadFile?: FileLoadingFunction
+}
 ```
 
 
 #### query
+Execute SPARQL queries against resources located at the given URL, either as a single resource or as a collection of resources (the URL will then need to be the location of the container).
 
 *usage*
+<!-- todo: geen idee wat query is in de code -->
 ```
 import { query } from "/install/location"
 
-let url = ...
+
+let url = ...         // location of the resource(s)
+let query = ...       // represents a SPARQL query
 
 let options = {
   fetch: any,         // an (authenticated) fetch function
   all?: boolean,      // include .acl resources in querying
   verbose?: boolean,  // log all operations
+  logger?: Logger     // Custom logging object, logs are sent to the terminal if this is left empty
 } 
 
-await query(url, options)
+await query(url, query, options)
 ```
 
 *returns*
+
+`query` yields objects with the properties `fileName` and `bindings`. The `fileName` property contains the URL of the file that was queried, while the `bindings` property is an array of objects that contain the query results, where each object represents a single query result as a set of key-value pairs.
 ```
 TODO::
 ```
