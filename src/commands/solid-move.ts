@@ -1,19 +1,18 @@
 import copy from './solid-copy';
 import { isDirectory, isRemote } from '../utils/util';
 import remove from './solid-remove';
-import type { Logger } from '../logger';
+import { ICommandOptions, setOptionDefaults } from './solid-command';
 
-export interface MoveOptions {
-  fetch: any
+export interface ICommandOptionsMove extends ICommandOptions {
   all: boolean,
-  verbose: boolean,
-  logger?: Logger,
 }
-export default async function move(source: string, destination: string, options: MoveOptions) {
+export default async function move(source: string, destination: string, options: ICommandOptionsMove) {
+  let commandOptions = setOptionDefaults<ICommandOptionsMove>(options);
+
   let source_is_dir = isDirectory(source)
   let dest_is_dir = isDirectory(destination)
   if (source_is_dir && !dest_is_dir) {
-    (options.logger || console).error('Cannot move directory to a file')
+    commandOptions.logger.error('Cannot move directory to a file')
     return;
   } 
 
@@ -24,10 +23,10 @@ export default async function move(source: string, destination: string, options:
   }
   
   // Copy from source to destination
-  await copy(source, destination, options)
+  await copy(source, destination, commandOptions)
 
   // Remove source recursively
   if (isRemote(source)) {
-    await remove(source, { recursive: true, ...options });
+    await remove(source, { recursive: true, ...commandOptions });
   }
 }

@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { changePermissions, deletePermissions, listPermissions, PermissionOperation } from '../../commands/solid-perms';
+import { changePermissions, deletePermissions, listPermissions, IPermissionOperation } from '../../commands/solid-perms';
 import authenticate from '../../authentication/authenticate';
 import { addEnvOptions, changeUrlPrefixes, getAndNormalizeURL } from '../../utils/shellutils';
 import { writeErrorString } from '../../utils/util';
@@ -85,7 +85,7 @@ export default class PermsCommand extends SolidCommand {
           const append = permissionOptions.indexOf('a') !== -1
           const control = permissionOptions.indexOf('c') !== -1
           const def = permissionOptions.indexOf('d') !== -1
-          return ({ type, id, read, write, append, control, default: def } as PermissionOperation)
+          return ({ type, id, read, write, append, control, default: def } as IPermissionOperation)
         })
         try {
           await changePermissions(url, parsedPermissions, options)

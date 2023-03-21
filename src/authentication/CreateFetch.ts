@@ -5,7 +5,7 @@ import type { Logger } from '../logger';
 export const DEFAULTPORT = 3435
 export const APPNAME = "Solid-cli"
 
-export type IInteractiveAuthOptions = {
+export interface IInteractiveAuthOptions {
   idp?: string,
   sessionInfoStorageLocation?: string, // Storage location of session information to reuse in subsequent runs of the application.
   port?: number, // Used for redirect url of Solid login sequence
@@ -13,7 +13,7 @@ export type IInteractiveAuthOptions = {
   logger?: Logger,
 }
 
-export type IUserCredentialsAuthOptions = {
+export interface IUserCredentialsAuthOptions {
   idp: string,
   email: string,
   password: string,
@@ -22,7 +22,7 @@ export type IUserCredentialsAuthOptions = {
   logger?: Logger,
 }
 
-export type IClientCredentialsTokenAuthOptions = {
+export interface IClientCredentialsTokenAuthOptions {
   idp?: string, // This value is stored with the created client credentials token.
   sessionInfoStorageLocation?: string, // Storage location of session information to reuse in subsequent runs of the application.
   clientCredentialsTokenStorageLocation?: string,  // Storage location of the stored client credentials token.
@@ -30,7 +30,7 @@ export type IClientCredentialsTokenAuthOptions = {
   logger?: Logger,
 }
 
-export type IClientCredentialsTokenGenerationOptions = {
+export interface IClientCredentialsTokenGenerationOptions {
   name: string,
   email: string,
   password: string,
@@ -39,7 +39,7 @@ export type IClientCredentialsTokenGenerationOptions = {
   logger?: Logger,
 }
 
-export type SessionInfo = {
+export interface SessionInfo {
   fetch: typeof fetch
   webId?: string
 }

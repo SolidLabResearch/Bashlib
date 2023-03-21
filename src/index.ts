@@ -1,15 +1,17 @@
-import copy, {SourceOptions, CopyOptions} from "./commands/solid-copy"
-import list, {ListingOptions} from "./commands/solid-list"
-import remove, {RemoveOptions} from "./commands/solid-remove"
-import move, {MoveOptions} from "./commands/solid-move"
-import find, {FindOptions} from "./commands/solid-find"
-import query, {QueryOptions} from './commands/solid-query'
-import makeDirectory from "./commands/solid-mkdir"
+import { SessionInfo } from './authentication/CreateFetch';
+import copy, {ICommandOptionsCopy} from "./commands/solid-copy"
+import list, {ICommandOptionsList} from "./commands/solid-list"
+import remove, {ICommandOptionsRemove} from "./commands/solid-remove"
+import move, {ICommandOptionsMove} from "./commands/solid-move"
+import find, {ICommandOptionsFind} from "./commands/solid-find"
+import query, {ICommandOptionsQuery} from './commands/solid-query'
+import makeDirectory, {ICommandOptionsMakeDirectory} from "./commands/solid-mkdir"
 // import shell from "./commands/solid-shell"
-import createSolidPods, {AccountData} from "./commands/solid-pod-create"
-import { listPermissions, changePermissions, deletePermissions, QueryOptions as PermissionQueryOptions, PermissionOperation } from './commands/solid-perms'
+import createSolidPods, {IAccountData} from "./commands/solid-pod-create"
+import { listPermissions, changePermissions, deletePermissions, ICommandOptionsPermissions, IPermissionOperation, IPermissionListing, Record } from './commands/solid-perms'
 import { authenticateWithTokenFromJavascript } from "./authentication/AuthenticationToken"
 import { generateCSSToken, IClientCredentialsTokenGenerationOptions, CSSToken } from "./authentication/TokenCreationCSS"
+import { FileInfo, ResourceInfo } from './utils/util';
 
 // General Solid functionality
 export { copy, list, remove, move, find, query, listPermissions, changePermissions, deletePermissions, makeDirectory }
@@ -24,7 +26,7 @@ export { createSolidPods }
 export type { Logger } from './logger';
 
 // Type exports of commands options
-export type { SourceOptions, CopyOptions, ListingOptions, RemoveOptions, MoveOptions, FindOptions, QueryOptions, PermissionQueryOptions }
+export type { ICommandOptionsCopy, ICommandOptionsList, ICommandOptionsRemove, ICommandOptionsMove, ICommandOptionsFind, ICommandOptionsQuery, ICommandOptionsPermissions, ICommandOptionsMakeDirectory }
 
 // Type exports 
-export type { AccountData, IClientCredentialsTokenGenerationOptions, CSSToken, PermissionOperation }
+export type { IAccountData, IClientCredentialsTokenGenerationOptions, CSSToken, IPermissionOperation, FileInfo, ResourceInfo, SessionInfo, IPermissionListing, Record }

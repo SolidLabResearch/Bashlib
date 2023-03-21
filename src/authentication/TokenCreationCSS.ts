@@ -1,7 +1,7 @@
 import BashlibError from '../utils/errors/BashlibError';
 import { BashlibErrorMessage } from '../utils/errors/BashlibError';
 
-export type IClientCredentialsTokenGenerationOptions = {
+export interface IClientCredentialsTokenGenerationOptions {
   name: string,
   email: string,
   password: string,
