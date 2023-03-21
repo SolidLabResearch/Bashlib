@@ -14,7 +14,7 @@
     "prepare": "npm run build",
     "release": "release-it",
     "mkdocs": "pip install mkdocs mkdocs-material && mkdocs serve -f documentation/mkdocs.yml",
-    "typedocs": "typedoc --customCss ./documentation/typedoc.css",
+    "typedoc:dev": "typedoc --customCss ./documentation/typedoc.css; live-server docs/",
     "updatesite": "npm run typedocs; mkdocs gh-deploy -f documentation/mkdocs.yml"
   },
   "author": "",
