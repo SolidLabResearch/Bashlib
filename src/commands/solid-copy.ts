@@ -13,13 +13,13 @@ const mime = require('mime-types');
 // TODO:: Make reads / writes happen 1 file at a time (1 pair at a time in a threaded loop maybe), instead of reading all files and then writing all files.
 // Also this can probably be made a tad shorter by removing some duplication and clearing some code
 
-export type srcOptions = {
+export interface SourceOptions {
   path: string,
   isRemote: boolean,
   isDir: boolean
 }
 
-export type CopyOptions = {
+export interface CopyOptions {
   fetch: Function,
   verbose?: boolean,
   all?: boolean,
@@ -46,7 +46,7 @@ export default async function copy(src: string, dst: string, options: CopyOption
   const src_path = src_isRemote ? src : fixLocalPath(src)
   const src_isDir = isDirectory(src_path)
 
-  const source: srcOptions = {
+  const source: SourceOptions = {
     path: src_path,
     isRemote: src_isRemote,
     isDir: src_isDir
@@ -60,7 +60,7 @@ export default async function copy(src: string, dst: string, options: CopyOption
   const dst_path = dst_isRemote ? dst : fixLocalPath(dst)
   let dst_isDir = isDirectory(dst_path);
 
-  const destination: srcOptions = {
+  const destination: SourceOptions = {
     path: dst_path,
     isRemote: dst_isRemote,
     isDir: dst_isDir
@@ -171,7 +171,7 @@ export default async function copy(src: string, dst: string, options: CopyOption
  * UTILITY FUNCTIONS *
  *********************/
 
-async function getLocalSourceFiles(source: srcOptions, verbose: boolean, all: boolean, options?: { logger?: Logger }): Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
+async function getLocalSourceFiles(source: SourceOptions, verbose: boolean, all: boolean, options?: { logger?: Logger }): Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
   if (source.isDir) {
     let filePathInfos = readLocalDirectoryRecursively(source.path, undefined, {verbose, all} )
     let files = await Promise.all(filePathInfos.files.map(async fileInfo => {
@@ -192,7 +192,7 @@ async function getLocalSourceFiles(source: srcOptions, verbose: boolean, all: bo
   }
 }
 
-async function getRemoteSourceFiles(source: srcOptions, fetch: Function, verbose: boolean, all: boolean, options?: { logger?: Logger }) : Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
+async function getRemoteSourceFiles(source: SourceOptions, fetch: Function, verbose: boolean, all: boolean, options?: { logger?: Logger }) : Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
   if (source.isDir) {
     let discoveredResources = await readRemoteDirectoryRecursively(source.path, { fetch, verbose, all})
 

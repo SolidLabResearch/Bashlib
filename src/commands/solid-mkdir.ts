@@ -1,7 +1,7 @@
 import { createContainerAt } from '@inrupt/solid-client';
 import type { Logger } from '../logger';
 
-type MakeDirOptions = {
+interface MakeDirOptions {
   fetch: any,
   verbose?: boolean,
   logger?: Logger,

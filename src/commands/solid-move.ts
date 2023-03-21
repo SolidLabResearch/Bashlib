@@ -3,7 +3,7 @@ import { isDirectory, isRemote } from '../utils/util';
 import remove from './solid-remove';
 import type { Logger } from '../logger';
 
-export type MoveOptions = {
+export interface MoveOptions {
   fetch: any
   all: boolean,
   verbose: boolean,

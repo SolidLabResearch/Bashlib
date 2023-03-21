@@ -1,7 +1,7 @@
 import fs from 'fs';
 import type { Logger } from '../logger';
 
-type FetchOptions = {
+interface FetchOptions {
   fetch: Function,
   header?: string[],
   method?: string,

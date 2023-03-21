@@ -3,7 +3,7 @@ import { getContainedResourceUrlAll, getSolidDataset } from '@inrupt/solid-clien
 import type { Logger } from '../logger';
 import BashlibError from '../utils/errors/BashlibError';
 
-export type ListingOptions = {
+export interface ListingOptions {
   fetch: any,
   all?: boolean,
   full?: boolean,

@@ -43,7 +43,7 @@ type Record<K extends keyof any, T> = {
 };
 
 
-export type PermissionListing = {
+export interface PermissionListing {
   access: {
     agent?: null | Record<string, Access>,
     group?: null | Record<string, Access>,
@@ -89,7 +89,7 @@ export async function listPermissions(resourceUrl: string, options: QueryOptions
   }
 }
 
-export type PermissionOperation = {
+export interface PermissionOperation {
   type: 'agent' | 'group' | 'public',
   id?: string,
   read?: boolean,

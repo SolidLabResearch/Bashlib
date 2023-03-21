@@ -8,7 +8,7 @@ import type { Logger } from '../logger';
 const md5 = require('md5');
 const child_process = require('child_process')
 
-type CommandOptionEdit = {
+interface CommandOptionEdit {
   fetch: any,
   editor?: string,
   touch?: boolean,

@@ -1,6 +1,6 @@
 import { generateRecursiveListing, FileInfo } from '../utils/util';
 
-export type FindOptions =  {
+export interface FindOptions {
   fetch: any,
   all?: boolean,
   full?: boolean,
