@@ -15,10 +15,10 @@
 - [x] duidelijke uitleg wat wat doet bij commando's
 - [x] remove gaat nooit verwijderen van local disk
 - [ ] mkdir later doen
-- [ ] bijzetten wanneer nodig dat async iterator wordt teruggegeven
+- [x] bijzetten wanneer nodig dat async iterator wordt teruggegeven
 - [x] onderscheid maken tussen standard options en function specific options
 # code
-- [ ] move baseren op copy in de nodejs stuff
+- [ ] move baseren op copy in solid-move.ts
 - [ ] copy en move moeten enkel destination teruggeven
 - [ ] find matcht op directorynames in de absolute path van filenames, da's niet de bedoeling, gewoon find een beetje fixen, full flag werkt ook niet
 - [ ] meegeven welk soort file je wilt aanmaken bij touch
