@@ -9,7 +9,7 @@ import { ICommandOptions, setOptionDefaults } from './solid-command';
 const md5 = require('md5');
 const child_process = require('child_process')
 
-interface ICommandOptionsEdit extends ICommandOptions {
+export interface ICommandOptionsEdit extends ICommandOptions {
   editor?: string,
   touch?: boolean,
 }

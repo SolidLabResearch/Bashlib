@@ -7,6 +7,7 @@ import find, {ICommandOptionsFind} from "./commands/solid-find"
 import query, {ICommandOptionsQuery} from './commands/solid-query'
 import makeDirectory, { ICommandOptionsMakeDirectory } from "./commands/solid-mkdir"
 import touch, {ICommandOptionsTouch} from "./commands/solid-touch"
+import edit, {ICommandOptionsEdit} from "./commands/solid-edit"
 // import shell from "./commands/solid-shell"
 import createSolidPods, {IAccountData} from "./commands/solid-pod-create"
 import { listPermissions, changePermissions, deletePermissions, ICommandOptionsPermissions, IPermissionOperation, IPermissionListing, Record } from './commands/solid-perms'
@@ -18,7 +19,7 @@ import { FileInfo, ResourceInfo } from './utils/util';
 export { copy, list, remove, move, find, query, listPermissions, changePermissions, deletePermissions, makeDirectory, touch }
 
 // Authentication Functionality
-export { authenticateWithTokenFromJavascript as authenticateToken, generateCSSToken }
+export { authenticateWithTokenFromJavascript as authenticateCSSToken, generateCSSToken }
 
 // CSS-specific Functionalitys
 export { createSolidPods }
@@ -27,7 +28,7 @@ export { createSolidPods }
 export type { Logger } from './logger';
 
 // Type exports of commands options
-export type { ICommandOptionsCopy, ICommandOptionsList, ICommandOptionsRemove, ICommandOptionsMove, ICommandOptionsFind, ICommandOptionsQuery, ICommandOptionsPermissions, ICommandOptionsMakeDirectory, ICommandOptionsTouch }
+export type { ICommandOptionsCopy, ICommandOptionsList, ICommandOptionsRemove, ICommandOptionsMove, ICommandOptionsFind, ICommandOptionsQuery, ICommandOptionsPermissions, ICommandOptionsMakeDirectory, ICommandOptionsTouch, ICommandOptionsEdit }
 
 // Type exports 
 export type { IAccountData, IClientCredentialsTokenGenerationOptions, CSSToken, IPermissionOperation, FileInfo, ResourceInfo, SessionInfo, IPermissionListing, Record }

@@ -2,10 +2,7 @@ import { FetchError, getResourceInfo } from "@inrupt/solid-client"
 import { setOptionDefaults, ICommandOptions } from './solid-command';
 const mime = require('mime-types');
 
-export interface ICommandOptionsTouch extends ICommandOptions{ 
-  all?: boolean,
-  full?: boolean,
-}
+export interface ICommandOptionsTouch extends ICommandOptions{}
 
 export default async function touch(url: string, options?: ICommandOptionsTouch) { 
     let commandOptions = setOptionDefaults<ICommandOptionsTouch>(options || {});
