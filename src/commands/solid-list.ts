@@ -1,7 +1,5 @@
 import { isDirectory, checkHeadersForAclAndMetadata, getResourceInfoFromDataset, getResourceInfoFromHeaders, ResourceInfo } from '../utils/util';
 import { getContainedResourceUrlAll, getSolidDataset } from '@inrupt/solid-client';
-import type { Logger } from '../logger';
-import BashlibError from '../utils/errors/BashlibError';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
 
 export interface ICommandOptionsList extends ICommandOptions{

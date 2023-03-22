@@ -99,7 +99,9 @@ export interface IPermissionOperation {
 }
 
 export async function changePermissions(resourceUrl: string, operations: IPermissionOperation[], options: ICommandOptionsPermissions) {
-  const resourceInfo = await getResourceInfoWithAcl(resourceUrl, { fetch: options.fetch })
+  let commandOptions = setOptionDefaults<ICommandOptionsPermissions>(options);
+
+  const resourceInfo = await getResourceInfoWithAcl(resourceUrl, { fetch: commandOptions.fetch })
   let aclDataset : AclDataset | null;
   if (await hasResourceAcl(resourceInfo)) {
     aclDataset = await getResourceAcl(resourceInfo); 
@@ -148,21 +150,23 @@ export async function changePermissions(resourceUrl: string, operations: IPermis
       if (operation.default) aclDataset = await setPublicDefaultAccess(aclDataset, access)
       aclDataset = await setPublicResourceAccess(aclDataset, access)
     } else { 
-      if (options.verbose) writeErrorString("Incorrect operation type", 'Please provide an operation type of agent, group or public.', options)
+      if (commandOptions.verbose) writeErrorString("Incorrect operation type", 'Please provide an operation type of agent, group or public.', commandOptions)
     }
   }
   // Post updated acl to pod
   if (aclDataset && await hasAccessibleAcl(resourceInfo)) {
     await saveAclFor(resourceInfo as WithAccessibleAcl, aclDataset, {fetch: options.fetch})
-    if (options.verbose) (options.logger || console).log(`Updated permissions for: ${resourceUrl}`)
+    if (commandOptions.verbose) commandOptions.logger.log(`Updated permissions for: ${resourceUrl}`)
   }
 }
 
 export async function deletePermissions(resourceUrl: string, options: ICommandOptionsPermissions) {
-  let resourceInfo = await getResourceInfoWithAcl(resourceUrl, {fetch: options.fetch})
+  let commandOptions = setOptionDefaults<ICommandOptionsPermissions>(options);
+
+  let resourceInfo = await getResourceInfoWithAcl(resourceUrl, {fetch: commandOptions.fetch})
   if (hasAccessibleAcl(resourceInfo)) {
-    await deleteAclFor(resourceInfo, {fetch: options.fetch})
-    if (options.verbose) (options.logger || console).log(`Deleted resource at ${resourceUrl}`)
+    await deleteAclFor(resourceInfo, {fetch: commandOptions.fetch})
+    if (commandOptions.verbose) commandOptions.logger.log(`Deleted resource at ${resourceUrl}`)
   } else {
     throw Error(`Resource at ${resourceUrl} does not have an accessible ACL resource`)
   }
