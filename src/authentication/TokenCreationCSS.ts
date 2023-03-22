@@ -6,7 +6,6 @@ export interface IClientCredentialsTokenGenerationOptions {
   email: string,
   password: string,
   idp: string,
-  clientCredentialsTokenStorageLocation?: string // Storage location of the output client credentials token.
 }
 
 export type CSSToken = {

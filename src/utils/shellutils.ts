@@ -36,7 +36,6 @@ export function addEnvOptions(options: any) {
   options.port = options.port || envAuthPort
 
   // Fixing some naming inconsistencies because of limited option length
-  options.clientCredentialsTokenStorageLocation = options.tokenStorage
   options.sessionInfoStorageLocation = options.sessionStorage
   options.verbose = !options.silent 
   return options
