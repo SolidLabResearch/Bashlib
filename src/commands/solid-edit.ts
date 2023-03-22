@@ -14,11 +14,11 @@ interface ICommandOptionsEdit extends ICommandOptions {
   touch?: boolean,
 }
 
-export default async function edit(url: string, options: ICommandOptionsEdit) { 
-  let commandOptions = setOptionDefaults<ICommandOptionsEdit>(options);
+export default async function edit(url: string, options?: ICommandOptionsEdit) { 
+  let commandOptions = setOptionDefaults<ICommandOptionsEdit>(options || {});
 
-  let exists = await checkRemoteFileExists(url, options.fetch);
-  let access = await checkRemoteFileAccess(url, options.fetch);
+  let exists = await checkRemoteFileExists(url, commandOptions.fetch);
+  let access = await checkRemoteFileAccess(url, commandOptions.fetch);
 
   if (exists && access) {
     await editRemoteFile(url, commandOptions)

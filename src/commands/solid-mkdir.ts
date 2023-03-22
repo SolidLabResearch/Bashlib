@@ -7,8 +7,8 @@ const LDP = "http://www.w3.org/ns/ldp#";
 
 export interface ICommandOptionsMakeDirectory extends ICommandOptions { }
 
-export default async function makeDirectory(url: string, options: ICommandOptionsMakeDirectory) {
-  let commandOptions = setOptionDefaults<ICommandOptionsMakeDirectory>(options);
+export default async function makeDirectory(url: string, options?: ICommandOptionsMakeDirectory) {
+  let commandOptions = setOptionDefaults<ICommandOptionsMakeDirectory>(options || {});
   let container = await createContainerAt(url, { fetch: commandOptions.fetch });
   let info: ResourceInfo = {
     url,

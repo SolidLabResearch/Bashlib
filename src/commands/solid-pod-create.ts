@@ -1,5 +1,7 @@
 import fetch from 'cross-fetch';
 import type { Logger } from '../logger';
+import { setOptionDefaults } from './solid-command';
+import { ICommandOptions } from '../../dist/commands/solid-command';
 
 export interface IAccountData {
   name: string,
@@ -11,7 +13,9 @@ export interface IAccountData {
  * @description
  * Function to initialize an array of data pods on a CSS instance.
  */
-export default async function createSolidPods(url: string, accountData: IAccountData[], options?: { logger?: Logger }) {
+export default async function createSolidPods(url: string, accountData: IAccountData[], options?: ICommandOptions) {
+  let commandOptions = setOptionDefaults(options || {});
+
   if (!url) throw new Error('Please pass a value for the CSS pod hosting service');
 
   // Uses hardcoded URL. Not sure if this URL can be discovered dynamically?
@@ -31,7 +35,7 @@ export default async function createSolidPods(url: string, accountData: IAccount
       createWebId: true
     }
     
-    const res = await fetch(pod_server_register_url, {
+    const res = await commandOptions.fetch(pod_server_register_url, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify(settings),
@@ -39,9 +43,9 @@ export default async function createSolidPods(url: string, accountData: IAccount
     // See server response or error text
     let jsonResponse = await res.json()
     if (jsonResponse.name && jsonResponse.name.includes('Error')) {
-      (options?.logger || console).error(`${jsonResponse.name} - Creating pod for ${account.name} failed: ${jsonResponse.message}`)
+      commandOptions.logger.error(`${jsonResponse.name} - Creating pod for ${account.name} failed: ${jsonResponse.message}`)
     } else {
-      (options?.logger || console).log(`Pod for ${account.name} created succesfully on ${jsonResponse.webId}`)
+      commandOptions.logger.log(`Pod for ${account.name} created succesfully on ${jsonResponse.webId}`)
       responses.push(jsonResponse)
     }
   }

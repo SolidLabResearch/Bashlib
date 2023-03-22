@@ -7,8 +7,8 @@ export interface ICommandOptionsList extends ICommandOptions{
   full?: boolean,
 }
 
-export default async function list(url: string, options: ICommandOptionsList) {
-  let commandOptions = setOptionDefaults<ICommandOptionsList>(options);
+export default async function list(url: string, options?: ICommandOptionsList) {
+  let commandOptions = setOptionDefaults<ICommandOptionsList>(options || {});
   
   if (!isDirectory(url)) {
     commandOptions.logger.error('List can only be called on containers. Please write containers with their trailing slash.')

@@ -9,8 +9,8 @@ export interface ICommandOptionsRemove extends ICommandOptions {
   recursive?: boolean,
 }
 
-export default async function remove(url: string, options: ICommandOptionsRemove) {
-  let commandOptions = setOptionDefaults<ICommandOptionsRemove>(options)
+export default async function remove(url: string, options?: ICommandOptionsRemove) {
+  let commandOptions = setOptionDefaults<ICommandOptionsRemove>(options || {})
 
   if (isDirectory(url)) {
     const listing = await list(url, { fetch: commandOptions.fetch })

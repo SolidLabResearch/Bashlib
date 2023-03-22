@@ -26,11 +26,11 @@ export interface ICommandOptionsCopy extends ICommandOptions {
   noOverride?: boolean,
 }
 
-export default async function copy(src: string, dst: string, options: ICommandOptionsCopy) : Promise<{
+export default async function copy(src: string, dst: string, options?: ICommandOptionsCopy) : Promise<{
   source: {files: FileInfo[]; directories: FileInfo[]; aclfiles: FileInfo[];}
   destination: {files: FileInfo[]; directories: FileInfo[]; aclfiles: FileInfo[];}
 }> {
-  let commandOptions = setOptionDefaults<ICommandOptionsCopy>(options);
+  let commandOptions = setOptionDefaults<ICommandOptionsCopy>(options || {});
   let fetch = commandOptions.fetch;
   commandOptions.all = commandOptions.all || false;
   commandOptions.interactiveOverride = commandOptions.interactiveOverride || false;

@@ -58,8 +58,8 @@ export interface IPermissionListing {
   }
 }
 
-export async function listPermissions(resourceUrl: string, options: ICommandOptionsPermissions) {
-  let commandOptions = setOptionDefaults<ICommandOptionsPermissions>(options);
+export async function listPermissions(resourceUrl: string, options?: ICommandOptionsPermissions) {
+  let commandOptions = setOptionDefaults<ICommandOptionsPermissions>(options || {});
 
   let permissions : IPermissionListing = { access: {} }
   try {
@@ -98,8 +98,8 @@ export interface IPermissionOperation {
   default?: boolean,
 }
 
-export async function changePermissions(resourceUrl: string, operations: IPermissionOperation[], options: ICommandOptionsPermissions) {
-  let commandOptions = setOptionDefaults<ICommandOptionsPermissions>(options);
+export async function changePermissions(resourceUrl: string, operations: IPermissionOperation[], options?: ICommandOptionsPermissions) {
+  let commandOptions = setOptionDefaults<ICommandOptionsPermissions>(options || {});
 
   const resourceInfo = await getResourceInfoWithAcl(resourceUrl, { fetch: commandOptions.fetch })
   let aclDataset : AclDataset | null;
@@ -155,13 +155,13 @@ export async function changePermissions(resourceUrl: string, operations: IPermis
   }
   // Post updated acl to pod
   if (aclDataset && await hasAccessibleAcl(resourceInfo)) {
-    await saveAclFor(resourceInfo as WithAccessibleAcl, aclDataset, {fetch: options.fetch})
+    await saveAclFor(resourceInfo as WithAccessibleAcl, aclDataset, {fetch: commandOptions.fetch})
     if (commandOptions.verbose) commandOptions.logger.log(`Updated permissions for: ${resourceUrl}`)
   }
 }
 
-export async function deletePermissions(resourceUrl: string, options: ICommandOptionsPermissions) {
-  let commandOptions = setOptionDefaults<ICommandOptionsPermissions>(options);
+export async function deletePermissions(resourceUrl: string, options?: ICommandOptionsPermissions) {
+  let commandOptions = setOptionDefaults<ICommandOptionsPermissions>(options || {});
 
   let resourceInfo = await getResourceInfoWithAcl(resourceUrl, {fetch: commandOptions.fetch})
   if (hasAccessibleAcl(resourceInfo)) {

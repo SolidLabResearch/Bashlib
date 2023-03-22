@@ -7,8 +7,8 @@ export interface ICommandOptionsTouch extends ICommandOptions{
   full?: boolean,
 }
 
-export default async function touch(url: string, options: ICommandOptionsTouch) { 
-    let commandOptions = setOptionDefaults<ICommandOptionsTouch>(options);
+export default async function touch(url: string, options?: ICommandOptionsTouch) { 
+    let commandOptions = setOptionDefaults<ICommandOptionsTouch>(options || {});
     let fetch = commandOptions.fetch;
     
     if (url.endsWith('/')) {
