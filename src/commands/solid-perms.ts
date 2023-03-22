@@ -42,7 +42,7 @@ export type Record<K extends keyof any, T> = {
 
 export interface IPermissionListing {
   access: {
-    agent?: null | Record<string, Access>,
+    agent?: null | AgentAccess,
     group?: null | Record<string, Access>,
     public?: null | Access
   },
