@@ -495,7 +495,7 @@ await list(url, options)
 
 *returns*
 
-An array of objects of the ```ResourceInfo``` interface:
+An array of objects of the `ResourceInfo` interface:
 ```
 ResourceInfo: {
   url: string,              // the full resource URL
@@ -605,17 +605,17 @@ let url = ...
 let options = {
 // general command options
   fetch?: any,          // an (authenticated) fetch function
-  verbose?: boolean,   // log all operations
-  logger?: Logger      // Custom logging object, logs are sent to the terminal if this is left empty
+  verbose?: boolean,    // log all operations
+  logger?: Logger       // Custom logging object, logs are sent to the terminal if this is left empty
 // options specific to remove
-  recursive?: boolean, // include .acl resources in the listing
+  recursive?: boolean,  // include .acl resources in the listing
 } 
 
 await remove(url, options)
 ```
 
 *returns*
-The command reutns when the source has been removed
+The command reutns when the source has been removed.
 
 #### makeDirectory
 This command creates a new empty container on a Solid pod on the given URL.
@@ -672,7 +672,7 @@ await find(url, options)
 
 *returns*
 
-`find` returns an iterator of FileInfo objects, where the filename of the file matches the `filename` provided when calling the function. Nothing is returned whan no files are found with a matching name in `container`. More info about the structure of `FileInfo` is listed below:
+`find` returns an **async** iterator of FileInfo objects, where the filename of the file matches the `filename` provided when calling the function. Nothing is returned whan no files are found with a matching name in `container`. More info about the structure of `FileInfo` is listed below:
 ```
 type FileInfo = { 
   absolutePath: string, 
@@ -690,7 +690,6 @@ type FileInfo = {
 Execute SPARQL queries against resources located at the given URL, either as a single resource or as a collection of resources (the URL will then need to be the location of the container).
 
 *usage*
-<!-- todo: geen idee wat query is in de code -->
 ```
 import { query } from "/install/location"
 
@@ -713,7 +712,7 @@ await query(url, query, options)
 
 *returns*
 
-An async iterator is returned with objects with the properties `fileName` and `bindings`. The `fileName` property contains the URL of the file that was queried.
+An **async** iterator is returned with objects with the properties `fileName` and `bindings`. The `fileName` property contains the URL of the file that was queried.
 
 This function uses Comunica query engine under the hood. For more information about the resulting bindings, please consult [this page](https://comunica.dev/docs/query/advanced/bindings/).
 
