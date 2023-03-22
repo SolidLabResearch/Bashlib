@@ -1,7 +1,5 @@
 import { isDirectory, checkHeadersForAclAndMetadata, getResourceInfoFromDataset, getResourceInfoFromHeaders, ResourceInfo } from '../utils/util';
 import { getContainedResourceUrlAll, getSolidDataset } from '@inrupt/solid-client';
-import type { Logger } from '../logger';
-import BashlibError from '../utils/errors/BashlibError';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
 
 export interface ICommandOptionsList extends ICommandOptions{
@@ -9,8 +7,8 @@ export interface ICommandOptionsList extends ICommandOptions{
   full?: boolean,
 }
 
-export default async function list(url: string, options: ICommandOptionsList) {
-  let commandOptions = setOptionDefaults<ICommandOptionsList>(options);
+export default async function list(url: string, options?: ICommandOptionsList) {
+  let commandOptions = setOptionDefaults<ICommandOptionsList>(options || {});
   
   if (!isDirectory(url)) {
     commandOptions.logger.error('List can only be called on containers. Please write containers with their trailing slash.')

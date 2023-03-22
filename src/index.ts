@@ -5,7 +5,8 @@ import remove, {ICommandOptionsRemove} from "./commands/solid-remove"
 import move, {ICommandOptionsMove} from "./commands/solid-move"
 import find, {ICommandOptionsFind} from "./commands/solid-find"
 import query, {ICommandOptionsQuery} from './commands/solid-query'
-import makeDirectory, {ICommandOptionsMakeDirectory} from "./commands/solid-mkdir"
+import makeDirectory, { ICommandOptionsMakeDirectory } from "./commands/solid-mkdir"
+import touch, {ICommandOptionsTouch} from "./commands/solid-touch"
 // import shell from "./commands/solid-shell"
 import createSolidPods, {IAccountData} from "./commands/solid-pod-create"
 import { listPermissions, changePermissions, deletePermissions, ICommandOptionsPermissions, IPermissionOperation, IPermissionListing, Record } from './commands/solid-perms'
@@ -14,7 +15,7 @@ import { generateCSSToken, IClientCredentialsTokenGenerationOptions, CSSToken } 
 import { FileInfo, ResourceInfo } from './utils/util';
 
 // General Solid functionality
-export { copy, list, remove, move, find, query, listPermissions, changePermissions, deletePermissions, makeDirectory }
+export { copy, list, remove, move, find, query, listPermissions, changePermissions, deletePermissions, makeDirectory, touch }
 
 // Authentication Functionality
 export { authenticateWithTokenFromJavascript as authenticateToken, generateCSSToken }
@@ -26,7 +27,7 @@ export { createSolidPods }
 export type { Logger } from './logger';
 
 // Type exports of commands options
-export type { ICommandOptionsCopy, ICommandOptionsList, ICommandOptionsRemove, ICommandOptionsMove, ICommandOptionsFind, ICommandOptionsQuery, ICommandOptionsPermissions, ICommandOptionsMakeDirectory }
+export type { ICommandOptionsCopy, ICommandOptionsList, ICommandOptionsRemove, ICommandOptionsMove, ICommandOptionsFind, ICommandOptionsQuery, ICommandOptionsPermissions, ICommandOptionsMakeDirectory, ICommandOptionsTouch }
 
 // Type exports 
 export type { IAccountData, IClientCredentialsTokenGenerationOptions, CSSToken, IPermissionOperation, FileInfo, ResourceInfo, SessionInfo, IPermissionListing, Record }

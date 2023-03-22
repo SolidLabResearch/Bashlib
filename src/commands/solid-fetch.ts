@@ -9,8 +9,8 @@ interface ICommandOptionsFetch extends ICommandOptions {
   file?: string, // File containing the body
   onlyHeaders?: boolean,
 }
-export default async function authenticatedFetch(url: string, options: ICommandOptionsFetch) {
-  let commandOptions = setOptionDefaults<ICommandOptionsFetch>(options);
+export default async function authenticatedFetch(url: string, options?: ICommandOptionsFetch) {
+  let commandOptions = setOptionDefaults<ICommandOptionsFetch>(options || {});
   
   const fetch = commandOptions.fetch
   let processedHeaders : any = {}
@@ -60,7 +60,7 @@ export default async function authenticatedFetch(url: string, options: ICommandO
     commandOptions.logger.error(methodString);
     commandOptions.logger.error(requestHeaderString);
     commandOptions.logger.error(responseHeaderString);
-  } else if (options.onlyHeaders) {
+  } else if (commandOptions.onlyHeaders) {
     commandOptions.logger.error(requestHeaderString);
     commandOptions.logger.error(responseHeaderString);
   }

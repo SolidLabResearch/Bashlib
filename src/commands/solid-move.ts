@@ -6,8 +6,8 @@ import { ICommandOptions, setOptionDefaults } from './solid-command';
 export interface ICommandOptionsMove extends ICommandOptions {
   all: boolean,
 }
-export default async function move(source: string, destination: string, options: ICommandOptionsMove) {
-  let commandOptions = setOptionDefaults<ICommandOptionsMove>(options);
+export default async function move(source: string, destination: string, options?: ICommandOptionsMove) {
+  let commandOptions = setOptionDefaults<ICommandOptionsMove>(options || {});
 
   let source_is_dir = isDirectory(source)
   let dest_is_dir = isDirectory(destination)

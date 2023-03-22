@@ -9,8 +9,8 @@ export interface ICommandOptionsQuery extends ICommandOptions{
 }
 
 
-export default async function* query(resourceUrl: string, query: string, options: ICommandOptionsQuery) {
-  let commandOptions = setOptionDefaults<ICommandOptionsQuery>(options);
+export default async function* query(resourceUrl: string, query: string, options?: ICommandOptionsQuery) {
+  let commandOptions = setOptionDefaults<ICommandOptionsQuery>(options || {});
 
   if (isDirectory(resourceUrl)) {
     for await (let fileInfo of find(resourceUrl, '.', commandOptions)) {

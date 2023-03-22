@@ -7,8 +7,8 @@ export interface ICommandOptionsFind extends ICommandOptions {
   listDirectories?: boolean,
 }
 
-export default async function* find(rootcontainer: string, filename: string, options: ICommandOptionsFind) {
-  let commandOptions = setOptionDefaults(options);
+export default async function* find(rootcontainer: string, filename: string, options?: ICommandOptionsFind) {
+  let commandOptions = setOptionDefaults(options || {});
 
   if (!filename || !rootcontainer) return;
   for await (let fileInfo of generateRecursiveListing(rootcontainer, commandOptions)) {

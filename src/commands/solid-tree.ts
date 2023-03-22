@@ -13,8 +13,8 @@ const DASHES = '---'
 /**
  * This function is CLI only, as it does not make any sense as a Node.JS export
  */
-export default async function tree(url: string, options: ICommandOptionsTree) {
-  let commandOptions = setOptionDefaults<ICommandOptionsTree>(options);
+export default async function tree(url: string, options?: ICommandOptionsTree) {
+  let commandOptions = setOptionDefaults<ICommandOptionsTree>(options || {});
 
   if (!isDirectory(url)) {
     throw new Error('Can only call tree with a container as argument.')
