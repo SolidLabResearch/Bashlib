@@ -1,0 +1,14 @@
+name: CI
+on:
+  push:
+    branches:
+      - "main"
+      - "master"
+      - "versions/*"
+    tags:
+      - "v*"
+  pull_request:
+  
+jobs:
+  mkdocs-release:
+    uses: ./.github/workflows/mkdocs.yml

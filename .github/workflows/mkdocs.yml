@@ -26,8 +26,6 @@ jobs:
         with:
           node-version: "16.x"
       - run: npm ci --ignore-scripts
-      - name: Lint documentation markdown
-        run: npm run lint:markdown -- documentation/**/*.md
       - if: startsWith(github.ref, 'refs/tags/v')
         name: Get tagged version
         id: tagged_version
@@ -53,7 +51,7 @@ jobs:
       - run: git fetch origin gh-pages --depth=1
       - run: |
           cd documentation && mike deploy --push --update-aliases \
-            ${{ needs.mkdocs-prep.outputs.major }}.x latest
+            typedocs latest
 
   typedocs:
     # Build typedocs and publish them to the GH page.

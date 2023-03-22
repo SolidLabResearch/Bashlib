@@ -1,24 +1,32 @@
-import copy from "./commands/solid-copy"
-import list from "./commands/solid-list"
-import remove from "./commands/solid-remove"
-import move from "./commands/solid-move"
-import find from "./commands/solid-find"
-import query from './commands/solid-query'
-import makeDirectory from "./commands/solid-mkdir"
-import shell from "./commands/solid-shell"
-import createSolidPods from "./commands/solid-pod-create"
-import { listPermissions, changePermissions, deletePermissions } from './commands/solid-perms'
+import { SessionInfo } from './authentication/CreateFetch';
+import copy, {ICommandOptionsCopy} from "./commands/solid-copy"
+import list, {ICommandOptionsList} from "./commands/solid-list"
+import remove, {ICommandOptionsRemove} from "./commands/solid-remove"
+import move, {ICommandOptionsMove} from "./commands/solid-move"
+import find, {ICommandOptionsFind} from "./commands/solid-find"
+import query, {ICommandOptionsQuery} from './commands/solid-query'
+import makeDirectory, {ICommandOptionsMakeDirectory} from "./commands/solid-mkdir"
+// import shell from "./commands/solid-shell"
+import createSolidPods, {IAccountData} from "./commands/solid-pod-create"
+import { listPermissions, changePermissions, deletePermissions, ICommandOptionsPermissions, IPermissionOperation, IPermissionListing, Record } from './commands/solid-perms'
 import { authenticateWithTokenFromJavascript } from "./authentication/AuthenticationToken"
-import { generateCSSToken } from "./authentication/TokenCreationCSS"
+import { generateCSSToken, IClientCredentialsTokenGenerationOptions, CSSToken } from "./authentication/TokenCreationCSS"
+import { FileInfo, ResourceInfo } from './utils/util';
 
 // General Solid functionality
-export { copy, list, remove, move, find, query, listPermissions, changePermissions, deletePermissions, makeDirectory, shell }
+export { copy, list, remove, move, find, query, listPermissions, changePermissions, deletePermissions, makeDirectory }
 
 // Authentication Functionality
 export { authenticateWithTokenFromJavascript as authenticateToken, generateCSSToken }
 
-// CSS-specific Functionality
+// CSS-specific Functionalitys
 export { createSolidPods }
 
 // Type exports
 export type { Logger } from './logger';
+
+// Type exports of commands options
+export type { ICommandOptionsCopy, ICommandOptionsList, ICommandOptionsRemove, ICommandOptionsMove, ICommandOptionsFind, ICommandOptionsQuery, ICommandOptionsPermissions, ICommandOptionsMakeDirectory }
+
+// Type exports 
+export type { IAccountData, IClientCredentialsTokenGenerationOptions, CSSToken, IPermissionOperation, FileInfo, ResourceInfo, SessionInfo, IPermissionListing, Record }

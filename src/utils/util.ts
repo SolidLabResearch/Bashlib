@@ -119,15 +119,15 @@ export async function getInbox(webId: string, fetch: Function) : Promise<string 
   return inbox;
 }
 
-export type ReadOptions = {
-  fetch: any,
+export interface IReadOptions {
+  fetch: typeof globalThis.fetch,
   verbose?: boolean,
   listDirectories?: boolean,
   all?: boolean,
 }
 
 export async function readRemoteDirectoryRecursively(
-  root_path: string, options: ReadOptions, local_path: string = '', files: FileInfo[] = [], directories: FileInfo[] = [], aclfiles: FileInfo[] = []
+  root_path: string, options: IReadOptions, local_path: string = '', files: FileInfo[] = [], directories: FileInfo[] = [], aclfiles: FileInfo[] = []
   ): Promise<DirInfo> {
   // Make sure directory path always ends with a /
   if (local_path && !local_path.endsWith('/')) local_path = local_path + '/'
@@ -215,7 +215,7 @@ export async function readRemoteDirectoryRecursively(
   return { files, directories, aclfiles };
 }
 
-export async function* generateRecursiveListing( baseContainerURI: string, options: ReadOptions ): AsyncGenerator<FileInfo, any, undefined> {
+export async function* generateRecursiveListing( baseContainerURI: string, options: IReadOptions ): AsyncGenerator<FileInfo, any, undefined> {
   // Make sure directory path always ends with a /
   if (!baseContainerURI.endsWith('/')) baseContainerURI += '/'
 

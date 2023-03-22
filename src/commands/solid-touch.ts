@@ -1,18 +1,24 @@
 import { FetchError, getResourceInfo } from "@inrupt/solid-client" 
+import { setOptionDefaults, ICommandOptions } from './solid-command';
 const mime = require('mime-types');
 
-export default async function touch(url: string, options: any) { 
-    let fetch = options.fetch;
-    let verbose = options.verbose || false;
+export interface ICommandOptionsTouch extends ICommandOptions{ 
+  all?: boolean,
+  full?: boolean,
+}
+
+export default async function touch(url: string, options: ICommandOptionsTouch) { 
+    let commandOptions = setOptionDefaults<ICommandOptionsTouch>(options);
+    let fetch = commandOptions.fetch;
     
     if (url.endsWith('/')) {
         throw new Error('Can\'t touch containers only resources')
     }
 
-    let urlExists = await resourceExists(url, options);
+    let urlExists = await resourceExists(url, commandOptions);
     
     if (urlExists) {
-        if (verbose) (options.logger || console).log(`Remote file already exists`)
+        if (commandOptions.verbose) commandOptions.logger.log(`Remote file already exists`)
     }
     else {
         let path = url.replace(/.*\//,'')
@@ -34,7 +40,7 @@ export default async function touch(url: string, options: any) {
             }
         )
         if (res.ok) {
-            if (verbose) (options.logger || console).log(`Remote file created`)
+            if (commandOptions.verbose) commandOptions.logger.log(`Remote file created`)
         }
         else {
             throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`)

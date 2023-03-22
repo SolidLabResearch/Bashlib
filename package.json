@@ -1,6 +1,6 @@
 {
   "name": "solid-bashlib",
-  "version": "0.2.6",
+  "version": "0.3.1",
   "description": "",
   "main": "dist/index.js",
   "bin": {
@@ -13,8 +13,9 @@
     "build": "rm -rf dist/ && tsc",
     "prepare": "npm run build",
     "release": "release-it",
-    "mkdocs":"pip install mkdocs mkdocs-material && mkdocs serve -f documentation/mkdocs.yml",
+    "mkdocs": "pip install mkdocs mkdocs-material && mkdocs serve -f documentation/mkdocs.yml",
     "typedocs": "typedoc --customCss ./documentation/typedoc.css",
+    "typedocs:dev": "typedoc --customCss ./documentation/typedoc.css; live-server docs/",
     "updatesite": "npm run typedocs; mkdocs gh-deploy -f documentation/mkdocs.yml"
   },
   "author": "",
@@ -48,6 +49,7 @@
     "@types/crypto-js": "^4.1.1",
     "@types/inquirer": "^8.2.1",
     "@types/set-cookie-parser": "^2.4.2",
+    "live-server": "^1.2.2",
     "release-it": "^15.5.0",
     "typedoc": "^0.23.27",
     "typescript": "^4.9.3"

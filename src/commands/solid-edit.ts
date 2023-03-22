@@ -4,35 +4,35 @@ import copy from "./solid-copy";
 import fs from 'fs';
 import { checkRemoteFileAccess, checkRemoteFileExists, getPodRoot } from "../utils/util";
 import type { Logger } from '../logger';
+import { ICommandOptions, setOptionDefaults } from './solid-command';
 
 const md5 = require('md5');
 const child_process = require('child_process')
 
-type CommandOptionEdit = {
-  fetch: any,
+interface ICommandOptionsEdit extends ICommandOptions {
   editor?: string,
   touch?: boolean,
-  verbose?: boolean,
-  logger?: Logger,
 }
 
-export default async function edit(url: string, options: CommandOptionEdit) { 
+export default async function edit(url: string, options: ICommandOptionsEdit) { 
+  let commandOptions = setOptionDefaults<ICommandOptionsEdit>(options);
+
   let exists = await checkRemoteFileExists(url, options.fetch);
   let access = await checkRemoteFileAccess(url, options.fetch);
 
   if (exists && access) {
-    await editRemoteFile(url, options)
+    await editRemoteFile(url, commandOptions)
   } else if (!exists) { 
-    if (!options.touch) {
+    if (!commandOptions.touch) {
       throw new Error('Could not edit non-existing resource. Please use the --touch flag to create a new resource on edit.')
     }
-    await editNewFile(url, options)
+    await editNewFile(url, commandOptions)
   } else { 
     throw new Error(`No access rights for editing resource at ${url}.`)
   }
 }
 
-async function editRemoteFile(url: string, options: CommandOptionEdit) { 
+async function editRemoteFile(url: string, options: ICommandOptionsEdit) { 
   const systemTmpDir = os.tmpdir()
   const solidTmpDir = path.join(systemTmpDir, '.solid/')
 
@@ -97,7 +97,7 @@ async function editRemoteFile(url: string, options: CommandOptionEdit) {
   }
 }
 
-async function editNewFile(url: string, options: CommandOptionEdit) { 
+async function editNewFile(url: string, options: ICommandOptionsEdit) { 
   const systemTmpDir = os.tmpdir()
   const solidTmpDir = path.join(systemTmpDir, '.solid/')
   let filename = url.split('/').reverse()[0]

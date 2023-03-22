@@ -5,7 +5,7 @@ import { getConfigCurrentWebID, getConfigCurrentToken } from '../utils/configopt
 import type { Logger } from '../logger';
 import crossfetch from 'cross-fetch';
 
-export type ILoginOptions = {
+export interface ILoginOptions {
   auth?: string,
   idp?: string,
   identityprovider?: string,

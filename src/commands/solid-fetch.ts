@@ -1,32 +1,32 @@
 import fs from 'fs';
 import type { Logger } from '../logger';
+import { ICommandOptions, setOptionDefaults } from './solid-command';
 
-type FetchOptions = {
-  fetch: Function,
+interface ICommandOptionsFetch extends ICommandOptions {
   header?: string[],
   method?: string,
   body?: string,
   file?: string, // File containing the body
-  verbose?: boolean,
   onlyHeaders?: boolean,
-  logger?: Logger,
 }
-export default async function authenticatedFetch(url: string, options: FetchOptions) {
-  const fetch = options.fetch
+export default async function authenticatedFetch(url: string, options: ICommandOptionsFetch) {
+  let commandOptions = setOptionDefaults<ICommandOptionsFetch>(options);
+  
+  const fetch = commandOptions.fetch
   let processedHeaders : any = {}
-  for (let header of options.header || []) {
+  for (let header of commandOptions.header || []) {
     let split = header.split(':')
     processedHeaders[split[0].trim()] = split[1].trim()
   }
 
-  if (options.file && !options.body){
-    options.body = fs.readFileSync(options.file, { encoding: "utf-8"})
+  if (commandOptions.file && !commandOptions.body){
+    commandOptions.body = fs.readFileSync(commandOptions.file, { encoding: "utf-8"})
   }
   
-  const fetchOptions = {
-    method: options.method,
+  const ICommandOptionsFetch = {
+    method: commandOptions.method,
     headers: processedHeaders,
-    body: options.body,
+    body: commandOptions.body,
     // mode: options.mode,
     // cache: options.cache,
     // credentials: options.credentials,
@@ -34,7 +34,7 @@ export default async function authenticatedFetch(url: string, options: FetchOpti
     // referrerPolicy: options.referrerPolicy,
   }
   
-  const response = await fetch(url, fetchOptions)
+  const response = await fetch(url, ICommandOptionsFetch)
   if (!response.ok) throw new Error(`HTTP Error Response: ${response.status} ${response.statusText}`);
   const text = await response.text();
   let methodString = ''
@@ -42,29 +42,29 @@ export default async function authenticatedFetch(url: string, options: FetchOpti
   let responseHeaderString = ''
 
   // Create method string
-  methodString = `${options.method || 'GET'} ${url}\n`
+  methodString = `${commandOptions.method || 'GET'} ${url}\n`
   
   // Create request header string
-  for (let header of options.header || []) {
+  for (let header of commandOptions.header || []) {
     let splitHeader = header.split(':')
     requestHeaderString += `> ${splitHeader[0]} ${splitHeader[1]}\n`
   }
 
   // Create response header string
-  for (let header of Array.from(response.headers) as any[]) {
+  response.headers.forEach(header => {
     responseHeaderString += `< ${header[0]} ${header[1]}\n`
-  }
+  })
 
   // Log to command line
-  if (options.verbose) {
-    (options.logger || console).error(methodString);
-    (options.logger || console).error(requestHeaderString);
-    (options.logger || console).error(responseHeaderString);
+  if (commandOptions.verbose) {
+    commandOptions.logger.error(methodString);
+    commandOptions.logger.error(requestHeaderString);
+    commandOptions.logger.error(responseHeaderString);
   } else if (options.onlyHeaders) {
-    (options.logger || console).error(requestHeaderString);
-    (options.logger || console).error(responseHeaderString);
+    commandOptions.logger.error(requestHeaderString);
+    commandOptions.logger.error(responseHeaderString);
   }
-  if (!options.onlyHeaders) {
-    (options.logger || console).log(text.trim());
+  if (!commandOptions.onlyHeaders) {
+    commandOptions.logger.log(text.trim());
   }
 }

@@ -31,19 +31,16 @@ import {
 } from '@inrupt/solid-client';
 import { writeErrorString } from '../utils/util';
 import type { Logger } from '../logger';
+import { ICommandOptions, setOptionDefaults } from './solid-command';
 
-export type QueryOptions = {
-  fetch: any
-  verbose?: boolean
-  logger?: Logger
-}
+export interface ICommandOptionsPermissions extends ICommandOptions { }
 
-type Record<K extends keyof any, T> = {
+export type Record<K extends keyof any, T> = {
   [P in K]: T;
 };
 
 
-export type PermissionListing = {
+export interface IPermissionListing {
   access: {
     agent?: null | Record<string, Access>,
     group?: null | Record<string, Access>,
@@ -61,10 +58,12 @@ export type PermissionListing = {
   }
 }
 
-export async function listPermissions(resourceUrl: string, options: QueryOptions) {
-  let permissions : PermissionListing = { access: {} }
+export async function listPermissions(resourceUrl: string, options: ICommandOptionsPermissions) {
+  let commandOptions = setOptionDefaults<ICommandOptionsPermissions>(options);
+
+  let permissions : IPermissionListing = { access: {} }
   try {
-    const resourceInfo = await getResourceInfoWithAcl(resourceUrl, { fetch: options.fetch })
+    const resourceInfo = await getResourceInfoWithAcl(resourceUrl, { fetch: commandOptions.fetch })
     permissions.access.agent = await getAgentAccessAll(resourceInfo)
     permissions.access.group = await getGroupAccessAll(resourceInfo)
     permissions.access.public = await getPublicAccess(resourceInfo)
@@ -85,11 +84,11 @@ export async function listPermissions(resourceUrl: string, options: QueryOptions
     }
     return permissions
   } catch (e) {
-    if (options.verbose) writeErrorString(`Could not retrieve permissions for ${resourceUrl}`, e, options)
+    if (commandOptions.verbose) writeErrorString(`Could not retrieve permissions for ${resourceUrl}`, e, commandOptions)
   }
 }
 
-export type PermissionOperation = {
+export interface IPermissionOperation {
   type: 'agent' | 'group' | 'public',
   id?: string,
   read?: boolean,
@@ -99,7 +98,7 @@ export type PermissionOperation = {
   default?: boolean,
 }
 
-export async function changePermissions(resourceUrl: string, operations: PermissionOperation[], options: QueryOptions) {
+export async function changePermissions(resourceUrl: string, operations: IPermissionOperation[], options: ICommandOptionsPermissions) {
   const resourceInfo = await getResourceInfoWithAcl(resourceUrl, { fetch: options.fetch })
   let aclDataset : AclDataset | null;
   if (await hasResourceAcl(resourceInfo)) {
@@ -159,7 +158,7 @@ export async function changePermissions(resourceUrl: string, operations: Permiss
   }
 }
 
-export async function deletePermissions(resourceUrl: string, options: QueryOptions) {
+export async function deletePermissions(resourceUrl: string, options: ICommandOptionsPermissions) {
   let resourceInfo = await getResourceInfoWithAcl(resourceUrl, {fetch: options.fetch})
   if (hasAccessibleAcl(resourceInfo)) {
     await deleteAclFor(resourceInfo, {fetch: options.fetch})
@@ -169,7 +168,7 @@ export async function deletePermissions(resourceUrl: string, options: QueryOptio
   }
 }
 
-function updateAccess(access: Access, operation: PermissionOperation) {
+function updateAccess(access: Access, operation: IPermissionOperation) {
   if (operation.read !== undefined) access.read = operation.read
   if (operation.write !== undefined) access.write = operation.write
   if (operation.append !== undefined) access.append = operation.append

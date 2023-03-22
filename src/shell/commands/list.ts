@@ -67,7 +67,7 @@ export default class ListCommand extends SolidCommand {
 /**
  * 
  * @param {ResourceInfo[]} listings 
- * @param {ListingOptions} options 
+ * @param {ICommandOptionsList} options 
  * @returns 
  */
 function formatListing(listings: any[], options: any) {

@@ -1,7 +1,7 @@
 import fetch from 'cross-fetch';
 import type { Logger } from '../logger';
 
-export type AccountData = {
+export interface IAccountData {
   name: string,
   email?: string,
   password?: string,
@@ -11,7 +11,7 @@ export type AccountData = {
  * @description
  * Function to initialize an array of data pods on a CSS instance.
  */
-export default async function createSolidPods(url: string, accountData: AccountData[], options?: { logger?: Logger }) {
+export default async function createSolidPods(url: string, accountData: IAccountData[], options?: { logger?: Logger }) {
   if (!url) throw new Error('Please pass a value for the CSS pod hosting service');
 
   // Uses hardcoded URL. Not sure if this URL can be discovered dynamically?

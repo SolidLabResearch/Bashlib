@@ -2,38 +2,38 @@ import { QueryEngine } from '@comunica/query-sparql';
 import { isDirectory, writeErrorString, FileInfo } from '../utils/util';
 import find from './solid-find';
 import type { Logger } from '../logger';
+import { ICommandOptions, setOptionDefaults } from './solid-command';
 
-export type QueryOptions = {
-  fetch: any
+export interface ICommandOptionsQuery extends ICommandOptions{
   all?: boolean,
-  verbose?: boolean,
-  logger?: Logger,
 }
 
 
-export default async function* query(resourceUrl: string, query: string, options: QueryOptions) {
+export default async function* query(resourceUrl: string, query: string, options: ICommandOptionsQuery) {
+  let commandOptions = setOptionDefaults<ICommandOptionsQuery>(options);
+
   if (isDirectory(resourceUrl)) {
-    for await (let fileInfo of find(resourceUrl, '.', options)) {
+    for await (let fileInfo of find(resourceUrl, '.', commandOptions)) {
       try {
-        const bindings = await queryResource(query, [fileInfo.absolutePath], options.fetch)
+        const bindings = await queryResource(query, [fileInfo.absolutePath], commandOptions.fetch)
         yield({ fileName: fileInfo.absolutePath, bindings })
       } catch (e) {
-        if (options.verbose) writeErrorString('Could not query file', e, options)
+        if (commandOptions.verbose) writeErrorString('Could not query file', e, commandOptions)
       }
     }
   } else {
     try {
-      const bindings = await queryResource(query, [resourceUrl], options.fetch)
+      const bindings = await queryResource(query, [resourceUrl], commandOptions.fetch)
       yield({ fileName: resourceUrl, bindings })
       return
     } catch (e) {
-      writeErrorString('Could not query file', e, options)
+      writeErrorString('Could not query file', e, commandOptions)
       return
     }
   }
 }
 
-async function queryResource(query: string, sources: any, fetch: any) {
+async function queryResource(query: string, sources: any, fetch: typeof globalThis.fetch) {
   const queryEngine = new QueryEngine();
   return new Promise(async (resolve, reject) => {
     try {
