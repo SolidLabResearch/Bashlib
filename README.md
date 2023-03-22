@@ -476,14 +476,15 @@ Returns an array, containing information about the contents of the given contain
 ```
 import { list } from "/install/location"
 
-let url = ...         // Enter a container URL
+let url = ...                       // container URL
 let options = {
-  fetch: any,         // An (authenticated) fetch function
-  all?: boolean,      // Include .acl resources in the listing
-  full?: boolean,     // Return full URL's instead of relative URL's
-  verbose?: boolean,  // Log all operations
-  logger?: Logger     // Custom logging object, logs are sent to the terminal if this is left empty
-} 
+  fetch?: typeof globalThis.fetch,  // An (authenticated) fetch function
+  verbose?: boolean,                // Log all operations
+  logger?: Logger,                  // Custom logging object, logs are sent to the terminal if this is left empty
+
+  all?: boolean,                    // Include .acl resources in the listing
+  full?: boolean                    // Return full URL's instead of relative URL's
+}
 
 await list(url, options)
 ```
@@ -516,12 +517,13 @@ let src = ...
 let dst = ...
 
 let options = {
-  fetch: Function,                // an (authenticated) fetch function
-  verbose?: boolean,              // log all operations
-  all?: boolean,                  // include .acl resources in the listing
-  interactiveOverride?: boolean,  // Determine which if the file should be overwritten, using CLI
-  noOverride?: boolean,           // don't override files that already exist
-  logger?: Logger                 // Custom logging object, logs are sent to the terminal if this is left empty
+  fetch?: Function,                // an (authenticated) fetch function
+  verbose?: boolean,               // log all operations
+  logger?: Logger                  // Custom logging object, logs are sent to the terminal if this is left empty
+
+  all?: boolean,                   // include .acl resources in the listing
+  interactiveOverride?: boolean,   // Determine which if the file should be overwritten, using CLI
+  noOverride?: boolean,            // don't override files that already exist
 }
 
 await copy(src, dst, options)
@@ -558,22 +560,23 @@ let src = ...
 let dst = ...
 
 let options = {
-  fetch: any,         // an (authenticated) fetch function
-  all?: boolean,      // include .acl resources in the listing
+  fetch?: any,         // an (authenticated) fetch function
   verbose?: boolean,  // log all operations
   logger?:            // Custom logging object, logs are sent to the terminal if this is left empty
+
+  all?: boolean,      // include .acl resources in the listing
 } 
 
 await move(src, dst, options)
 ```
 
 *returns*
-<!-- todo: er wordt nooit een value teruggegeven, hoe verwoord ik dit best? -->
-
+The command returns when the source has been moved
 
 
 #### remove
 <!-- todo: uitleg fixen -->
+<!-- Remove verwijdert nooit local sources -->
 *usage*
 ```
 import { remove } from "/install/location"
@@ -581,19 +584,18 @@ import { remove } from "/install/location"
 let url = ...
 
 let options = {
-  fetch: any,          // an (authenticated) fetch function
-  recursive?: boolean, // include .acl resources in the listing
+  fetch?: any,          // an (authenticated) fetch function
   verbose?: boolean,   // log all operations
   logger?: Logger      // Custom logging object, logs are sent to the terminal if this is left empty
+
+  recursive?: boolean, // include .acl resources in the listing
 } 
 
 await remove(url, options)
 ```
 
 *returns*
-
-<!-- todo: geeft niks terug: wat hier -->
-
+The command reutns when the source has been removed
 
 #### makeDirectory
 <!-- todo: uitleg hier fixen -->
@@ -605,20 +607,20 @@ import { makeDirectory } from "/install/location"
 let url = ...
 
 let options = {
-  fetch: any,         // an (authenticated) fetch function
-  verbose?: boolean,  // log all operations
-  logger?: Logger     // Custom logging object, logs are sent to the terminal if this is left empty
+  fetch?: any,         // an (authenticated) fetch function
+  verbose?: boolean,   // log all operations
+  logger?: Logger      // Custom logging object, logs are sent to the terminal if this is left empty
 } 
 
 await makeDirectory(url, options)
 ```
 
 *returns*
-<!-- TODO: geen idee wat een promise is -->
+<!-- TODO: dexa moet eerst fixen dat deze functie niet teveel internal stuff teruggeeft -->
 
 #### find
 
-Given a container, the find function will look for all the files that have a matching filename to the provided filename.
+Given a container, the find function will look for all the files that have a matching filename to the provided one.
 
 *usage*
 ```
@@ -628,11 +630,13 @@ let container = ...
 let filename = ... (string that is converted into a RegEx internally to match filenames)
 
 let options = {
-  fetch: any,                 // an (authenticated) fetch function
-  all?: boolean,              // include .acl resource in search
-  full?: boolean,             // look for name matches in the full resource URL instead of relative
-  listDirectories?: boolean,  // include container resources in search
-  verbose?: boolean,          // log all operations
+  fetch?: any,                 // an (authenticated) fetch function
+  verbose?: boolean,           // log all operations
+  logger?: Logger              // Custom logging object, logs are sent to the terminal if this is left empty
+
+  all?: boolean,               // include .acl resource in search
+  full?: boolean,              // look for name matches in the full resource URL instead of relative
+  listDirectories?: boolean,   // also match container names in find
 } 
 
 await find(url, options)
@@ -667,10 +671,13 @@ let url = ...         // location of the resource(s)
 let query = ...       // represents a SPARQL query
 
 let options = {
-  fetch: any,         // an (authenticated) fetch function
-  all?: boolean,      // include .acl resources in querying
+// standard options
+  fetch?: any,         // an (authenticated) fetch function
   verbose?: boolean,  // log all operations
   logger?: Logger     // Custom logging object, logs are sent to the terminal if this is left empty
+// options specific to query
+  all?: boolean,      // include .acl resources in querying
+
 } 
 
 await query(url, query, options)
@@ -678,15 +685,15 @@ await query(url, query, options)
 
 *returns*
 
-`query` yields objects with the properties `fileName` and `bindings`. The `fileName` property contains the URL of the file that was queried, while the `bindings` property is an array of objects that contain the query results, where each object represents a single query result as a set of key-value pairs.
-```
-TODO::
-```
+An async iterator is returned with objects with the properties `fileName` and `bindings`. The `fileName` property contains the URL of the file that was queried.
+
+This function uses Comunica query engine under the hood. For more information about the resulting bindings, please consult [this page](https://comunica.dev/docs/query/advanced/bindings/).
 
 
 #### perms
 
 ##### listPermissions
+List permissions of a given resource.
 
 *usage*
 ```
@@ -695,19 +702,40 @@ import { listPermissions } from "/install/location"
 let url = ...
 
 let options = {
-  fetch: any,         // an (authenticated) fetch function
-  verbose?: boolean,  // log all operations
+  fetch?: any,         // an (authenticated) fetch function
+  verbose?: boolean,   // log all operations
+  logger?: Logger      // Custom logging object, logs are sent to the terminal if this is left empty
 } 
 
 await listPermissions(url, options)
 ```
 
 *returns*
+
+An object containing the current permissions of the resource URL is returned. This object is of the IPermissinsListing interface, which has the following properties:
 ```
-TODO::
+interface IPermissionListing {
+  access: {
+    agent?: null  | Record<string, Access>,   // the agent ID's that have acces to this resource
+    group?: null  | Record<string, Access>,   // the group ID's that have acces to this resource
+    public?: null | Access                    // the resource has public access
+  },
+  default?: {
+    agent?: null  | AgentAccess,              // the agent ID's that have acces to this resource, inherited from a parent resource
+    group?: null  | Record<string, Access>,   // the group ID's that have acces to this resource, inherited from a parent resource
+    public?: null | Access                    // the resource has public access, inherited from a parent resource
+  }
+  resource?: {
+    agent?: null  | AgentAccess,              // the agent ID's that have acces to this resource, not inherited but explicitely given
+    group?: null  | Record<string, Access>,   // the group ID's that have acces to this resource, not inherited but explicitely given
+    public?: null | Access                    // the resource has public access, not inherited but explicitely given
+  }
+}
 ```
 
+
 ##### changePermissions
+Change the permissions of a specific resource
 
 *usage*
 ```
@@ -716,8 +744,10 @@ import { changePermissions } from "/install/location"
 let url = ...
 
 let options = {
-  fetch: any,         // an (authenticated) fetch function
+// standard options
+  fetch?: any,         // an (authenticated) fetch function
   verbose?: boolean,  // log all operations
+  logger?: Logger     // Custom logging object, logs are sent to the terminal if this is left empty
 } 
 
 let operations = [ 
@@ -736,12 +766,12 @@ await changePermissions(url, operations, options)
 ```
 
 *returns*
-```
-TODO::
-```
+
+the function returns if the permissions are changed correctly.
 
 ##### deletePermissions
-List user permissions
+Delete all of the permissions for a specific resource.
+
 *usage*
 ```
 import { deletePermissions } from "/install/location"
@@ -749,17 +779,18 @@ import { deletePermissions } from "/install/location"
 let url = ...
 
 let options = {
-  fetch: any,         // an (authenticated) fetch function
+// standard options
+  fetch?: any,         // an (authenticated) fetch function
   verbose?: boolean,  // log all operations
+  logger?: Logger     // Custom logging object, logs are sent to the terminal if this is left empty
 } 
 
 await deletePermissions(url, options)
 ```
 
 *returns*
-```
-TODO::
-```
+
+The function returns of the deletion of the permissions was successful.
 
 ##### authenticateWithTokenFromJavascript
 
