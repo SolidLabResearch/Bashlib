@@ -14,5 +14,5 @@ it is always possible we miss something,
 so please report it if you find incorrect information or links that no longer work.
 
 An introductory tutorial can be found
-[here](https://github.com/SolidLabResearch/Bashlib/blob/master/Tutorial-cli.md).
+[here](tutorial.md).
 This is a good way to get started with the server and its setup.
