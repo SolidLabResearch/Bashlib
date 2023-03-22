@@ -470,7 +470,10 @@ The commands above are nearly all exported as functions by the `Bashlib-solid` l
 ### Functions
 The following is a list of available functions that are exported by the Node.js library.
 #### list
-Returns an array, containing information about the contents of the given container.
+This command lists the resources contained by the url argument.
+The passed URL should be a container, or the command will fail.
+
+The option `all` can be set to include `.acl` files in the listing.
 
 *usage*
 ```
@@ -478,10 +481,11 @@ import { list } from "/install/location"
 
 let url = ...                       // container URL
 let options = {
+// general command options
   fetch?: typeof globalThis.fetch,  // An (authenticated) fetch function
   verbose?: boolean,                // Log all operations
   logger?: Logger,                  // Custom logging object, logs are sent to the terminal if this is left empty
-
+// options specific to list
   all?: boolean,                    // Include .acl resources in the listing
   full?: boolean                    // Return full URL's instead of relative URL's
 }
@@ -507,8 +511,13 @@ ResourceInfo: {
 ```
 
 #### copy
-<!-- todo: nog aanvullen wat dit exact doet -->
+
 This command copies files/resources from and to both the local filesystem and solid pods.
+Both the source and destination arguments can be either a local path or a URL on a solid pod. Resources that cannot be read due to lack of authorization will be ignored, but can be notified by setting the `verbose` option to `true`.
+Containers/directories are copied recursively by default.
+The command will return an error when it's trying to copy a container to a file.
+Copying a file/resource to a container/directory will create a new file in the container/directory with the same name, and **overwrite it if it already exists.**
+
 *usage*
 ```
 import { copy } from "/install/location"
@@ -517,10 +526,11 @@ let src = ...
 let dst = ...
 
 let options = {
+// general command options
   fetch?: Function,                // an (authenticated) fetch function
   verbose?: boolean,               // log all operations
   logger?: Logger                  // Custom logging object, logs are sent to the terminal if this is left empty
-
+// options specific to copy
   all?: boolean,                   // include .acl resources in the listing
   interactiveOverride?: boolean,   // Determine which if the file should be overwritten, using CLI
   noOverride?: boolean,            // don't override files that already exist
@@ -549,9 +559,14 @@ let destinationInfo : {
 
 #### move
 
-*usage*
+This command moves files/resources from and to both the local filesystem and solid pods.
+Its functionality is equal to copying the files/resources from the source to the destination, and then removing the source. **note: if the source is the local filesystem, files will not be removed, and the command will be identical to a copy.**
+Resources that cannot be read due to lack of authorization will be ignored, but can be notified setting the `verbose` option to `true`.
+Containers/directories are always be moved recursively  by default.
+The command will return an error when it's trying to move a container to a file.
+Moving a file to a container will create a new file in the container with the same name, and **overwrite it if it already exists.**
 
-<!-- todo: uitleg nog aanvullen -->
+*usage*
 
 ```
 import { move } from "/install/location"
@@ -560,10 +575,11 @@ let src = ...
 let dst = ...
 
 let options = {
+// general command options
   fetch?: any,         // an (authenticated) fetch function
   verbose?: boolean,  // log all operations
   logger?:            // Custom logging object, logs are sent to the terminal if this is left empty
-
+// options specific to move
   all?: boolean,      // include .acl resources in the listing
 } 
 
@@ -575,8 +591,11 @@ The command returns when the source has been moved
 
 
 #### remove
-<!-- todo: uitleg fixen -->
-<!-- Remove verwijdert nooit local sources -->
+
+This command removes resources from solid environments.
+**Removing a container requires the `recursive` option to be set to `true` to recursively remove resources from containers! This is in contrast to copy and move commands that set this automatically.**
+`.acl` resources are not explicitly removed by this command. We expect these auxiliary resources to be deleted by the Pod Provider on resource deletion.
+
 *usage*
 ```
 import { remove } from "/install/location"
@@ -584,10 +603,11 @@ import { remove } from "/install/location"
 let url = ...
 
 let options = {
+// general command options
   fetch?: any,          // an (authenticated) fetch function
   verbose?: boolean,   // log all operations
   logger?: Logger      // Custom logging object, logs are sent to the terminal if this is left empty
-
+// options specific to remove
   recursive?: boolean, // include .acl resources in the listing
 } 
 
@@ -598,7 +618,8 @@ await remove(url, options)
 The command reutns when the source has been removed
 
 #### makeDirectory
-<!-- todo: uitleg hier fixen -->
+This command creates a new empty container on a Solid pod on the given URL.
+Missing parent containers are created automatically.
 
 *usage*
 ```
@@ -607,6 +628,7 @@ import { makeDirectory } from "/install/location"
 let url = ...
 
 let options = {
+// general command options
   fetch?: any,         // an (authenticated) fetch function
   verbose?: boolean,   // log all operations
   logger?: Logger      // Custom logging object, logs are sent to the terminal if this is left empty
@@ -620,6 +642,11 @@ await makeDirectory(url, options)
 
 #### find
 
+This command finds the resources contained by the URL argument matching the passed string argument.
+The passed URL should be a container, or the command will fail.
+
+The `--all` flag can be set to include `.acl` files in the results.
+
 Given a container, the find function will look for all the files that have a matching filename to the provided one.
 
 *usage*
@@ -630,10 +657,11 @@ let container = ...
 let filename = ... (string that is converted into a RegEx internally to match filenames)
 
 let options = {
+// general command options
   fetch?: any,                 // an (authenticated) fetch function
   verbose?: boolean,           // log all operations
   logger?: Logger              // Custom logging object, logs are sent to the terminal if this is left empty
-
+// options specific to find
   all?: boolean,               // include .acl resource in search
   full?: boolean,              // look for name matches in the full resource URL instead of relative
   listDirectories?: boolean,   // also match container names in find
@@ -671,7 +699,7 @@ let url = ...         // location of the resource(s)
 let query = ...       // represents a SPARQL query
 
 let options = {
-// standard options
+// general command options
   fetch?: any,         // an (authenticated) fetch function
   verbose?: boolean,  // log all operations
   logger?: Logger     // Custom logging object, logs are sent to the terminal if this is left empty
@@ -692,9 +720,10 @@ This function uses Comunica query engine under the hood. For more information ab
 
 #### perms
 
-##### listPermissions
-List permissions of a given resource.
+These commands only support `Web Access Controls resources (.acl)`, and don't support `Access Control Policies resources (.acp)`.
 
+##### listPermissions
+This command enables the listing of resource permisssions.
 *usage*
 ```
 import { listPermissions } from "/install/location"
@@ -702,6 +731,7 @@ import { listPermissions } from "/install/location"
 let url = ...
 
 let options = {
+// general command options
   fetch?: any,         // an (authenticated) fetch function
   verbose?: boolean,   // log all operations
   logger?: Logger      // Custom logging object, logs are sent to the terminal if this is left empty
@@ -735,7 +765,8 @@ interface IPermissionListing {
 
 
 ##### changePermissions
-Change the permissions of a specific resource
+This command enables the editing of resource permisssions.
+**note: Editing permissions for a specific WebID or public permissions will remove all prior assigned permissions.** E.g. editing permissions to assign read permissions to a WebID will remove prior assigned write permissions!
 
 *usage*
 ```
@@ -744,7 +775,7 @@ import { changePermissions } from "/install/location"
 let url = ...
 
 let options = {
-// standard options
+// general command options
   fetch?: any,         // an (authenticated) fetch function
   verbose?: boolean,  // log all operations
   logger?: Logger     // Custom logging object, logs are sent to the terminal if this is left empty
@@ -770,7 +801,7 @@ await changePermissions(url, operations, options)
 the function returns if the permissions are changed correctly.
 
 ##### deletePermissions
-Delete all of the permissions for a specific resource.
+This deletes all of the permissions for a specific resource.
 
 *usage*
 ```
@@ -779,7 +810,7 @@ import { deletePermissions } from "/install/location"
 let url = ...
 
 let options = {
-// standard options
+// general command options
   fetch?: any,         // an (authenticated) fetch function
   verbose?: boolean,  // log all operations
   logger?: Logger     // Custom logging object, logs are sent to the terminal if this is left empty
@@ -793,8 +824,7 @@ await deletePermissions(url, options)
 The function returns of the deletion of the permissions was successful.
 
 ##### generateCSSToken
-<!-- todo: uitleggen wat dit doet -->
-
+Create an authentication token (only for WebIDs hosted on a Community Solid Server v4.0.0 and up).
 *usage*
 ```
 let options = IClientCredentialsTokenGenerationOptions {
@@ -823,6 +853,7 @@ type CSSToken = {
 ```
 
 ##### authenticateCSSToken
+This function allows you to get authenticated access to a Solid Pod, using the token generated by `generateCSSToken`.
 
 *usage*
 ```
@@ -848,7 +879,7 @@ interface SessionInfo {
 ```
 
 #### touch
-This command allows you to create a new file. Only for remote usage. 
+This function creates a new empty resource on a Solid pod on a given URL.
 
 <!-- todo: Als er geen file extension staat bij de resource dan gaat hij automatisch assumen dat je utrtle aan het aanmaken bent. -->
 
@@ -859,7 +890,7 @@ import { touch } from "/install/location"
 let url = ...          // URL of the new file
 
 let options = {
-// standard options
+// general command options
   fetch?: any,         // an (authenticated) fetch function
   verbose?: boolean,   // log all operations
   logger?: Logger      // Custom logging object, logs are sent to the terminal if this is left empty
@@ -873,6 +904,14 @@ await touch(url, options)
 The function returns when the file has been created correctly.
 
 #### edit
+
+The edit command is a convenient command created to edit resources on your Solid pod locally.
+The command will default to use the default system editor. 
+After editing, the result will be used to overwrite the original resource.
+Please keep in mind that there is no locking mechanism for multiple users editing the same file simultaneously.
+
+The `editor` option can be set to specify the path to the executable of the editor to be used.
+
 This command allows you to edit local and remote files.
 
 *usage*
@@ -882,12 +921,12 @@ import { edit } from "/install/location"
 let url = ...
 
 let options = {
-// standard options
+// general command options
   fetch?: any,         // an (authenticated) fetch function
   verbose?: boolean,   // log all operations
   logger?: Logger      // Custom logging object, logs are sent to the terminal if this is left empty
 // options specific to edit
-  editor?: string,     // name of the editor that will be used
+  editor?: string,     // path to the executable of the editor to be used
   touch?: boolean,     // set to true if the resource does not exist yet
 } 
 
