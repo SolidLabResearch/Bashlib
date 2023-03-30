@@ -25,7 +25,6 @@ export interface IUserCredentialsAuthOptions {
 export interface IClientCredentialsTokenAuthOptions {
   idp?: string, // This value is stored with the created client credentials token.
   sessionInfoStorageLocation?: string, // Storage location of session information to reuse in subsequent runs of the application.
-  clientCredentialsTokenStorageLocation?: string,  // Storage location of the stored client credentials token.
   verbose?: boolean,
   logger?: Logger,
 }
@@ -35,7 +34,6 @@ export interface IClientCredentialsTokenGenerationOptions {
   email: string,
   password: string,
   idp: string,
-  clientCredentialsTokenStorageLocation?: string // Storage location of the output client credentials token.
   logger?: Logger,
 }
 

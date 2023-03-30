@@ -12,7 +12,6 @@ export interface ILoginOptions {
   email?: string,
   password?: string, 
   config?: string, 
-  clientCredentialsTokenStorageLocation?: string,  // Storage location of the stored client credentials token.
   sessionInfoStorageLocation?: string, 
   verbose?: boolean,
   logger?: Logger,
