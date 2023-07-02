@@ -22,31 +22,54 @@ export default async function authenticate(options: ILoginOptions): Promise<{ fe
   let builder = new SolidFetchBuilder;
 
   options.idp = options.idp || options.identityprovider; // TODO:: make this not necessary :p
-  options = await queryUserAuthentication(options)
-   
-  let authType = 'none'
-  if (getConfigCurrentToken()) authType = 'token'
-  else if (getConfigCurrentWebID() || options.idp) authType = 'interactive'
+  
+  let authType = options.auth
 
-  if (authType === 'none') {
-    return { fetch: crossfetch }
+  if (!authType) { 
+    if (getConfigCurrentToken()) authType = "token"
+    // Try to authenticate interactively
+    else if (getConfigCurrentWebID() || options.idp) authType = "interactive"
+    // Ask user for IDP to authenticate interactively
+    else authType = "request"
+  }
 
-  } else if (authType === 'token') {
-    try {
-      await builder.buildFromClientCredentialsToken(options)
-    } catch (e) {
-      if (options.verbose) writeErrorString(`Could not authenticate using client credentials token`, e, options);
+  if (authType === "request") { 
+    const userWantsToAuthenticate = await queryUserAuthentication();
+    if (userWantsToAuthenticate) {
+      const idp = await getUserIdp()
+      options.idp = idp
+      authType = "interactive"
+    } else { 
+      authType = "none"
     }
+  }
 
-  } else if (authType === 'interactive') {
-
-    try {
-      await builder.buildInteractive(options);
-    } catch (e) {
-      if (options.verbose) writeErrorString(`Could not authenticate interactively`, e, options);
-    }
-  } 
-
+  switch (authType) {
+    case "none":
+      return { fetch: crossfetch }
+  
+    case "token":
+      try {
+        await builder.buildFromClientCredentialsToken(options)
+      } catch (e) {
+        if (options.verbose) writeErrorString(`Could not authenticate using client credentials token`, e, options);
+        throw new Error("Could not authenticate using client credentials token") // TODO:: do this concretely
+      }      
+      break;
+    
+    case "interactive":
+      try {
+        await builder.buildInteractive(options);
+      } catch (e) {
+        if (options.verbose) writeErrorString(`Could not authenticate interactively`, e, options);
+        throw new Error("Could not authenticate interactively") // TODO:: do this concretely
+      }
+      break;
+    
+    default:
+      throw new Error(`Unknown authentication type: ${authType}`);
+  }
+  
   let sessionInfo = builder.getSessionInfo();
   if (!sessionInfo || !sessionInfo.fetch) {
     console.error('Continuing unauthenticated')
@@ -57,30 +80,21 @@ export default async function authenticate(options: ILoginOptions): Promise<{ fe
 
 }
 
-async function queryUserAuthentication(options: ILoginOptions) { 
-  let currentWebID = getConfigCurrentWebID();
-  if (!currentWebID && !options.idp) { 
-    // Ask the user if they want to authenticate. If not, use cross-fetch, else give them a prompt to provide an idp
-    console.log(`Do you want to authenticate the current request? [y, N] `);
-    let userWantsToAuthenticate = await new Promise((resolve, reject) => {
-      process.stdin.setRawMode(true);
-      process.stdin.resume();
-      process.stdin.on('data', (chk) => {
-        if (chk.toString('utf8') === "y") {
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-      });
-    });
-    
-    while (!options.idp && userWantsToAuthenticate) { 
-      if (userWantsToAuthenticate) {
-        options.idp = await getUserIdp()
+async function queryUserAuthentication() { 
+  // Ask the user if they want to authenticate. If not, use cross-fetch, else give them a prompt to provide an idp
+  console.log(`Do you want to authenticate the current request? [Y, n] `);
+  let userWantsToAuthenticate : boolean = await new Promise((resolve, reject) => {
+    process.stdin.setRawMode(true);
+    process.stdin.resume();
+    process.stdin.on('data', (chk) => {
+      if (chk.toString('utf8') === "n") {
+        resolve(false);
+      } else {
+        resolve(true);
       }
-    }
-  }
-  return options
+    });
+  });
+  return userWantsToAuthenticate
 }
 
 

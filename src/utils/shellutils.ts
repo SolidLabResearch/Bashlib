@@ -1,44 +1,51 @@
 import { getInbox, getPodRoot, writeErrorString } from './util';
-import fs from 'fs';
 import { SolidShell } from '../commands/solid-shell';
 
 export function arrayifyHeaders(value: any, previous: any) { return previous ? previous.concat(value) : [value] }
 
-export function addEnvOptions(options: any) {
-  const envAuthType = process.env['BASHLIB_AUTH']
-  const envIdp = process.env['BASHLIB_IDP']
-  const envTokenStorage = process.env['BASHLIB_TOKEN_STORAGE']
-  const envSessionStorage = process.env['BASHLIB_SESSION_STORAGE']
-  const envConfig = process.env['BASHLIB_CONFIG']
-  const envAuthPort = process.env['BASHLIB_AUTH_PORT']
+/**
+ * General optionsL
+ * 
+ * requestAuth  // Disable authentication requesting
+ * idp          // Identity Provider
+ * config       // Path of the config file
+ * port         // Port to handle redirect from login
+ * verbose      // Enable verbose setting
+ */
 
-  // Set config options
-  options.config = options.config || envConfig
-  if (options.config) {
+enum AuthTypes { 
+  "token",
+  "interactive",
+  "request",
+  "none"
+}
+
+export function addEnvOptions(options: any) {
+  // Set environment variables
+  let envOptions: any = {
+    auth: process.env['BASHLIB_AUTH'] || undefined, 
+    idp: process.env['BASHLIB_IDP'] || undefined, 
+    config: process.env['BASHLIB_CONFIG'] || undefined,
+    port: process.env['BASHLIB_PORT'] || undefined,  
+  }
+
+  if (options.auth) { 
     try {
-      let cfg = JSON.parse(fs.readFileSync(options.config, 'utf8'));
-      for (let key of Object.keys(cfg)) {
-        // Set config option value if no cli value
-        if (!options[key]) options[key] = cfg[key]
-      }
-    } catch (e) {
-      // Dirty solution to prevent extra error handling everywhere :)
-      writeErrorString(`Error parsing config file at ${options.config}.`, e, options);
-      process.exit(1);
+      options.auth = options.auth as AuthTypes
+    } catch (e) {  
+      options.auth = undefined;
     }
   }
 
-  // Set env option value if no cli and config option value
-  options.auth = options.auth || envAuthType
-  options.idp = options.idp || envIdp
-  options.tokenStorage = options.tokenStorage || envTokenStorage
-  options.sessionStorage = options.sessionStorage || envSessionStorage
-  options.port = options.port || envAuthPort
+  // cleanup undefined values for merging with spread operator.
+  Object.keys(envOptions).forEach(key => envOptions[key] === undefined ? delete envOptions[key] : {});
+  return { ... options, ... envOptions}
+}
 
-  // Fixing some naming inconsistencies because of limited option length
-  options.sessionInfoStorageLocation = options.sessionStorage
-  options.verbose = !options.silent 
-  return options
+function prepareOptions(options: any) {
+  let processOptions = {}
+
+  return processOptions
 }
 
 
@@ -66,6 +73,7 @@ export async function changeUrlPrefixes(authenticationInfo: any, url: string) {
     let inbox = await getInbox(authenticationInfo.webId, authenticationInfo.fetch);
     if (!inbox) throw new Error('No inbox value found')
     return mergeStringsSingleSlash(inbox, url.replace('inbox:', '')) 
+
   } else {
     return url;
   }
