@@ -1,6 +1,6 @@
 {
   "name": "solid-bashlib",
-  "version": "0.3.2",
+  "version": "0.3.5",
   "description": "",
   "main": "dist/index.js",
   "bin": {
@@ -22,8 +22,8 @@
   "license": "ISC",
   "dependencies": {
     "@comunica/query-sparql": "^2.1.0",
-    "@inrupt/solid-client": "1.23.3",
-    "@inrupt/solid-client-authn-node": "^1.11.7",
+    "@inrupt/solid-client": "1.26.0",
+    "@inrupt/solid-client-authn-node": "^1.14.0",
     "chalk": "^4.1.2",
     "cli-columns": "^4.0.0",
     "cli-select": "^1.1.2",

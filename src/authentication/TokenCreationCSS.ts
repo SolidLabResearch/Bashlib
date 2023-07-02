@@ -21,6 +21,8 @@ import crossfetch from 'cross-fetch';
 
 export async function generateCSSToken(options: IClientCredentialsTokenGenerationOptions) {
   
+  if (!options.idp) throw new BashlibError(BashlibErrorMessage.noIDPOption)
+  
   if (!options.idp.endsWith('/')) options.idp += '/';
 
   // This assumes your server is started under http://localhost:3000/.
