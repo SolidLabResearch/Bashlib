@@ -113,25 +113,29 @@ export default async function copy(src: string, dst: string, options?: ICommandO
    * Copying Files
    */
   for (let sourceFileInfo of resourcesToTransfer.files) {
-    let fileRelativePath = source.isDir
-    ? sourceFileInfo.relativePath
-    : sourceFileInfo.absolutePath.split('/').slice(-1)[0]; // FileName is filename.txt
+    try {
+      let fileRelativePath = source.isDir
+        ? sourceFileInfo.relativePath
+        : sourceFileInfo.absolutePath.split('/').slice(-1)[0]; // FileName is filename.txt
 
-    let destinationPath;
-    if (destination.isRemote) {
-      destinationPath = destination.isDir
-      ? (fileRelativePath ? combineURLs(destination.path, fileRelativePath) : destination.path)
-      : destination.path;
-      await writeRemoteFile(destinationPath, sourceFileInfo, fetch, commandOptions)
-    } else {
-      destinationPath = destination.isDir
-      ? (fileRelativePath ? path.join(destination.path, fileRelativePath) : destination.path)
-      : destination.path;
-      let fileName = await writeLocalFile(destinationPath, sourceFileInfo, commandOptions)
-      // fileName can change in function
-      if(fileName) destinationPath = fileName
+      let destinationPath;
+      if (destination.isRemote) {
+        destinationPath = destination.isDir
+          ? (fileRelativePath ? combineURLs(destination.path, fileRelativePath) : destination.path)
+          : destination.path;
+        await writeRemoteFile(destinationPath, sourceFileInfo, fetch, commandOptions)
+      } else {
+        destinationPath = destination.isDir
+          ? (fileRelativePath ? path.join(destination.path, fileRelativePath) : destination.path)
+          : destination.path;
+        let fileName = await writeLocalFile(destinationPath, sourceFileInfo, commandOptions)
+        // fileName can change in function
+        if (fileName) destinationPath = fileName
+      }
+      destinationInfo.files.push({ absolutePath: destinationPath || '' })
+    } catch (e) { 
+      console.error(`Could not copy file ${sourceFileInfo.relativePath || sourceFileInfo.absolutePath}: ${e}` )
     }
-    destinationInfo.files.push({absolutePath: destinationPath || ''})
   }
 
   /**
