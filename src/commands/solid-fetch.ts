@@ -51,8 +51,8 @@ export default async function authenticatedFetch(url: string, options?: ICommand
   }
 
   // Create response header string
-  response.headers.forEach(header => {
-    responseHeaderString += `< ${header[0]} ${header[1]}\n`
+  response.headers.forEach((value, key) => {
+    responseHeaderString += `< ${key} ${value}\n`
   })
 
   // Log to command line
