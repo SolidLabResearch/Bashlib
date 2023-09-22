@@ -5,9 +5,9 @@ This tutorial only regards the CLI interface of the Bashlib library. For the Nod
 
 **Used aliases in this document:**
 All aliases are calculated from the root of the cloned bashlib repo.
-  - bashlib-css  - `alias bashlib-css="node bashlib/css/bin/css.js"`
-  - bashlib-solid  - `alias bashlib-solid="node bashlib/solid/bin/solid.js"`
-  - bashlib-auth - `alias bashlib-auth="node bashlib/solid/bin/solid.js --auth token -t .tokens/.bobs-auth-token"`
+  - bashlib-css  - `alias bashlib-css="node bin/solid-dev.js"`
+  - bashlib-solid  - `alias bashlib-solid="node bin/solid.js"`
+  - bashlib-auth - `alias bashlib-auth="node bin/solid.js --auth token -t .tokens/.bobs-auth-token"`
 Feel free to use a different authentication scheme for the `bashlib-auth` alias.
 
 
@@ -21,7 +21,7 @@ Feel free to use a different authentication scheme for the `bashlib-auth` alias.
     - [Creating a Client Credentials token](#creating-a-client-credentials-token)
     - [Authentication options](#authentication-options)
   - [Bashlib-solid](#bashlib-solid)
-    - [Authentication](#authentication)
+    - [Authentication](tutorial.md#authentication)
       - [Authenticate using Client Credentials token](#authenticate-using-client-credentials-token)
       - [Interactive authentication](#interactive-authentication)
       - [No authentication](#no-authentication)
@@ -45,10 +45,10 @@ Feel free to use a different authentication scheme for the `bashlib-auth` alias.
 ## Setting up a Solid Server
 Before we use the Bashlib library, we need a Solid account and accompanying data pod to use the library. In case you already own a Solid pod, you may still want to follow the setup process, as some of the functionality will only be available for pods created on a [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer) instance.
 
-To setup a Solid Server where we can register an account and get an accompanying data pod, we will make use in this tutorial of the [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer). 
+To set up a Solid Server where we can register an account and get an accompanying data pod, we will make use in this tutorial of the [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer). 
 
-To setup a local Community Solid Server instance, please execute the code below.
-More information on the setup process can be found [here](https://github.com/KNowledgeOnWebScale/solid-linked-data-workshops-hands-on-exercises/blob/main/css-tutorial.md).
+To set up a local Community Solid Server instance, please execute the code below.
+More information on the setup process can be found [here](https://github.com/CommunitySolidServer/tutorials/blob/main/getting-started.md).
 When you are done with the tutorial, you can remove the current folder to delete all created files.
 
 ```
@@ -63,30 +63,32 @@ You can confirm this by browsing to `http://localhost:3000` in the browser, and 
 You do not have to do anything on this screen for now! 
 
 ## Setting up Bashlib
-To setup the `Bashlib` library, we execute the following code:
+To set up the `Bashlib` library, we execute the following code:
 ```
 git clone https://github.com/SolidLabResearch/Bashlib.git
 cd Bashlib
-bash setup.sh
+npm install
+npm run build
 ```
+
 This code does the setup for Bashlib, and installs the available modules.
-Your `Bashlib` library is now setup and ready to use!
+Your `Bashlib` library is now set up and ready to use!
 
 
 ## Bashlib-css
 To start with `Bashlib`, we first take a look at the `Bashlib-css` module.
-The `Bashlib-css` module gives a set of functions specifically designed for the Community Solid Server. 
+This module gives a set of functions specifically designed for the Community Solid Server. 
 It handles functionality that is currently not included in the spec for Solid and may vary between implementations of the Solid specification.
 The CLI interface for `Bashlib-css` can be accessed here:
 ```
-node bashlib/css/bin/css.js
+node bin/solid-dev.js
 ```
-**optional:** You can create an alias for this path so you do not have to write the full command every time. From here on, I will assume the alias `alias bashlib-css="node bashlib/css/bin/css.js"` to be set!
+**optional:** You can create an alias for this path so you do not have to write the full command every time. From here on, I will assume the alias `alias bashlib-css="node bin/solid-dev.js"` to be set!
 ### Creating a new Solid account + data pod
 *compatbility: CSSv2.0.0 - current*
 
 A first function of the `Bashlib-css` module is the creation of a new Solid-account and accompanying data pod on a CSS instance.
-This serves as an to having to use the browser interface to register a new user, which can be found on [http://localhost:3000/idp/register/](http://localhost:3000/idp/register/).
+This serves as an alternative to having to use the browser interface to register a new user; which can be found on [http://localhost:3000/idp/register/](http://localhost:3000/idp/register/).
 
 To create a new Solid account and pod, please execute the following code:
 ```
@@ -105,62 +107,60 @@ This will result in the message that a pod for bob has been created succesfully 
 
 If you do not want an interactive prompt, you can use the command with all options enabled 
 ```
-bashlib-css create-pod -b "http://localhost:3000/" -n Carol -e carol@test.edu -p carolIsTheBest123
+bashlib-css create-pod -u "http://localhost:3000/" -n Carol -e carol@test.edu -p carolIsTheBest123
 ```
 to automatically create a new pod without requiring manual interaction.
-
-
-### Creating a Client Credentials token
-*compatbility: CSSv4.0.0 - current*
-
-A second function of the `Bashlib-css` module is the creation of a [Client Credentials token](https://github.com/CommunitySolidServer/CommunitySolidServer/blob/main/documentation/client-credentials.md). 
-These tokens allow the user to authenticate without requiring user interaction by having them authenticate using a browser window. 
-
-To create such a token, please execute the following code:
-```
-bashlib-css create-token
-```
-
-This will again open an interactive prompt, requiring you to enter the information of the user registered on this Solid server for which you want to create the token:
-```
-? Token name        bobs-auth-token
-? Pod baseuri       http://localhost:3000/
-? User email        bob@test.edu
-? User password     bobIsTheBest123
-? Token location    .tokens/.bobs-auth-token
-```
-
-You just succesfully created a Client Credentials token for Bob!
-You can inspect the newly created token using `cat .tokens/.bobs-auth-token` to verify this.
-
-This command can again be executed without an interactive prompt by providing values for all options:
-```
-bashlib-css create-token -v -b "http://localhost:3000/" -n carols-auth-token -e carol@test.edu -p carolIsTheBest123 -o .tokens/.carols-auth-token
-```
-
-### Authentication options
-The `Bashlib-css` module exposes a set of authentication options.
-These are however not exposed over the CLI interface, but are available in the Node.JS interface to use in your own Node.JS projects.
-The `Bashlib-solid` module makes use of these options to authenticate the user on the CLI.
-
 
 ## Bashlib-solid
 The `Bashlib-solid` module provides a set of functions to facilitate usage of and development for Solid from Node.JS and the CLI.
 The CLI interface for `Bashlib-solid` can be accessed here:
 ```
-node bashlib/solid/bin/solid.js
+node bin/solid.js
 ```
-**optional**: You can create an alias for this path so you do not have to write the full command every time. From here on, I will assume the alias `alias bashlib-solid="node bashlib/solid/bin/solid.js"` to be set!
+**optional**: You can create an alias for this path so you do not have to write the full command every time. From here on, I will assume the alias `alias bashlib-solid="node bin/solid.js"` to be set!
 
 ### Authentication
-Authentication in the `Bashlib-solid` module is done using the authentication options exposed by the `Bashlib-css` module. 
 We will quickly go over the available authentication options:
 
+#### CLI Authentication
+*compatbility: CSSv4.0.0 - current*
 
+##### Creating a Client Credentials token 
+A first function of the `Bashlib-solid` module is the creation of a [Client Credentials token](https://github.com/CommunitySolidServer/CommunitySolidServer/blob/main/documentation/markdown/usage/client-credentials.md). 
+These tokens allow the user to authenticate without requiring user interaction by having them authenticate using a browser window. 
+
+To create such a token, we can use the `create-token` command. This coud be for example:
+```
+bashlib-solid auth create-token
+```
+
+<!-- 
+#### Creating a Client Credentials token
+*compatbility: CSSv4.0.0 - current*
+
+To create such a token, please execute the following code:
+```
+bashlib-solid auth create-token
+```
+
+This will again open an interactive prompt, requiring you to enter the information of the user registered on this Solid server for which you want to create the token:
+```
+? Pod baseuri       http://localhost:3000/
+? User email        bob@test.edu
+? User password     bobIsTheBest123
+```
+
+You just succesfully created a Client Credentials token for Bob! All of the information about this token can be found in at the following location: `~/.solid/.bashlibconfig`
+
+This command can also be executed without an interactive prompt by providing values for all options:
+```
+bashlib-solid auth create-token -b "http://localhost:3000/" -n carols-auth-token -e carol@test.edu -p carolIsTheBest123
+```
 
 #### Authenticate using Client Credentials token
 *compatbility: CSSv4 - current*
-We can now use the client credentials token we made in [the previous step](#creating-a-client-credentials-token) to authenticate our user from the CLI. We can do this using the following authentication options:
+
+We can now use the client credentials token we made in [the previous step](#creating-a-new-pod-and-authentication-token) to authenticate our user from the CLI. We can do this using the following authentication options:
 ```
  bashlib-solid --auth token <command> [options]
 ```
@@ -173,7 +173,7 @@ We can now use the authenticated fetch command on private resources:
 
 **note: This method of authentication is restricted to pods hosted on a Community Solid Server instance of v4.0.0 and later. If you have another provider, please use the interactive login option described below.**
 
-
+ -->
 
 #### Interactive authentication
 *compatbility: all*
@@ -480,7 +480,7 @@ For all examples, we will make use of the following aliases:
 ### Creating a new pod and authentication token 
 *compatibility CSSv4 - current*
 
-First, we need to have a Community Solid Server instance running. More info on how to setup a Community Solid Server can be found [here](https://github.com/CommunitySolidServer/CommunitySolidServer).
+First, we need to have a Community Solid Server instance running. More info on how to setup a Community Solid Server can be found [here](https://github.com/CommunitySolidServer/tutorials/blob/main/getting-started.md).
 
 First, we create a new pod on our running CSS instance.
 For this we run the `create-pod` command:

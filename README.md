@@ -73,9 +73,9 @@ Set current authentication option.
 
 *usage*
 ```
-node bin/solid.js auth show [webid]
+node bin/solid.js auth set [webid]
 ```
-*options*
+*arguments*
 ```
   webid       Set active WebID directly, without requiring manual selection
 ```
@@ -86,7 +86,7 @@ Removes the authentication information for a specific WebID or for all saved Web
 ```
 node bin/solid.js auth remove [string]
 ```
-*options*
+*arguments*
 ```
   string      webid | all
 ```
@@ -112,24 +112,6 @@ node bin/solid.js auth create-token [options]
   -p, --password <string>  User password
   -v, --verbose            Log actions to the CLI
 ```
-
-#### The config file
-You can use a config file with the `-c, --config <path>` option.
-This config file will be used to autofill any missing authentication options.
-The config file must adhere to the following format, and may include any of the following options:
-```
-{
-  auth: "token" | "credentials" | "interactive" | "none",
-  idp: "https://your.pod.identity.provider.org/",
-  email: "User email address",
-  password: "User password",
-  tokenStorage: "/path/of/token/file",
-  sessionStorage: "/path/of/session/storage/file",
-  port: <number>
-  silent: true | false,
-}
-```
-This option is the preferred way to passing user credentials when using credentials based authentication.
 
 #### environment variables
 Finally, the environment variables can be used to pass the above authentication options.

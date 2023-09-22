@@ -3,6 +3,7 @@
 <!-- - [x] nagaan welke commands er gebruikt worden -->
 <!-- - [x] documentatie per command nagaan -->
 - [ ] environment variables 1 per 1 nagaan
+- [ ] nagaan wat een option is en wat een argument is
 <!-- - [x] nagaan welke commands zelfde functionality hebben en namen toevoegen in de readme -->
 ## Node.js
 <!-- - [x] options nagaan welke nu optional zijn -->
@@ -24,5 +25,15 @@
 - [ ] bij interfaces de standard value van dingen zetten, nog outfiguren hoe ik dat erbij moet plaatsen
 - [ ] in typedocs kijken "npm run typedocs:dev", is te fixen in de code zelf
 ## tutorial
-- [ ] uitschrijven hoe authenticatie werkt
+- [ ] uitschrijven hoe authenticatie werktgit
 - [ ] checken wat er nog werkt bij die tutorial en fixen wat ik kan
+
+# pod info
+
+email:  bauke@blomme.be
+
+pass:   b_a_u_k_e
+
+idp:    https://publicpod.rubendedecker.be/
+
+webId:  https://publicpod.rubendedecker.be/bauke/profile/card#me
