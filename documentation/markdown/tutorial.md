@@ -83,7 +83,7 @@ The CLI interface for `Bashlib-css` can be accessed here:
 ```
 node bin/solid-dev.js
 ```
-**optional:** You can create an alias for this path so you do not have to write the full command every time. From here on, I will assume the alias `alias bashlib-css="node bin/solid-dev.js"` to be set!
+**optional:** You can create an alias for this path so you do not have to write the full command every time. From here on, the alias `alias bashlib-css="node bin/solid-dev.js"` will be assumed to be set!
 ### Creating a new Solid account + data pod
 *compatbility: CSSv2.0.0 - current*
 
@@ -117,7 +117,7 @@ The CLI interface for `Bashlib-solid` can be accessed here:
 ```
 node bin/solid.js
 ```
-**optional**: You can create an alias for this path so you do not have to write the full command every time. From here on, I will assume the alias `alias bashlib-solid="node bin/solid.js"` to be set!
+**optional**: You can create an alias for this path so you do not have to write the full command every time. From here on, the alias `alias bashlib-solid="node bin/solid.js"` will be asumed to be set!
 
 ### Authentication
 We will quickly go over the available authentication options:
@@ -129,9 +129,17 @@ We will quickly go over the available authentication options:
 A first function of the `Bashlib-solid` module is the creation of a [Client Credentials token](https://github.com/CommunitySolidServer/CommunitySolidServer/blob/main/documentation/markdown/usage/client-credentials.md). 
 These tokens allow the user to authenticate without requiring user interaction by having them authenticate using a browser window. 
 
-To create such a token, we can use the `create-token` command. This coud be for example:
+To create such a token, the `create-token` command can be used. This coud be for example:
 ```
 bashlib-solid auth create-token
+```
+As an example, we could create a token for our user Bob:
+```
+bashlib-solid auth create-token -n bobs-auth-token
+? Pod baseuri            http://localhost:3000/
+? User email             bob@test.edu
+? User password [hidden] bobIsTheBest123
+Successfully created new token bobs-auth-token
 ```
 
 <!-- 
@@ -205,18 +213,24 @@ We can now use fetch public resources as such:
 ### Commands
 Now that we have created a Solid account and pod and learned how to authenticate, we will look at the available commands in `Bashlib-solid`. In this section, we will do a runthrough for all available commands, and how they can be used.
 These commands will help you see solid not only as a Web technology, but as something you can easily include in existing workflows, while enabling ease of access and sharing of resources in between systems and users.
-**We use the alias `alias bashlib-auth = "node bashlib/solid/bin/solid.js --auth token -t .tokens/.bobs-auth-token"` as a shortcut to make authenticated requests from here. In case you use another authentication method feel free to choose your own alias!**
+
+We will use the alias 
+```
+alias bashlib-auth="node bin/solid.js --auth token -t .tokens/.bobs-auth-token"
+``` 
+as a shortcut to make authenticated requests from here. In case you use another authentication method feel free to choose your own alias!
 
 #### URL Prefixes
 All commands support URL prefixes for all URL parameters.
 **Prefixes only work when the user is authenticated!**
 Accepted prefixes are:
-  - `webid:`  - The user WebID
-  - `inbox:`  - The user inbox (if available) 
-  - `root:`   - The user storage root (only found if the WebID is inside te data pod)
-  - `base:`   - Identical to `root:`
 
-For our user bob, we can now write the following url
+  - `webid:`    - The user WebID
+  - `inbox:`    - The user inbox (if available) 
+  - `root:`     - The user storage root (only found if the WebID is inside te data pod)
+  - `base:`     - Identical to `root:`
+
+For our user bob, the following URL can be used:
 ```
   base:/public/resource1.ttl
 ```

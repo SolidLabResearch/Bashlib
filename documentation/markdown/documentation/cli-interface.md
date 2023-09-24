@@ -57,7 +57,7 @@ Set current authentication option.
 
 *usage*
 ```
-node bin/solid.js auth show [webid]
+node bin/solid.js auth set [webid]
 ```
 *options*
 ```
