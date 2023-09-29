@@ -19,18 +19,54 @@
 - [x] duidelijke uitleg wat wat doet bij commando's
 - [x] remove gaat nooit verwijderen van local disk
 - [ ] mkdir later doen
+  - still waiting for dexa
 - [x] bijzetten wanneer nodig dat async iterator wordt teruggegeven
 - [x] onderscheid maken tussen standard options en function specific options
-# code
+<!-- # code
 - [ ] move baseren op copy in solid-move.ts
 - [ ] copy en move moeten enkel destination, aanpassen in solid-copy en solid-move teruggeven
 - [ ] meegeven welk soort file je wilt aanmaken bij touch
 - [ ] auth remove geeft nog geen melding wanneer je een webid meegeeft dat niet bijgehouden wordt.
-- [ ] misschien fixen dat bij list van auth options dat de token name er staat?
+- [ ] misschien fixen dat bij list van auth options dat de token name er staat? -->
 # site
 ## general
 - [x] documentation updaten
 ## API
+- per commando:
+  - [x] IAccountData
+  - [x] IClientCredentialsTokenGenerationOptions
+  - [ ] ICommandOptionsCopy
+  - [ ] ICommandOptionsEdit
+  - [ ] ICommandOptionsFind
+  - [ ] ICommandOptionsList
+  - [ ] ICommandOptionsMakeDirectory
+  - [ ] ICommandOptionsMove
+  - [ ] ICommandOptionsPermissions
+  - [ ] ICommandOptionsQuery
+  - [ ] ICommandOptionsRemove
+  - [ ] ICommandOptionsTouch
+  - [ ] IPermissionListing
+  - [ ] IPermissionOperation
+  - [ ] Logger
+  - [ ] SessionInfo
+  - [ ] CSSToken
+  - [ ] FileInfo
+  - [ ] Record
+  - [ ] ResourceInfo
+  - [ ] authenticateCSSToken
+  - [ ] changePermissions
+  - [ ] copy
+  - [ ] createSolidPods
+  - [ ] deletePermissions
+  - [ ] find
+  - [ ] generateCSSToken
+  - [ ] list
+  - [ ] listPermissions
+  - [ ] makeDirectory
+  - [ ] move
+  - [ ] query
+  - [ ] remove
+  - [ ] touch
 - [ ] bij interfaces de standard value van dingen zetten, nog outfiguren hoe ik dat erbij moet plaatsen
 - [ ] in typedocs kijken "npm run typedocs:dev", is te fixen in de code zelf
 ## tutorial

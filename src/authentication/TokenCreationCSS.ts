@@ -1,10 +1,25 @@
 import BashlibError from '../utils/errors/BashlibError';
 import { BashlibErrorMessage } from '../utils/errors/BashlibError';
 
+/**
+ * Contains the options for generating a Client Credentials Token for a specific pod user.
+ */
 export interface IClientCredentialsTokenGenerationOptions {
+  /**
+   * The name of the user.
+   */
   name: string,
+  /**
+   * The e-mail address of the user.
+   */
   email: string,
+  /**
+   * The password of the user.
+   */
   password: string,
+  /**
+   * The base URL of the Community Solid Server.
+   */
   idp: string,
 }
 

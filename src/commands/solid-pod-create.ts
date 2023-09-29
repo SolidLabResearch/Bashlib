@@ -3,9 +3,19 @@ import type { Logger } from '../logger';
 import { setOptionDefaults } from './solid-command';
 import { ICommandOptions } from './solid-command';
 
+/**
+ * Contains the account information of a pod user.
+ */
 export interface IAccountData {
+  /** The name of the user */
   name: string,
+  /**
+   * The e-mail address of the user.
+   */
   email?: string,
+  /**
+   * The password of the user.
+   */
   password?: string,
 }
 
