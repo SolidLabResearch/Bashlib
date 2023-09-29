@@ -5,12 +5,10 @@ This tutorial only regards the CLI interface of the Bashlib library. For the Nod
 
 **Used aliases in this document:**
 All aliases are calculated from the root of the cloned bashlib repo.
+
   - bashlib-css  - `alias bashlib-css="node bin/solid-dev.js"`
+
   - bashlib-solid  - `alias bashlib-solid="node bin/solid.js"`
-  - bashlib-auth - `alias bashlib-auth="node bin/solid.js --auth token -t .tokens/.bobs-auth-token"`
-Feel free to use a different authentication scheme for the `bashlib-auth` alias.
-
-
 ## Index
 - [Bashlib Tutorial - CLI edition](#bashlib-tutorial---cli-edition)
   - [Index](#index)
@@ -120,12 +118,12 @@ node bin/solid.js
 **optional**: You can create an alias for this path so you do not have to write the full command every time. From here on, the alias `alias bashlib-solid="node bin/solid.js"` will be asumed to be set!
 
 ### Authentication
-We will quickly go over the available authentication options:
+Before being able to execute any commands, an authenticated connection needs to be made. There are a few options to establish this connection.
 
 #### CLI Authentication
 *compatbility: CSSv4.0.0 - current*
 
-##### Creating a Client Credentials token 
+##### Using the *auth* Command to Create a Client Credentials token
 A first function of the `Bashlib-solid` module is the creation of a [Client Credentials token](https://github.com/CommunitySolidServer/CommunitySolidServer/blob/main/documentation/markdown/usage/client-credentials.md). 
 These tokens allow the user to authenticate without requiring user interaction by having them authenticate using a browser window. 
 
@@ -141,6 +139,22 @@ bashlib-solid auth create-token -n bobs-auth-token
 ? User password [hidden] bobIsTheBest123
 Successfully created new token bobs-auth-token
 ```
+
+As with the creation of a pod, there's also a shorter way of doing this:
+
+```
+bashlib-solid auth create-token -n carols-auth-token -b http://localhost:3000/ -e carol@test.edu -p carolIsTheBest123
+Successfully created new token carols-auth-token
+```
+
+Now all we need to do is *set* the active WebId. For our user Bob, this would look like the following command:
+
+```
+bashlib-solid auth set http://localhost:3000/bob/profile/card#me
+```
+
+An authenticated connection should now be astablished. For every command after this, the current connection will be used.
+
 
 <!-- 
 #### Creating a Client Credentials token
@@ -183,42 +197,47 @@ We can now use the authenticated fetch command on private resources:
 
  -->
 
-#### Interactive authentication
+<!--
+dit deel weggelaten want --auth wordt niet meer gebruikt
+ #### Interactive authentication
 *compatbility: all*
 
 An alternative authentication method is the interactive login.
 This option provides the default [Inrupt Node.JS authentication flow](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/authenticate-nodejs/), and is compatible with all pods.
 The interactive authentication requires the user to manually authenticate using their browser.
 ```
- bashlib-solid --auth interactive --idp http://localhost:3000 <command> [options]
+b bashlib-solid --auth interactive --idp http://localhost:3000 <command> [options]
 ```
 We can now use the authenticated fetch command on private resources:
 ```
   bashlib-solid --auth interactive --idp http://localhost:3000 fetch http://localhost:3000/bob/profile/
-```
+``` 
+-->
+
+##### Authenticating while fetching
+It's not necessary to authenticate before fetching a resource. If no authenticated connection has been made, while calling the fetch command, you will be asked if you want to establish one.
+
+<!-- todo_bauke: geen idee wat er misgaat bij interactive authentication bij fetch, vragen aan dexa nog -->
+
+
 
 #### No authentication
 *compatbility: all*
 
-Finally, you can just make use of the library without authenticating yourself.
-This is the default option when no auth option is specified.
+Finally, you can just make use of the library without authenticating yourself. No commands need to be executed for this option. When fetching a resource, if no autenticated connection is established, you could choose to go further without one.
+
+e.g.
+
 ```
- bashlib-solid --auth none  <command> [options]
-```
-We can now use fetch public resources as such:
-```
-  bashlib-solid --auth none fetch http://localhost:3000/bob/profile/card
+node bin/solid.js fetch http://localhost:3000/bob/profile/card 
+Do you want to authenticate the current request? [y, N]      N
 ```
 
 ### Commands
 Now that we have created a Solid account and pod and learned how to authenticate, we will look at the available commands in `Bashlib-solid`. In this section, we will do a runthrough for all available commands, and how they can be used.
 These commands will help you see solid not only as a Web technology, but as something you can easily include in existing workflows, while enabling ease of access and sharing of resources in between systems and users.
 
-We will use the alias 
-```
-alias bashlib-auth="node bin/solid.js --auth token -t .tokens/.bobs-auth-token"
-``` 
-as a shortcut to make authenticated requests from here. In case you use another authentication method feel free to choose your own alias!
+From here on, we'll expect you to have an authenticated connection to a pod. We'll keep using the pod from the previous examples, but feel free to replace any options with the ones relevant to you of you're working on another pod.
 
 #### URL Prefixes
 All commands support URL prefixes for all URL parameters.
@@ -247,16 +266,16 @@ but the `fetch` command can take additional flags to pass custom headers and mor
 
 To fetch the user webId, we can now call the following function:
 ```
-  bashlib-auth fetch webid:
+bashlib-solid fetch webid:
 ```
-As the authenticated user is Bob (see the alias we created), we just fetched bob's WebID.
+As the authenticated user is Bob, we just fetched bob's WebID.
 Additional options can be found by calling the help function.
 ```
-  bashlib-auth fetch --help
+bashlib-solid fetch --help
 ```
 If we want to fetch the file in an other RDF format, we can add custom headers:
 ```
-  bashlib-auth fetch -h "Accept: application/ld+json" webid:
+bashlib-solid fetch -h "Accept: application/ld+json" webid:
 ```
 
 #### list / ls
@@ -266,13 +285,13 @@ Options can be discovered using the help command.
 
 To list the resources in our profile folder, we use the following command:
 ```
-  bashlib-auth ls base:/profile/
+bashlib-solid ls base:/profile/
 ```
 
 By looking at the help function, we now will add the `--all` flag to also include any .acl files in the directory, and the `--long` flag to show a table overview of the result
 
 ```
-  bashlib-auth ls --all --long base:/profile/
+bashlib-solid ls --all --long base:/profile/
 ```
 
 
@@ -281,22 +300,22 @@ The `copy` or `cp` command copies resources form and to both the local filesyste
 **Make sure you have read permissisons for the source location and write permissions for the destination location when they are on a pod.**
 
 We will demonstrate the copy command by uploading a profile image form our local disk.
-If you have chosen a local image file, we can now upload this to our pod as follows:
+If you have chosen a local image file called `contacts.ttl`, we can now upload this to our pod as follows:
 ```
- bashlib-auth cp contacts.ttl base:/profile/
+bashlib-solid cp contacts.ttl base:/profile/
 ```
 This copies the `contacts.ttl` file to the container at the url `http://localhost:3000/bob/profile/`, and creates the contacts.ttl resource in this container.
 We can now request the copied file as follows:
 ```
- bashlib-auth cat base:/profile/contacts.ttl
+bashlib-solid cat base:/profile/contacts.ttl
 ```
 We can also copy resources from one location on our pod to another location as follows:
 ```
- bashlib-auth cp base:/profile/contacts.ttl base:/test/
+bashlib-solid cp base:/profile/contacts.ttl base:/test/
 ```
 and can now fetch the resource at the target location
 ```
- bashlib-auth fetch base:/test/contacts.ttl
+bashlib-solid fetch base:/test/contacts.ttl
 ```
 We see that the missing containers were automatically created.
 
@@ -315,7 +334,7 @@ The `move` or `mv` command moves resources between different locations on a data
 In the last section, we made a `contacts.ttl` resource in our `base:/test/` container. 
 We can now move the test resource we just made as a demonstration:
 ```
-bashlib-auth mv base:/test/contacts.ttl base:/test/demo_contacts.ttl
+bashlib-solid mv base:/test/contacts.ttl base:/test/demo_contacts.ttl
 ```
 
 
@@ -324,16 +343,16 @@ The `remove` or `rm` command removes resources from a data pod.
 
 With this command, we can now remove the `demo_contacts.ttl` file in the `/test` folder:
 ```
-bashlib-auth rm base:/test/demo_contacts.ttl
+bashlib-solid rm base:/test/demo_contacts.ttl
 ```
 If we now look at the container listing:
 ```
-bashlib-auth ls base:/test/
+bashlib-solid ls base:/test/
 ```
 we see that the resource has been removed.
 We can also remove the container now as follows:
 ```
-bashlib-auth rm base:/test/
+bashlib-solid rm base:/test/
 ```
 To remove a container together with the contained resources, the `-r, --recursive` flag has to be set.
 
@@ -342,7 +361,7 @@ To remove a container together with the contained resources, the `-r, --recursiv
 The `mkdir` command creates a target container.
 
 ```
-bashlib-auth mkdir base:/Pictures/
+bashlib-solid mkdir base:/Pictures/
 ```
 creates a new `Pictures/` container in the root of your pod.
 
@@ -350,7 +369,7 @@ creates a new `Pictures/` container in the root of your pod.
 The `touch` command creates a target resource in a container.
 
 ```
-bashlib-auth touch base:/test.txt
+bashlib-solid touch base:/test.txt
 ```
 creates a new resource `test.txt` in the root of your pod.
 
@@ -359,7 +378,7 @@ The `find` command enables you to find specific files in a given container based
 
 If we want to find where our profile card is located on our data pod, we can use the following command:
 ```
-bashlib find --full base: card
+bashlib-solid find --full base: card
 ```
 This command looks to match all found files in the `base:` container with the given filename match `card`.
 We use the `--full` flag to match with and display the full url of the found resources.
@@ -369,7 +388,7 @@ The `query` command is a convenience command that lets the user query one file o
 
 To return all triples from our WebID, we can use the following command:
 ```
-bashlib-auth query webid: "Select * WHERE { ?s ?p ?o . }"
+bashlib-solid query webid: "Select * WHERE { ?s ?p ?o . }"
 ```
 
 This command also works on containers to recursively query all contained resources.
@@ -379,7 +398,7 @@ echo "Select * WHERE { ?s ?p ?o . }" > queryFile.txt
 ```
 Now, we can use this query to get all triples of all files on our data pod. We use the `--pretty` flag to receive the results in a table format:
 ```
-bashlib-auth query -q -p base: queryFile.txt
+bashlib-solid query -q -p base: queryFile.txt
 ```
 
 
@@ -391,12 +410,12 @@ The `perms` command provides three operations to list, edit and delete permissio
 
 To list the permissions of your profile resource, we can use the following command:
 ```
-bashlib-auth perms list webid:
+bashlib-solid perms list webid:
 ```
 Here, we see the permissions written out for all agents, groups and the public for the given resource.
 This also works for containers. The following command prints the permissions of the pod root in a table format:
 ```
-bashlib-auth perms list --pretty base:
+bashlib-solid perms list --pretty base:
 ```
 
 ***editing***
@@ -404,41 +423,41 @@ bashlib-auth perms list --pretty base:
 
 To demonstrate the editing of permissions, we will first create a `Private` and `Public` folder on our pod.
 ```
-bashlib-auth mkdir base:/Private/
-bashlib-auth mkdir base:/Public/
+bashlib-solid mkdir base:/Private/
+bashlib-solid mkdir base:/Public/
 ```
 
 We start by setting the permissions for the `base:/Public/` container to be publicly readable, and make this the default for all contained resources (only an option for WAC).
 ```
-bashlib-auth perms edit base:/Public/ p=rd
+bashlib-solid perms edit base:/Public/ p=rd
 ```
 
 When we now list the resource permissions, we see that public permissions are set to `read` and `default`.
 ```
-bashlib-auth perms list --pretty base:/Public/
+bashlib-solid perms list --pretty base:/Public/
 ```
 
 Now we want to make sure the public cannot read or interact in any way with out `Private` container.
 For this we set public permissions to be nothing.
 However, we want our currently authenticated user to have full permissions in this container and all contained resources as a default (append permissions are implicitly set by giving write permissions):
 ```
-bashlib-auth perms edit base:/Private/ p= u=rwcd
+bashlib-solid perms edit base:/Private/ p= u=rwcd
 ```
 
 When we now list the resource permissions, we see that no public permissions are set. We also see that the permissions are NOT inherited, meaning they are have been set for the resource successfully.
 ```
-bashlib-auth perms list --pretty base:/Private/
+bashlib-solid perms list --pretty base:/Private/
 ```
 
-Finally, we want to give permission to our friend with the WebID `https://my.friends.pod/profile/card#me` to read and write in our `Private` container.
+Finally, we want to give permission to our friend Carol with the WebID `https://carol/profile/card#me` to read and write in our `Private` container.
 For this we use the following command:
 ```
-bashlib-auth perms edit base:/Private/ https://my.friends.pod/profile/card#me=rw
+bashlib-solid perms edit base:/Private/ https://carol/profile/card#me=rw
 ```
 
-When we now list the resource permissions, we see that our friend `https://my.friends.pod/profile/card#me` had received read, write and append (implicitly given through write) permissions over our `Private` container.
+When we now list the resource permissions, we see that our friend `https://carol/profile/card#me` has received read, write and append (implicitly given through write) permissions over our `Private` container.
 ```
-bashlib-auth perms list --pretty base:/Private/
+bashlib-solid perms list --pretty base:/Private/
 ```
 
 ***deleting***
@@ -447,12 +466,12 @@ We can remove the permissions set for a given resource.
 
 To remove the permissions set for the public container, we can use the following command:
 ```
-bashlib-auth perms delete base:/Public/
+bashlib-solid perms delete base:/Public/
 ```
 
 If we now list the permissions for this container, we see that all current permissions are inherited from the parent container, as the permissions for the `Public` container have been deleted.
 ```
-bashlib-auth perms list --pretty base:/Public/
+bashlib-solid perms list --pretty base:/Public/
 ```
 
 
@@ -464,7 +483,7 @@ We will now edit the file `base:/Public/test.txt` with our local vim editor.
 If you do not have vim installed, please select your prefered editor or do not use the flag to use the default system editor.
 Using the `--touch` flag, we will create a new file if the resource does not exist yet.
 ```
-bashlib-auth edit --editor vim --touch base:/Public/test.txt
+bashlib-solid edit --editor vim --touch base:/Public/test.txt
 ```
 
 Now your editor will open with an empty file.
@@ -474,7 +493,7 @@ Now, the edited resource will be copied from your local filesystem to its locati
 
 If we now look at the created file
 ```
-bashlib-auth cat base:/Public/test.txt
+bashlib-solid fetch base:/Public/test.txt
 ```
 we see that the file has been created and contains the text that was written in the editor.
 
@@ -487,11 +506,10 @@ In this section, we will go over some quick examples of how the CLI interface of
 For all examples, we will make use of the following aliases:
 
 - bashlib-css - `alias bashlib-css="node bashlib/css/bin/css.js"`
-- bashlib-solid - `alias bashlib-auth="node bashlib/solid/bin/solid.js"`
-- bashlib-auth - `alias bashlib-auth="node bashlib/solid/bin/solid.js" --auth <your_preferred_auth_option>`
+- bashlib-solid - `alias bashlib-solid="node bashlib/solid/bin/solid.js"`
 
 
-### Creating a new pod and authentication token 
+<!-- ### Creating a new pod and authentication token 
 *compatibility CSSv4 - current*
 
 First, we need to have a Community Solid Server instance running. More info on how to setup a Community Solid Server can be found [here](https://github.com/CommunitySolidServer/tutorials/blob/main/getting-started.md).
@@ -541,31 +559,31 @@ bashlib-solid --auth "token" -t <path_to_token> perms list --pretty webid:
 
 You can alias this to have a quick and easy way to use `Bashlib` from the cli (-t option only required if the default storage location was not used):
 ```
-alias bashlib-auth=`bashlib-solid --auth "token" -t <path_to_token>
+alias bashlib-solid=`bashlib-solid --auth "token" -t <path_to_token>
 ```
 From here on, you can use this alias to make all your commands authenticated:
 ```
-bashlib-auth perms list --pretty webid:
+bashlib-solid perms list --pretty webid:
 ```
-
-
+dit uitgecomment want de tut legt basically al uit hoe je dit doet
+ -->
 
 ### Setting up a profile image on your pod 
 Here we will discuss how we can quickly add a profile image to our profile, and store it on our pod. For this, we first need to choose a profile image. Say we have a nice image we want to use for this at `~/Pictures/my_nice_picture.png`.
 
 First, we copy the image to our pod at the location `base:/profile/img.png`.
 ```
-bashlib-auth cp ~/Pictures/my_nice_picture.png base:/profile/img.png
+bashlib-solid cp ~/Pictures/my_nice_picture.png base:/profile/img.png
 ```
 
 Next, we will make this image publicly readable, so everyone can see your profile picture. If you do not like this, feel free to only add read permissions for specific WebIDs.
 ```
-bashlib-auth perms edit base:/profile/img.png p=r
+bashlib-solid perms edit base:/profile/img.png p=r
 ```
 
 With our image uploaded to our pod and made public, we will now have to edit our profile document to link the new profile image to our WebID.
 ```
-bashlib-auth edit webId:
+bashlib-solid edit webId:
 ```
 This will open our profile document in our default editor.
 We now add the following line to the document (replace `imageurl` with the url of the newly uploaded image):

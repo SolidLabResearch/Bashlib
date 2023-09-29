@@ -92,7 +92,7 @@ export default class AuthCommand extends SolidCommand {
     
     authcommand
       .command('create-token')
-      .description('create authentication token (only for WebIDs hosted on a Community Solid Server v4.0.0 and up).')
+      .description('Create authentication token (only for WebIDs hosted on a Community Solid Server v4.0.0 and up).')
       .option('-b, --base-url <string>', 'URL of your CSS server')
       .option('-n, --name <string>', 'Token name')
       .option('-e, --email <string>', 'User email')

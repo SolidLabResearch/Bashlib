@@ -5,7 +5,7 @@ All available commands are presented through the CLI interface found in `bin/sol
 node bin/solid.js command [command_options] <command_args>
 ```
 ### authentication options
-In this section we detail the available authentication options in the CLI interface. These make use of the [authentication module](../css#creating-an-authenticated-fetch) exposed by [Bashlib-css](../css).
+In this section we detail the available authentication options in the CLI interface. These make use of the [authentication module](../usage/cli/authentication.md) exposed by [Bashlib-css](../usage/cli/css-specific.md).
 
 The **interactive** auth option opens a browser window that can be used to interacitvely authenticate you through the browser for the given identity provider value. This follows the default [Inrupt Node.JS authentication flow](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/authenticate-nodejs/). This option stores session information in your filesystem and re-uses a previous session where possible to speed up subsequent commands without requiring re-authentication.
 *A custom port used for the redirect in the authentication flow can be set using [environment variables](#environment-variables).*
@@ -20,7 +20,7 @@ The **credentials** auth option uses client credentials to authenticate the user
 When failing to authenticate, the program will try to continue unauthenticated.
 
 #### CLI authentication
-Before being able to execute any commands, an authenticated connection needs to be made to the solid pod by uding the *auth* command
+Before being able to execute any commands, an authenticated connection needs to be made to the solid pod by using the *auth* command
 
 ##### auth
 Command to edit authentication options for Bashlib.
