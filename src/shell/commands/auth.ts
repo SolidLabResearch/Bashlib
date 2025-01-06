@@ -10,6 +10,7 @@ import { generateCSSToken, generateInruptToken } from '../../authentication/Toke
 import { getWebIDIdentityProvider, writeErrorString } from '../../utils/util';
 import { generateDpopKeyPair } from '@inrupt/solid-client-authn-core';
 import { requestAccessToken } from '../../authentication/AuthenticationToken';
+import { getSolidDataset, getThing } from '@inrupt/solid-client';
 const Table = require('cli-table');
 
 
@@ -93,7 +94,7 @@ export default class AuthCommand extends SolidCommand {
     authcommand
       .command('create-token-css')
       .description('create authentication token (only for WebIDs hosted on a Community Solid Server v4.0.0 and up).')
-      .option('-b, --base-url <string>', 'URL of your CSS server')
+      .option('-w, --webid <string>', 'User WebID')
       .option('-n, --name <string>', 'Token name')
       .option('-e, --email <string>', 'User email')
       .option('-p, --password <string>', 'User password')
@@ -112,7 +113,7 @@ export default class AuthCommand extends SolidCommand {
     authcommand
     .command('create-token-ess')
     .description('Store application id and secret for authentication token generation (register bashlib here: https://login.inrupt.com/registration.html).')
-    .option('-b, --base-url <string>', 'URL of your Inrupt server (default is https://login.inrupt.com/)')
+    .option('-w, --webid <string>', 'User WebID')
     .option('-i, --id <string>', 'application registration id')
     .option('-s, --secret <string>', 'application registration secret')
     .option('-v, --verbose', 'Log actions')
@@ -258,13 +259,17 @@ async function clearAuthenticationOption(options?: any) {
   await clearConfigCurrentWebID();
 }
 
+// todo: handle multiple auth servers for a single WebID.
 async function createAuthenticationTokenCSS(options: any) { 
   options.name = options.name || "Solid-cli token"
   let questions = []
 
   let currentWebID = getConfigCurrentWebID();
   let createTokenForCurrentWebID = false;
-  if (currentWebID) { 
+  
+  if (options.webid) options.webId = options.webid
+
+  if (!options.webId && currentWebID) { 
     console.log(`Do you want to create an authentication token for ${currentWebID}? [Y/n] `);
     createTokenForCurrentWebID = await new Promise((resolve, reject) => {
       process.stdin.setRawMode(true);
@@ -284,12 +289,10 @@ async function createAuthenticationTokenCSS(options: any) {
     let token = getConfigCurrentToken()
     let webId = getConfigCurrentWebID()
     if(webId) options.webId = webId;
-    if (!options.baseUrl && webId) { 
-      options.baseUrl = session?.idp || token?.idp || await getWebIDIdentityProvider(webId)
-    }
+    if (webId) options.idp = session?.idp || token?.idp || await getWebIDIdentityProvider(webId)
   }
 
-  if (!options.baseUrl) questions.push({ type: 'input', name: 'baseUrl',  message: 'Pod baseuri'})
+  if (!options.webId) questions.push({ type: 'input', name: 'webId',  message: 'WebID to create token for'})
   if (!options.email) questions.push({ type: 'input', name: 'email',  message: 'User email'})
   if (!options.password) questions.push({ type: 'password', name: 'password',  message: 'User password'})
 
@@ -297,7 +300,14 @@ async function createAuthenticationTokenCSS(options: any) {
     let answers = await inquirer.prompt(questions)
     options = { ...options, ...answers }
   }
-  options.idp = options.baseUrl;
+
+  if (!options.idp) {
+    try {
+      options.idp  = await getWebIDIdentityProvider(options.webId);
+    } catch (e) {
+      throw new Error(`Could not process provided WebID at ${options.webid}`)
+    }
+  }
 
   try {
     let token = await generateCSSToken(options);
@@ -322,7 +332,10 @@ async function createAuthenticationTokenInrupt(options: any){
 
   let currentWebID = getConfigCurrentWebID();
   let createTokenForCurrentWebID = false;
-  if (currentWebID) { 
+
+  if (options.webid) options.webId = options.webid
+
+  if (!options.webId && currentWebID) { 
     console.log(`Do you want to create an authentication token for ${currentWebID}? [Y/n] `);
     createTokenForCurrentWebID = await new Promise((resolve, reject) => {
       process.stdin.setRawMode(true);
@@ -342,12 +355,10 @@ async function createAuthenticationTokenInrupt(options: any){
     let token = getConfigCurrentToken()
     let webId = getConfigCurrentWebID()
     if(webId) options.webId = webId;
-    if (!options.baseUrl && webId) { 
-      options.baseUrl = session?.idp || token?.idp || await getWebIDIdentityProvider(webId)
-    }
-  }
+    if (!options.idp && webId) options.idp = session?.idp || token?.idp || await getWebIDIdentityProvider(webId)
+  } 
 
-  if (!options.baseUrl) questions.push({ type: 'input', name: 'baseUrl',  message: 'Solid server URI', default: "https://login.inrupt.com/"})
+  if (!options.webId) questions.push({ type: 'input', name: 'webId',  message: 'WebID to create token for'})
   if (!options.email) questions.push({ type: 'input', name: 'id',  message: 'id'})
   if (!options.password) questions.push({ type: 'input', name: 'secret',  message: 'secret'})
 
@@ -355,8 +366,14 @@ async function createAuthenticationTokenInrupt(options: any){
     let answers = await inquirer.prompt(questions)
     options = { ...options, ...answers }
   }
-  options.idp = options.baseUrl;
 
+  if (!options.idp) {
+    try {
+      options.idp  = await getWebIDIdentityProvider(options.webId);
+    } catch (e) {
+      throw new Error(`Could not process provided WebID at ${options.webid}`)
+    }
+  }
   
   try {
     let token = await generateInruptToken(options);
@@ -373,64 +390,6 @@ async function createAuthenticationTokenInrupt(options: any){
   } catch (e) {
     console.error(`Could not create token: ${(e as Error).message}`)
     console.error(`Please make sure the filled in email and password values are correct!`)
-  }
-}
-
-
-async function setAuthenticationOption_backup(options: any) {
-  let webId = options.webid
-  if (webId) {  
-    await setConfigCurrentWebID(webId)
-    addConfigEmtpyEntry(webId)
-    console.log(`Authenticating for WebID: ${webId}`)
-  } else { 
-    let entries = getAllConfigEntries();
-    let values: Record<string, string> = {}
-    let activeSession = entries[webId]?.session
-    values["cancel"] = `${chalk.bold.redBright("Cancel operation")}`
-    values["new"] = `${chalk.bold.blueBright("Authenticate using new WebID")}`
-    values["clear"] = `${chalk.bold.red("Clear current authentication option")}`
-    for (let webId of Object.keys(entries)) { 
-      values[webId] =
-  `${colorWebID(webId)} ${entries[webId].hasToken ? `- ${chalk.bold("auth token")}` : ""} ${!!activeSession && !! activeSession?.expirationDate && activeSession.expirationDate > new Date() ? `- ${chalk.bold("active session")}` : ""}`
-    }
-
-    let selected = await new Promise((resolve, reject) => { 
-      cliSelect({
-        values,
-        valueRenderer: (value, selected) => {
-          if (selected) {
-            return chalk.underline(value);
-          }
-          return value;
-        },
-      }).then(result => { 
-        resolve(result.id)
-      }).catch(e => reject(e));
-    })
-
-    let selectedWebID = undefined;
-    // Add a new webId to the config
-    if (selected === "new") {
-      let answers = await inquirer.prompt([{ type: 'input', name: 'webid',  message: 'Use a new WebID to authenticate'}])
-      let newWebId = answers.webid;
-      await setConfigCurrentWebID(newWebId)
-      addConfigEmtpyEntry(newWebId)
-      selectedWebID = newWebId
-    } else if (selected === "cancel") {
-       // We just return from the function
-      return;
-    } else if (selected === "clear") {
-       // We clear the currently authenticated session
-      clearAuthenticationOption()
-      console.log(`Cleared authenticated WebID.`)
-      return;
-    } else { 
-      // We set the selected WebID as the currently used one
-      await setConfigCurrentWebID(selected as unknown as string)
-      selectedWebID = selected
-    }
-    console.log(`Authenticating for WebID: ${selectedWebID}`)
   }
 }
 
