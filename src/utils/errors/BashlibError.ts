@@ -1,4 +1,5 @@
 export enum BashlibErrorMessage { 
+  noWebIDOption = "No WebID option",
   noIDPOption = "No Identity Provider option",
   invalidIDPOption = "Invalid Identity Provider option",
   authFlowError = "Authentication flow error",

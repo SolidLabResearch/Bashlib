@@ -266,6 +266,7 @@ async function createAuthenticationTokenCSS(options: any) {
     let session = getConfigCurrentSession()
     let token = getConfigCurrentToken()
     let webId = getConfigCurrentWebID()
+    if(webId) options.webId = webId;
     if (!options.baseUrl && webId) { 
       options.baseUrl = session?.idp || token?.idp || await getWebIDIdentityProvider(webId)
     }
