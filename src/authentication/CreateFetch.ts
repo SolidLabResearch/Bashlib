@@ -29,7 +29,7 @@ export interface IClientCredentialsTokenAuthOptions {
   logger?: Logger,
 }
 
-export interface IClientCredentialsTokenGenerationOptions {
+export interface ICSSClientCredentialsTokenGenerationOptions {
   name: string,
   email: string,
   password: string,

@@ -6,12 +6,26 @@ import { createDpopHeader, generateDpopKeyPair } from '@inrupt/solid-client-auth
 
 const express = require('express')
 
-export interface IClientCredentialsTokenGenerationOptions {
+export interface ICSSClientCredentialsTokenGenerationOptions {
   name: string,
   email: string,
   password: string,
   idp: string,
   webId?: string,
+}
+
+export interface IInruptClientCredentialsTokenGenerationOptions {
+  id: string,
+  secret: string,
+  idp: string,
+  webId?: string,
+}
+
+
+export type InruptToken = {
+  id: string,
+  secret: string,
+  idp: string,
 }
 
 export type CSSToken = {
@@ -25,11 +39,11 @@ export type CSSToken = {
 
 import crossfetch from 'cross-fetch';
 
-export async function generateCSSToken(options: IClientCredentialsTokenGenerationOptions) {
+export async function generateCSSToken(options: ICSSClientCredentialsTokenGenerationOptions) {
   return generateCSSTokenVersion7(options)
 }
 
-export async function generateCSSTokenVersion7(options: IClientCredentialsTokenGenerationOptions) {
+export async function generateCSSTokenVersion7(options: ICSSClientCredentialsTokenGenerationOptions) {
 
   if (!options.idp) throw new BashlibError(BashlibErrorMessage.noIDPOption)
   if (!options.webId) throw new BashlibError(BashlibErrorMessage.noWebIDOption)
@@ -81,14 +95,12 @@ export async function generateCSSTokenVersion7(options: IClientCredentialsTokenG
     name: options.name,
     email: options.email,
     idp: options.idp,
-  
-    
   } as CSSToken
 
   return token;
 }
 
-export async function generateCSSTokenVersion6(options: IClientCredentialsTokenGenerationOptions) {
+export async function generateCSSTokenVersion6(options: ICSSClientCredentialsTokenGenerationOptions) {
   
   if (!options.idp) throw new BashlibError(BashlibErrorMessage.noIDPOption)
   
@@ -120,4 +132,14 @@ export async function generateCSSTokenVersion6(options: IClientCredentialsTokenG
   token.idp = options.idp;
 
   return token as CSSToken;
+}
+
+
+export function generateInruptToken(options: IInruptClientCredentialsTokenGenerationOptions): InruptToken {
+
+  return {
+    id: options.id,
+    secret: options.secret,
+    idp: options.idp
+  }
 }

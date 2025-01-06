@@ -16,11 +16,12 @@ export type IAuthInfoEntry = {
 }
 
 export type ITokenEntry = {
-  name: string,
-  email: string,
+  name?: string,
+  email?: string,
   idp: string, 
   webId: string,
   id: string,
+  secret?: string,
 }
 
 export type ISessionEntry = {

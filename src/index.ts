@@ -11,7 +11,7 @@ import touch, {ICommandOptionsTouch} from "./commands/solid-touch"
 import createSolidPods, {IAccountData} from "./commands/solid-pod-create"
 import { listPermissions, changePermissions, deletePermissions, ICommandOptionsPermissions, IPermissionOperation, IPermissionListing, Record } from './commands/solid-perms'
 import { authenticateWithTokenFromJavascript } from "./authentication/AuthenticationToken"
-import { generateCSSToken, IClientCredentialsTokenGenerationOptions, CSSToken } from "./authentication/TokenCreationCSS"
+import { generateCSSToken, ICSSClientCredentialsTokenGenerationOptions, CSSToken } from "./authentication/TokenCreationCSS"
 import { FileInfo, ResourceInfo } from './utils/util';
 
 // General Solid functionality
@@ -30,4 +30,4 @@ export type { Logger } from './logger';
 export type { ICommandOptionsCopy, ICommandOptionsList, ICommandOptionsRemove, ICommandOptionsMove, ICommandOptionsFind, ICommandOptionsQuery, ICommandOptionsPermissions, ICommandOptionsMakeDirectory, ICommandOptionsTouch }
 
 // Type exports 
-export type { IAccountData, IClientCredentialsTokenGenerationOptions, CSSToken, IPermissionOperation, FileInfo, ResourceInfo, SessionInfo, IPermissionListing, Record }
+export type { IAccountData, ICSSClientCredentialsTokenGenerationOptions, CSSToken, IPermissionOperation, FileInfo, ResourceInfo, SessionInfo, IPermissionListing, Record }

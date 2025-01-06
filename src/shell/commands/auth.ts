@@ -6,7 +6,7 @@ import inquirer from 'inquirer';
 
 import cliSelect from "cli-select"
 import chalk from 'chalk';
-import { generateCSSToken } from '../../authentication/TokenCreationCSS';
+import { generateCSSToken, generateInruptToken } from '../../authentication/TokenCreationCSS';
 import { getWebIDIdentityProvider, writeErrorString } from '../../utils/util';
 import { generateDpopKeyPair } from '@inrupt/solid-client-authn-core';
 import { requestAccessToken } from '../../authentication/AuthenticationToken';
@@ -91,7 +91,7 @@ export default class AuthCommand extends SolidCommand {
         })
     
     authcommand
-      .command('create-token')
+      .command('create-token-css')
       .description('create authentication token (only for WebIDs hosted on a Community Solid Server v4.0.0 and up).')
       .option('-b, --base-url <string>', 'URL of your CSS server')
       .option('-n, --name <string>', 'Token name')
@@ -108,6 +108,23 @@ export default class AuthCommand extends SolidCommand {
         if (this.mayExit) process.exit(0)
       })
     
+
+    authcommand
+    .command('create-token-ess')
+    .description('Store application id and secret for authentication token generation (register bashlib here: https://login.inrupt.com/registration.html).')
+    .option('-b, --base-url <string>', 'URL of your Inrupt server (default is https://login.inrupt.com/)')
+    .option('-i, --id <string>', 'application registration id')
+    .option('-s, --secret <string>', 'application registration secret')
+    .option('-v, --verbose', 'Log actions')
+    .action(async (options) => {
+      try {
+        await createAuthenticationTokenInrupt(options)
+      } catch (e) { 
+        writeErrorString('Could not create authentication token', e, options) 
+        if (this.mayExit) process.exit(1)
+      }
+      if (this.mayExit) process.exit(0)
+    })
     return program
   } 
 }
@@ -287,6 +304,66 @@ async function createAuthenticationTokenCSS(options: any) {
 
     // Get token WebID by creating an access token (a bit wastefull but no other option sadly)
       if (!token.id || !token.secret) throw new Error('Could not create valid authentication token.')
+    const dpopKey = await generateDpopKeyPair();
+    let { accessToken, expirationDate, webId } = await requestAccessToken(token.id, token.secret, dpopKey, options);
+
+    if (!webId) throw new Error('Could not create valid authentication token.')
+    setConfigToken(webId, token)
+    console.log(`Successfully created new token ${options.name}`)
+  } catch (e) {
+    console.error(`Could not create token: ${(e as Error).message}`)
+    console.error(`Please make sure the filled in email and password values are correct!`)
+  }
+}
+
+async function createAuthenticationTokenInrupt(options: any){
+  options.name = options.name || "Solid-cli token"
+  let questions = []
+
+  let currentWebID = getConfigCurrentWebID();
+  let createTokenForCurrentWebID = false;
+  if (currentWebID) { 
+    console.log(`Do you want to create an authentication token for ${currentWebID}? [Y/n] `);
+    createTokenForCurrentWebID = await new Promise((resolve, reject) => {
+      process.stdin.setRawMode(true);
+      process.stdin.resume();
+      process.stdin.on('data', (chk) => {
+        if (chk.toString('utf8') === "n") {
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      });
+    });
+  }
+
+  if (createTokenForCurrentWebID) { 
+    let session = getConfigCurrentSession()
+    let token = getConfigCurrentToken()
+    let webId = getConfigCurrentWebID()
+    if(webId) options.webId = webId;
+    if (!options.baseUrl && webId) { 
+      options.baseUrl = session?.idp || token?.idp || await getWebIDIdentityProvider(webId)
+    }
+  }
+
+  if (!options.baseUrl) questions.push({ type: 'input', name: 'baseUrl',  message: 'Solid server URI', default: "https://login.inrupt.com/"})
+  if (!options.email) questions.push({ type: 'input', name: 'id',  message: 'id'})
+  if (!options.password) questions.push({ type: 'input', name: 'secret',  message: 'secret'})
+
+  if (questions.length) {
+    let answers = await inquirer.prompt(questions)
+    options = { ...options, ...answers }
+  }
+  options.idp = options.baseUrl;
+
+  
+  try {
+    let token = await generateInruptToken(options);
+
+    // Get token WebID by creating an access token (a bit wastefull but no other option sadly)
+    if (!token.id || !token.secret) throw new Error('Could not create valid authentication token.')
+      
     const dpopKey = await generateDpopKeyPair();
     let { accessToken, expirationDate, webId } = await requestAccessToken(token.id, token.secret, dpopKey, options);
 
