@@ -19,7 +19,7 @@ export default class FetchCommand extends SolidCommand {
       // })
     
     program
-      .command('fetch')
+      .command('curl')
       .description('Fetch a resource')
       .argument(urlParam, 'file to be fetched')
       .option('-v, --verbose', 'Write out full response and all headers')
