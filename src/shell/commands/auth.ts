@@ -143,7 +143,7 @@ async function showAuthenticationOption(options: any) {
     let entries = getAllConfigEntries();
     for (let webId of Object.keys(entries)) {
       let activeSession = entries[webId]?.session
-      if (webId === currentWebId) table.push([chalk.cyan.bold(webId), entries[webId].hasToken, 
+      if (webId === currentWebId) table.push([colorWebID(webId), entries[webId].hasToken, 
         !!activeSession && !! activeSession.expirationDate && activeSession.expirationDate > new Date()])
     }
     console.log(`
@@ -155,7 +155,7 @@ ${table.toString()}`
     for (let webId of Object.keys(entries)) {
       let activeSession = entries[webId]?.session
       if (webId === currentWebId) console.log(
-        chalk.cyan.bold(webId),
+        colorWebID(webId),
         entries[webId].hasToken ? `- ${chalk('auth token')}` : "",
         !!activeSession && !! activeSession.expirationDate && 
           activeSession.expirationDate > new Date() ? `- ${chalk('active session')}` : ""
@@ -190,9 +190,9 @@ ${table.toString()}`
       let activeSession = entries[webId]?.session
       console.log(
         colorWebID(webId),
-        entries[webId].hasToken ? `- ${chalk.bold('auth token')}` : "",
+        entries[webId].hasToken ? `- ${chalk('auth token')}` : "",
         !!activeSession && !! activeSession.expirationDate && 
-          activeSession.expirationDate > new Date() ? `- ${chalk.bold('active session')}` : ""
+          activeSession.expirationDate > new Date() ? `- ${chalk('active session')}` : ""
       )
     }
   }
@@ -213,7 +213,7 @@ async function setAuthenticationOption(options: any) {
     values["clear"] = `${chalk.red("Clear current authentication option")}`
     for (let webId of Object.keys(entries)) { 
       values[webId] =
-  `${colorWebID(webId)} ${entries[webId].hasToken ? `- ${chalk.bold("auth token")}` : ""} ${!!activeSession && !! activeSession?.expirationDate && activeSession.expirationDate > new Date() ? `- ${chalk.bold("active session")}` : ""}`
+  `${colorWebID(webId)} ${entries[webId].hasToken ? `- ${chalk("auth token")}` : ""} ${!!activeSession && !! activeSession?.expirationDate && activeSession.expirationDate > new Date() ? `- ${chalk("active session")}` : ""}`
     }
 
     let selected = await new Promise((resolve, reject) => { 
