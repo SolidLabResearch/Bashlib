@@ -23,11 +23,23 @@ export default class PermsCommand extends SolidCommand {
     access
       .command('list')
       .argument('<url>', 'Resource URL')
+      .option('--acl', 'Displays ACL specific information such as group and default access')
       .option('-p, --pretty', 'Pretty format')
       .option('-v, --verbose', 'Log all operations') 
       .action(async (url: string, options: any) => {
-        let listings = await listPermissions(url, options)
-        if (listings) formatPermissionListing(url, listings, options)
+
+        let programOpts = addEnvOptions(this.programopts || {});
+        const authenticationInfo = await authenticate(programOpts)
+        options.fetch = authenticationInfo.fetch
+        url = await changeUrlPrefixes(authenticationInfo, url)
+
+        if (options.acl) {
+          const listings = await acl_perms.listPermissions(url, options)
+          if (listings) formatACLPermissionListing(url, listings, options)
+        } else {
+          const listings = await listPermissions(url, options)
+          if (listings) formatPermissionListing(url, listings, options)
+        }
         if (this.mayExit) process.exit(0)
       })
 
@@ -118,6 +130,11 @@ export default class PermsCommand extends SolidCommand {
       .description('Delete ACL resource attached to resource with given URI. Does not work for ACP based pods!')
       .option('-v, --verbose', 'Log all operations') // Should this be default?
       .action(async (url: string, options: any) => {
+        let programOpts = addEnvOptions(this.programopts || {});
+        const authenticationInfo = await authenticate(programOpts)
+        options.fetch = authenticationInfo.fetch
+        url = await changeUrlPrefixes(authenticationInfo, url)
+
         try {
           await acl_perms.deletePermissions(url, options)
         } catch (e) {
@@ -135,6 +152,92 @@ export default class PermsCommand extends SolidCommand {
 
 
 function formatPermissionListing(url: string, permissions: any, options: any) {
+  let formattedString = ``    
+  let formattedPerms = permissions.access 
+  if (permissions.resource) {
+    if (permissions.resource.agent) {
+      for (let agentId of Object.keys(permissions.resource.agent)) {
+        formattedPerms.agent[agentId]['resource'] = true
+      }
+    }
+    if (permissions.resource.public) {
+      formattedPerms.public['resource'] = true
+    }
+  }
+  
+
+  if (options.pretty) {
+    let head = [
+      chalk.cyan.bold("ID"), 
+      chalk.bold("read"), 
+      chalk.bold("append"), 
+      chalk.bold("write"), 
+      chalk.bold("control"), 
+    ] 
+    let table = new Table({ head });
+    if (!isEmpty(formattedPerms.agent)) {
+      table.push([chalk.bold('Agent'), '', '', '', ''])
+      for (let id of Object.keys(formattedPerms.agent)) {
+        const control = formattedPerms.agent[id].controlRead && formattedPerms.agent[id].controlWrite
+        table.push([
+          id,
+          formattedPerms.agent[id].read || 'false',
+          formattedPerms.agent[id].append || 'false',
+          formattedPerms.agent[id].write || 'false',
+          control || 'false',
+        ])
+      }
+    }
+    if (!isEmpty(formattedPerms.public)) {
+      const control = formattedPerms.public.controlRead && formattedPerms.public.controlWrite
+      table.push([chalk.bold('Public'), '', '', '', ''])
+      table.push([
+        chalk.blue('#public'),
+        chalk.bold(formattedPerms.public.read || 'false'),
+        chalk.bold(formattedPerms.public.append || 'false'),
+        chalk.bold(formattedPerms.public.write || 'false'),
+        chalk.bold(control || 'false'),
+      ])
+    }
+    formattedString += `> ${chalk.bold(url)}\n`
+    formattedString += `${table.toString()}`
+  } else {
+    formattedString += `> ${chalk.bold(url)}\n`
+    if (!isEmpty(formattedPerms.agent)) {
+      formattedString += `${chalk.bold('Agent')}\n`
+      for (let id of Object.keys(formattedPerms.agent)) {
+        formattedString += `${id} - `
+        for (let permission of Object.entries(formattedPerms.agent[id])) {
+          if (permission[1] && permission[0] !== "controlRead" && permission[0] !== "controlWrite") {
+            formattedString += `${permission[0]} `
+          } 
+        }
+        if (formattedPerms.agent[id]["controlRead"] && formattedPerms.agent[id]["controlWrite"]) {
+          formattedString += `control `
+        }
+        formattedString += `\n`
+      }
+    }
+    if (!isEmpty(formattedPerms.public)) {
+      formattedString += `${chalk.bold('Public')}\n`
+      formattedString += `${'#public'} - `
+      let inherited = true;
+      for (let permission of Object.entries(formattedPerms.public)) {
+        if (permission[1] && permission[0] !== "controlRead" && permission[0] !== "controlWrite") {
+          formattedString += `${permission[0]} `
+        } 
+      }
+      if (formattedPerms.public["controlRead"] && formattedPerms.public["controlWrite"]) {
+        formattedString += `control `
+      }
+      formattedString += `\n`
+    }
+  }
+  console.log(formattedString)
+}
+
+
+function formatACLPermissionListing(url: string, permissions: any, options: any) {
   let formattedString = ``    
   let formattedPerms = permissions.access 
   if (permissions.resource) {
@@ -289,5 +392,6 @@ function formatPermissionListing(url: string, permissions: any, options: any) {
 }
 
 function isEmpty (obj: any) {
+  if (!obj) return true;
   return Object.keys(obj).length === 0
 }
