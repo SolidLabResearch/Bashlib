@@ -13,7 +13,7 @@ export default class TreeCommand extends SolidCommand {
     
     program
       .command('tree')
-      .description('Utility to query RDF resoures on your data pod.')
+      .description('View resource tree from container')
       .argument(urlParam, 'Base container to construct tree over')
       .option('-a, --all', 'Match .acl and .meta files')
       .option('-f, --full', 'Return containing files using full filename.')

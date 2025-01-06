@@ -16,7 +16,7 @@ export default class EditCommand extends SolidCommand {
   
     program
       .command('edit')
-      .description('Edit a remote file using your default editor')
+      .description('Edit remote resources')
       .argument('<url>', 'Resource URL')
       .option('-e, --editor <path_to_editor_executable>', 'Use custom editor')
       .option('-t, --touch', 'Create file if not exists') // Should this be default?

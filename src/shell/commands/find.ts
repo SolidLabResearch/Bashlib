@@ -13,7 +13,7 @@ export default class FindCommand extends SolidCommand {
   
     program
       .command('find')
-      .description('Utility to find resoures on your data pod.')
+      .description('Find resources')
       .argument('<url>', 'Container to start the search')
       .argument('<filename>', 'Filename to match, processed as RegExp(filename)')
       .option('-a, --all', 'Match .acl and .meta files')

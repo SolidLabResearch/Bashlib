@@ -10,20 +10,20 @@ export default class CopyCommand extends SolidCommand {
   public addCommand(program: Command) {
     this.programopts = program.opts();
 
-    program
-      .command('cp')
-      .description('Utility to copy files from and to both the local file system and remote Solid pod.')
-      .argument('<src>', 'file or directory to be copied')
-      .argument('<dst>', 'destination to copy file or directory to')
-      .option('-a, --all', 'Copy .acl files in recursive directory copies')
-      .option('-i, --interactive-override', 'Interactive confirmation prompt when overriding existing files')
-      .option('-n, --no-override', 'Do not override existing files')
-      .option('-v, --verbose', 'Log all read and write operations')
-      .action(this.executeCommand)
+    // program
+    //   .command('cp')
+    //   .description('Utility to copy files from and to both the local file system and remote Solid pod.')
+    //   .argument('<src>', 'file or directory to be copied')
+    //   .argument('<dst>', 'destination to copy file or directory to')
+    //   .option('-a, --all', 'Copy .acl files in recursive directory copies')
+    //   .option('-i, --interactive-override', 'Interactive confirmation prompt when overriding existing files')
+    //   .option('-n, --no-override', 'Do not override existing files')
+    //   .option('-v, --verbose', 'Log all read and write operations')
+    //   .action(this.executeCommand)
 
     program
       .command('copy')
-      .description('Utility to copy files from and to both the local file system and remote Solid pod.')
+      .description('Copy resources and containers between remote sources or the local file system')
       .argument('<src>', 'file or directory to be copied')
       .argument('<dst>', 'destination to copy file or directory to')
       .option('-a, --all', 'Copy .acl files in recursive directory copies')

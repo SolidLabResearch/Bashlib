@@ -15,7 +15,7 @@ export default class QueryCommand extends SolidCommand {
 
     program
       .command('query')
-      .description('Utility to query RDF resoures on your data pod.')
+      .description('Query RDF resoures using SPARQL')
       .argument('<url>', 'Resource to query. In case of container recursively queries all contained files.')
       .argument('<query>', 'SPARQL query string | file path containing SPARQL query when -q flag is active')
       .option('-a, --all', 'Match .acl and .meta files')

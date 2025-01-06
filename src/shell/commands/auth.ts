@@ -18,7 +18,7 @@ export default class AuthCommand extends SolidCommand {
   public addCommand(program: Command) {
     this.programopts = program.opts();
 
-    let authcommand = program.command('auth').description('Utility to edit authentication options for Bashlib.')
+    let authcommand = program.command('auth').description('Manage authentication options for Bashlib.')
 
     authcommand
       .command('show')

@@ -10,20 +10,20 @@ export default class MkdirCommand extends SolidCommand {
   public addCommand(program: Command) {
     this.programopts = program.opts();
 
-    program
-      .command('mv')
-      .description('Utility to move files or containers on remote Solid pod.')
-      .argument('<src>', 'file or directory to be moved')
-      .argument('<dst>', 'destination of the move')
-      .option('-a, --all', 'Move .acl files when moving directories recursively')
-      .option('-i, --interactive-override', 'Interactive confirmation prompt when overriding existing files')
-      .option('-n, --no-override', 'Do not override existing files')
-      .option('-v, --verbose', 'Log all operations')
-      .action(this.executeCommand)
+    // program
+    //   .command('mv')
+    //   .description('Utility to move files or containers on remote Solid pod.')
+    //   .argument('<src>', 'file or directory to be moved')
+    //   .argument('<dst>', 'destination of the move')
+    //   .option('-a, --all', 'Move .acl files when moving directories recursively')
+    //   .option('-i, --interactive-override', 'Interactive confirmation prompt when overriding existing files')
+    //   .option('-n, --no-override', 'Do not override existing files')
+    //   .option('-v, --verbose', 'Log all operations')
+    //   .action(this.executeCommand)
     
     program
       .command('move')
-      .description('Utility to move files or containers on remote Solid pod.')
+      .description('Move resources and containers between remote sources or the local file system')
       .argument('<src>', 'file or directory to be moved')
       .argument('<dst>', 'destination of the move')
       .option('-a, --all', 'Move .acl files when moving directories recursively')

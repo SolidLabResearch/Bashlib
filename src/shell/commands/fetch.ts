@@ -11,16 +11,16 @@ export default class FetchCommand extends SolidCommand {
     let urlParam = this.mayUseCurrentContainer ? '[url]' : '<url>'
 
     program
-      .command('cat')
-      .description('Utility to display files from remote Solid pod.')
-      .argument(urlParam, 'file to be displayed')
-      .action(async (url: string, options: any) => { 
-        await this.executeCommand(url, options)
-      })
+      // .command('cat')
+      // .description('Utility to display files from remote Solid pod.')
+      // .argument(urlParam, 'file to be displayed')
+      // .action(async (url: string, options: any) => { 
+      //   await this.executeCommand(url, options)
+      // })
     
     program
       .command('fetch')
-      .description('Utility to fetch files from remote Solid pod.')
+      .description('Fetch a resource')
       .argument(urlParam, 'file to be fetched')
       .option('-v, --verbose', 'Write out full response and all headers')
       .option('-H, --only-headers', 'Only write out headers')

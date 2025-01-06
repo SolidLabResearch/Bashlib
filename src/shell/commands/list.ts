@@ -13,21 +13,21 @@ export default class ListCommand extends SolidCommand {
     this.programopts = program.opts();
     let urlParam = this.mayUseCurrentContainer ? '[url]' : '<url>'
 
-    program
-      .command('ls')
-      .description('Utility to view files in container on remote Solid pod.')
-      .argument(urlParam, 'URL of container to be listed')
-      .option('-a, --all', 'List all files including acl files')
-      .option('-f, --full', 'List files with their full uri')
-      .option('-l, --long', 'List in long format')
-      .option('-v, --verbose', '')
-      .action(async (url: string, options: any) => { 
-        await this.executeCommand(url, options)
-      })
+    // program
+    //   .command('ls')
+    //   .description('Utility to view files in container on remote Solid pod.')
+    //   .argument(urlParam, 'URL of container to be listed')
+    //   .option('-a, --all', 'List all files including acl files')
+    //   .option('-f, --full', 'List files with their full uri')
+    //   .option('-l, --long', 'List in long format')
+    //   .option('-v, --verbose', '')
+    //   .action(async (url: string, options: any) => { 
+    //     await this.executeCommand(url, options)
+    //   })
 
     program
       .command('list')
-      .description('Utility to view files in container on remote Solid pod.')
+      .description('List files in a container')
       .argument(urlParam, 'URL of container to be listed')
       .option('-a, --all', 'List all files including acl files')
       .option('-f, --full', 'List files with their full uri')
