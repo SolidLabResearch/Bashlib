@@ -134,7 +134,7 @@ async function showAuthenticationOption(options: any) {
   let currentWebId = getConfigCurrentWebID();
   if (options.pretty) {
     let head = [
-      chalk.cyan.bold("WebID"),
+      chalk.cyan("WebID"),
       "has auth token",
       "has active session",
     ]
@@ -156,9 +156,9 @@ ${table.toString()}`
       let activeSession = entries[webId]?.session
       if (webId === currentWebId) console.log(
         chalk.cyan.bold(webId),
-        entries[webId].hasToken ? `- ${chalk.bold('auth token')}` : "",
+        entries[webId].hasToken ? `- ${chalk('auth token')}` : "",
         !!activeSession && !! activeSession.expirationDate && 
-          activeSession.expirationDate > new Date() ? `- ${chalk.bold('active session')}` : ""
+          activeSession.expirationDate > new Date() ? `- ${chalk('active session')}` : ""
       )
     }
   }
@@ -177,7 +177,7 @@ async function listAuthenticationOptions(options: any) {
     let entries = getAllConfigEntries();
     for (let webId of Object.keys(entries)) {
       let activeSession = entries[webId]?.session
-      table.push([webId, entries[webId].hasToken, 
+      table.push([colorWebID(webId), entries[webId].hasToken, 
         !!activeSession && !! activeSession.expirationDate && activeSession.expirationDate > new Date()])
     }
     console.log(`
@@ -208,9 +208,9 @@ async function setAuthenticationOption(options: any) {
     let entries = getAllConfigEntries();
     let values: Record<string, string> = {}
     let activeSession = entries[webId]?.session
-    values["cancel"] = `${chalk.bold.redBright("Cancel operation")}`
-    values["new"] = `${chalk.bold.blueBright("Authenticate using new WebID")}`
-    values["clear"] = `${chalk.bold.red("Clear current authentication option")}`
+    values["cancel"] = `${chalk.redBright("Cancel operation")}`
+    values["new"] = `${chalk.blueBright("Authenticate using new WebID")}`
+    values["clear"] = `${chalk.red("Clear current authentication option")}`
     for (let webId of Object.keys(entries)) { 
       values[webId] =
   `${colorWebID(webId)} ${entries[webId].hasToken ? `- ${chalk.bold("auth token")}` : ""} ${!!activeSession && !! activeSession?.expirationDate && activeSession.expirationDate > new Date() ? `- ${chalk.bold("active session")}` : ""}`
@@ -410,10 +410,10 @@ async function removeAuthenticationOption(options?: any) {
     let entries = getAllConfigEntries();
     let values: Record<string, string> = {}
     let activeSession = entries[webId]?.session
-    values["all"] = `${chalk.bold.redBright("Delete all saved auth information (including tokens)")}`
+    values["all"] = `${chalk.redBright("Delete all saved auth information (including tokens)")}`
     for (let webId of Object.keys(entries)) { 
       values[webId] =
-  `${colorWebID(webId)} ${entries[webId].hasToken ? `- ${chalk.bold("auth token")}` : ""} ${!!activeSession && !! activeSession?.expirationDate && activeSession.expirationDate > new Date() ? `- ${chalk.bold("active session")}` : ""}`
+  `${colorWebID(webId)} ${entries[webId].hasToken ? `- ${chalk("auth token")}` : ""} ${!!activeSession && !! activeSession?.expirationDate && activeSession.expirationDate > new Date() ? `- ${chalk("active session")}` : ""}`
     }
 
     let selected = await new Promise((resolve, reject) => { 
@@ -447,5 +447,5 @@ async function removeAuthenticationOption(options?: any) {
 
 
 function colorWebID(webId: string) {
-  return getConfigCurrentWebID() === webId ? chalk.bold.cyan(webId) : chalk.bold(webId)
+  return getConfigCurrentWebID() === webId ? chalk.bold(webId) : chalk(webId)
 }

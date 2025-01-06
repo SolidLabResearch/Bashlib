@@ -28,7 +28,7 @@
     "cli-columns": "^4.0.0",
     "cli-select": "^1.1.2",
     "cli-table": "^0.3.11",
-    "commander": "^9.0.0",
+    "commander": "^13.0.0",
     "cookie-session": "^2.0.0",
     "cross-fetch": "^3.1.5",
     "express": "^4.17.3",
