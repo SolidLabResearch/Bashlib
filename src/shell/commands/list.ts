@@ -54,7 +54,7 @@ export default class ListCommand extends SolidCommand {
       url = await changeUrlPrefixes(authenticationInfo, url)
       listings = await list(url, options)
     } catch (e) {
-      writeErrorString(`Could not provide listing for ${url}`, e, options)
+      writeErrorString(`Could not provide listing for ${url}`, (e as Error).message, options)
       if (this.mayExit) process.exit(1)
     }
     // Output to command line

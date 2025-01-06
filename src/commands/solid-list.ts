@@ -1,5 +1,5 @@
 import { isDirectory, checkHeadersForAclAndMetadata, getResourceInfoFromDataset, getResourceInfoFromHeaders, ResourceInfo, getAclAndMetadata } from '../utils/util';
-import { getContainedResourceUrlAll, getSolidDataset } from '@inrupt/solid-client';
+import { getContainedResourceUrlAll, getSolidDataset, SolidDataset, WithServerResourceInfo } from '@inrupt/solid-client';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
 
 export interface ICommandOptionsList extends ICommandOptions{
@@ -14,8 +14,20 @@ export default async function list(url: string, options?: ICommandOptionsList) {
     commandOptions.logger.error('List can only be called on containers. Please write containers with their trailing slash.')
     throw new Error('List can only be called on containers.');
   }
-  let dataset = await getSolidDataset(url, { fetch: commandOptions.fetch })
-  let containedResources = getContainedResourceUrlAll(dataset)
+  
+  // let dataset = await getSolidDataset(url, { fetch: commandOptions.fetch })
+  // let containedResources = getContainedResourceUrlAll(dataset)
+
+  let dataset: SolidDataset & WithServerResourceInfo;
+  let containedResources: string[];
+
+  try {
+    dataset = await getSolidDataset(url, { fetch: commandOptions.fetch })
+    containedResources = getContainedResourceUrlAll(dataset)
+  } catch (e) {
+    throw new Error(`Resource at ${url} does not exist or unauthorized to access resource.`)
+  }
+
   let resourceInfos : ResourceInfo[] = []
 
   // Test original directory for acl file
