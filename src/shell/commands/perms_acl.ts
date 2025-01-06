@@ -1,6 +1,5 @@
 import { Command } from 'commander';
-import * as acl_perms from '../../commands/solid-perms_acl';
-import { setPermission, listPermissions, IPermissionOperation } from '../../commands/solid-perms';
+import { changePermissions, deletePermissions, listPermissions, IPermissionOperation } from '../../commands/solid-perms_acl';
 import authenticate from '../../authentication/authenticate';
 import { addEnvOptions, changeUrlPrefixes, getAndNormalizeURL } from '../../utils/shellutils';
 import { writeErrorString } from '../../utils/util';
@@ -13,120 +12,101 @@ export default class PermsCommand extends SolidCommand {
   public addCommand(program: Command) {
     this.programopts = program.opts();
 
-    
-    const access = program
-      .command('access')
-      .description('Control and edit resource permissions.');
-
-
-
-    access
-      .command('list')
+    program
+      .command('chmod')
+      .description('Utility to list and edit resource permissions on a data pod. Only supports operations on ACL and not ACP.')
+      .argument('<operation>', 'list, edit, delete')
       .argument('<url>', 'Resource URL')
-      .option('-p, --pretty', 'Pretty format')
-      .option('-v, --verbose', 'Log all operations') 
-      .action(async (url: string, options: any) => {
-        let listings = await listPermissions(url, options)
-        if (listings) formatPermissionListing(url, listings, options)
-        if (this.mayExit) process.exit(0)
-      })
-
-
-    access
-      .command('set')
-      .argument('<url>', 'Resource URL')
-      .argument('[permissions...]', 
-      `Permission format when setting permissions. 
-      Format according to id=[a][c][r][w]. 
+      .argument('[permissions...]', `Permission operations to edit resource permissions. 
+      Formatted according to id=[d][g][a][c][r][w]. 
       For public permissions please set id to "p". 
       For the current authenticated user please set id to "u".
-      For specific agents, set id to be the agent webid.
+      To set updated permissions as default, please add the [d] option as follows: id=d[g][a][c][r][w]
+      To indicate the id as a group id, please add the [g] option as follows: id=g[d][a][c][r][w]
       `)
-      .option('--acl', 'Enables ACL specific operations --default and --group')
-      .option('--default', 'Set the defined permissions as default (only in --acl mode)')
-      .option('--group', 'Process identifier as a group identifier (only in --acl mode)')
+      .option('-p, --pretty', 'Pretty format')
       .option('-v, --verbose', 'Log all operations') // Should this be default?
-      .action( async (url: string, permissions: string[], options: any) => {
-
-        let programOpts = addEnvOptions(this.programopts || {});
-        const authenticationInfo = await authenticate(programOpts)
-        options.fetch = authenticationInfo.fetch
-        url = await changeUrlPrefixes(authenticationInfo, url)
-
-        try {
-          // if (this.shell) url = getAndNormalizeURL(url, this.shell);
-          let parsedPermissions = permissions.map(permission => {
-            const splitPerm = permission.split('=')
-            if (! (splitPerm.length === 2)) { 
-              writeErrorString('Incorrect permission format.', 'Please format your permissions as id=[a][c][r][w].', options) 
-              process.exit(0)
-            }
-            let id = splitPerm[0]
-            const permissionOptions = splitPerm[1].split('')
-            let type;
-            const acl = options.acl
-
-            if (options.group) {
-              if (!acl) {
-                writeErrorString('Cannot set group permissions outside of --acl mode.', options);
-                process.exit(0)
-              }
-              type = 'group'
-            } else if (id === 'p') {
-              type = 'public'
-            } else if (id === 'u') {
-              if (!authenticationInfo.webId) { 
-                writeErrorString('Could not autmatically fill in webId of authenticated user.', 'Please make sure you have an authenticated session to auto-fill your webId', options);
-                process.exit(0)
-              }
-              type = 'agent'
-              id = authenticationInfo.webId
-            } 
-            const read = permissionOptions.indexOf('r') !== -1
-            const write = permissionOptions.indexOf('w') !== -1
-            const append = permissionOptions.indexOf('a') !== -1
-            const control = permissionOptions.indexOf('c') !== -1
-            const def = options.default
-            if (options.default && !options.acl) {
-              writeErrorString('Cannot set default permissions outside of --acl mode.', options);
-              process.exit(0)
-            }
-            return ({ type, id, read, write, append, control, default: def, acl } as IPermissionOperation)
-          })
-          try {
-            for (let permission of parsedPermissions) {
-              if (permission.acl) {
-                await acl_perms.changePermissions(url, parsedPermissions, options)
-              } else {
-                await setPermission(url, parsedPermissions, options)
-              }
-
-            }
-          } catch (e) {
-            if (options.verbose) writeErrorString(`Could not update permissions for resource at ${url}`, e, options)
-          }
-        }
-        catch (e) {
-          writeErrorString(`Could not evaluate permissions for ${url}`, e, options)
-          if (this.mayExit) process.exit(1)
-        }
-      })
-
-    access
-      .command('delete')
+      .action(this.executeCommand)
+    
+    program
+      .command('perms')
+      .description('Utility to list and edit resource permissions on a data pod. Only supports operations on ACL and not ACP.')
+      .argument('<operation>', 'list, edit, delete')
       .argument('<url>', 'Resource URL')
-      .description('Delete ACL resource attached to resource with given URI. Does not work for ACP based pods!')
+      .argument('[permissions...]', `Permission operations to edit resource permissions. 
+      Formatted according to id=[d][g][a][c][r][w]. 
+      For public permissions please set id to "p". 
+      For the current authenticated user please set id to "u".
+      To set updated permissions as default, please add the [d] option as follows: id=d[g][a][c][r][w]
+      To indicate the id as a group id, please add the [g] option as follows: id=g[d][a][c][r][w]
+      `)
+      .option('-p, --pretty', 'Pretty format')
       .option('-v, --verbose', 'Log all operations') // Should this be default?
-      .action(async (url: string, options: any) => {
+      .action(this.executeCommand)
+
+    return program
+  }
+  
+  async executeCommand (operation: string, url: string, permissions: string[], options: any) {
+    let programOpts = addEnvOptions(this.programopts || {});
+    const authenticationInfo = await authenticate(programOpts)
+    options.fetch = authenticationInfo.fetch
+    try {
+      if (this.shell) url = getAndNormalizeURL(url, this.shell);
+      url = await changeUrlPrefixes(authenticationInfo, url)
+
+      if (operation === 'list') {
+        let listings = await listPermissions(url, options)
+        if (listings) formatPermissionListing(url, listings, options)
+      } else if (operation === 'edit') {
+        let parsedPermissions = permissions.map(permission => {
+          const splitPerm = permission.split('=')
+          if (! (splitPerm.length === 2)) { 
+            writeErrorString('Incorrect permission format.', 'Please format your permissions as id=[d][a][c][r][w].', options) 
+            process.exit(0)
+          }
+          let id = splitPerm[0]
+          const permissionOptions = splitPerm[1].split('')
+          let type;
+          if (id === 'p') {
+            type = 'public'
+          } else if (id === 'u') {
+            if (!authenticationInfo.webId) { 
+              writeErrorString('Could not autmatically fill in webId of authenticated user.', 'Please make sure you have an authenticated session to auto-fill your webId', options);
+              process.exit(0)
+            }
+            type = 'agent'
+            id = authenticationInfo.webId
+          } else {
+            type = permissionOptions.indexOf('g') === -1 ? 'agent' : 'group'
+          }
+          const read = permissionOptions.indexOf('r') !== -1
+          const write = permissionOptions.indexOf('w') !== -1
+          const append = permissionOptions.indexOf('a') !== -1
+          const control = permissionOptions.indexOf('c') !== -1
+          const def = permissionOptions.indexOf('d') !== -1
+          return ({ type, id, read, write, append, control, default: def } as IPermissionOperation)
+        })
         try {
-          await acl_perms.deletePermissions(url, options)
+          await changePermissions(url, parsedPermissions, options)
+        } catch (e) {
+          if (options.verbose) writeErrorString(`Could not update permissions for resource at ${url}`, e, options)
+        }
+      } else if (operation === 'delete') {
+        try {
+          await deletePermissions(url, options)
         } catch (e) {
           if (options.verbose) writeErrorString(`Could not delete permissions for resource at ${url}`, e, options)
         }
-        if (this.mayExit) process.exit(0)
-      })
-
-    return program
+      } else {
+        console.error('Invalid operation.')
+      }
+    }
+    catch (e) {
+      writeErrorString(`Could not evaluate permissions for ${url}`, e, options)
+      if (this.mayExit) process.exit(1)
+    }
+    if (this.mayExit) process.exit(0)
   }
 
 }

@@ -9,13 +9,14 @@ import makeDirectory, { ICommandOptionsMakeDirectory } from "./commands/solid-mk
 import touch, {ICommandOptionsTouch} from "./commands/solid-touch"
 // import shell from "./commands/solid-shell"
 import createSolidPods, {IAccountData} from "./commands/solid-pod-create"
-import { listPermissions, changePermissions, deletePermissions, ICommandOptionsPermissions, IPermissionOperation, IPermissionListing, Record } from './commands/solid-perms'
+import { listPermissions, setPermission, ICommandOptionsPermissions, IPermissionOperation, IPermissionListing, Record } from './commands/solid-perms'
+import { changePermissions as setPermissionsAcl, deletePermissions as deletePermissionsAcl } from './commands/solid-perms_acl'
 import { authenticateWithTokenFromJavascript } from "./authentication/AuthenticationToken"
 import { generateCSSToken, ICSSClientCredentialsTokenGenerationOptions, CSSToken } from "./authentication/TokenCreationCSS"
 import { FileInfo, ResourceInfo } from './utils/util';
 
 // General Solid functionality
-export { copy, list, remove, move, find, query, listPermissions, changePermissions, deletePermissions, makeDirectory, touch }
+export { copy, list, remove, move, find, query, listPermissions, setPermission, setPermissionsAcl, deletePermissionsAcl, makeDirectory, touch }
 
 // Authentication Functionality
 export { authenticateWithTokenFromJavascript as authenticateToken, generateCSSToken }
