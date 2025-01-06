@@ -49,7 +49,7 @@ export default class AuthCommand extends SolidCommand {
     
     authcommand
       .command('set')
-      .description('Set current authentication option.')
+      .description('Set WebID through interactive menu, or directly set the WebID through argument.')
       .argument('[webid]', 'Set active WebID directly, without requiring manual selection.')
       .action(async (webid: string | undefined, options: any) => { 
         options.webid = webid;
@@ -61,7 +61,7 @@ export default class AuthCommand extends SolidCommand {
         }
         if (this.mayExit) process.exit(0)
       })
-    
+
     authcommand
       .command('remove')
       .argument('[string]', 'webid | all')

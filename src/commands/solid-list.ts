@@ -1,4 +1,4 @@
-import { isDirectory, checkHeadersForAclAndMetadata, getResourceInfoFromDataset, getResourceInfoFromHeaders, ResourceInfo } from '../utils/util';
+import { isDirectory, checkHeadersForAclAndMetadata, getResourceInfoFromDataset, getResourceInfoFromHeaders, ResourceInfo, getAclAndMetadata } from '../utils/util';
 import { getContainedResourceUrlAll, getSolidDataset } from '@inrupt/solid-client';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
 
@@ -34,22 +34,14 @@ export default async function list(url: string, options?: ICommandOptionsList) {
   for (let containedResourceUrl of containedResources) {
     let resourceInfo = getResourceInfoFromDataset(dataset, containedResourceUrl, url);
     if (resourceInfo && !resourceInfo.isDir && commandOptions.all) { //  We only want to show acl files in the current dir. Aka the ones of the current dir + the ones of contained files
-      const headerInfo = await checkHeadersForAclAndMetadata(containedResourceUrl, commandOptions.fetch)
-      let aclResourceInfo: ResourceInfo | undefined;
-      let metaResourceInfo: ResourceInfo | undefined;
-      if (headerInfo.meta) {
-        metaResourceInfo = await getResourceInfoFromHeaders(headerInfo.meta, url, commandOptions.fetch)
-        if(metaResourceInfo) {
-          resourceInfo.metadata = metaResourceInfo;
-          resourceInfos.push(metaResourceInfo)
-        }
-      }
-      if (headerInfo.acl) {
-        aclResourceInfo = await getResourceInfoFromHeaders(headerInfo.acl, url, commandOptions.fetch)
-        if (aclResourceInfo) {
-          resourceInfo.acl = aclResourceInfo;
-          resourceInfos.push(aclResourceInfo)
-        }
+      const headerResources = await getAclAndMetadata(containedResourceUrl, url, commandOptions.fetch)
+      if (headerResources.acl) {
+        resourceInfo.acl = headerResources.acl
+        resourceInfos.push(headerResources.acl)
+      } 
+      if (headerResources.meta) {
+        resourceInfo.metadata = headerResources.meta
+        resourceInfos.push(headerResources.meta)
       }
     }
     if (resourceInfo) resourceInfos.push(resourceInfo)

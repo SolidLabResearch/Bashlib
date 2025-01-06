@@ -299,6 +299,37 @@ async function getResourceHeaderLinks(url: string, fetch: any, baseUrl?: string 
   }
 }
 
+
+export async function getAclAndMetadata(url: any, containerUrl: string, fetch: Function, headers?: any) : Promise<{acl: ResourceInfo | null, meta: ResourceInfo | null}> {
+  let foundHeaders: {acl: ResourceInfo | null, meta: ResourceInfo | null} = { acl: null, meta: null }
+  // Fetch headers if not passed
+  if (!headers) {
+    const res = await fetch(url, {
+      method: "HEAD"
+    })
+    if (!res.ok) throw new Error(`HTTP Error Response requesting ${url}: ${res.status} ${res.statusText}`);
+    let linkHeaders = res.headers.get('Link')
+    if (!linkHeaders) return foundHeaders;
+    headers = LinkHeader.parse(linkHeaders)
+  }
+  for (let header of headers.refs) {
+    if (header.rel === 'acl') {
+      try {
+        const aclResource = await getResourceInfoFromHeaders(header.uri, containerUrl, fetch)
+        if(aclResource) foundHeaders.acl = aclResource;
+      } catch (e) { } //todo:
+      
+    } else if (header.rel === 'describedby') {
+
+      try {
+        const metaResourceInfo = await getResourceInfoFromHeaders(header.uri, containerUrl, fetch)
+        if(metaResourceInfo) foundHeaders.meta = metaResourceInfo;
+      } catch (e) { } //todo:
+    }
+  }
+  return foundHeaders;
+}
+
 export async function checkHeadersForAclAndMetadata(url: any, fetch: Function, headers?: any) : Promise<{acl: string | null, meta: string | null}> {
   let foundHeaders = { acl: null, meta: null }
   // Fetch headers if not passed
@@ -314,14 +345,14 @@ export async function checkHeadersForAclAndMetadata(url: any, fetch: Function, h
   for (let header of headers.refs) {
     if (header.rel === 'acl') {
       // Check if file exists first
-      if (await checkRemoteFileAccess(header.uri, fetch)) {
+      // if (await checkRemoteFileAccess(header.uri, fetch)) {
         foundHeaders.acl = header.uri;
-      }
+      // }
     } else if (header.rel === 'describedby') {
       // Check if file exists first
-      if (await checkRemoteFileAccess(header.uri, fetch)) {
+      // if (await checkRemoteFileAccess(header.uri, fetch)) {
         foundHeaders.meta = header.uri;
-      }
+      // }
     }
   }
   return foundHeaders;

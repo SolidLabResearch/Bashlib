@@ -14,7 +14,7 @@ export interface IPreparedCommandOptions {
 }
 
 export function setOptionDefaults<T>(options: ICommandOptions) { 
-  if (!options.fetch) options.fetch = fetch;
+  if (!options.fetch) options.fetch = fetch
   if (!options.verbose) options.verbose = false;
   if (!options.logger) options.logger = console;
 
