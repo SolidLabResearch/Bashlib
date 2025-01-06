@@ -45,6 +45,7 @@ export async function listPermissions(resourceUrl: string, options?: ICommandOpt
   try {
     permissions.access.agent = await universalAccess.getAgentAccessAll(resourceUrl, {fetch: commandOptions.fetch})
     permissions.access.public = await universalAccess.getPublicAccess(resourceUrl, {fetch: commandOptions.fetch})
+    console.log('PERMISSIONS', permissions)
     return permissions
   } catch (e) {
     if (commandOptions.verbose) writeErrorString(`Could not retrieve permissions for ${resourceUrl}`, e, commandOptions)

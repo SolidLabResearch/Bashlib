@@ -30,21 +30,29 @@ export default async function list(url: string, options?: ICommandOptionsList) {
       if(resourceInfo) resourceInfos.push(resourceInfo)
     }
   }
-  
+  const promiseList: Promise<ResourceInfo>[] = [];
   for (let containedResourceUrl of containedResources) {
-    let resourceInfo = getResourceInfoFromDataset(dataset, containedResourceUrl, url);
-    if (resourceInfo && !resourceInfo.isDir && commandOptions.all) { //  We only want to show acl files in the current dir. Aka the ones of the current dir + the ones of contained files
-      const headerResources = await getAclAndMetadata(containedResourceUrl, url, commandOptions.fetch)
-      if (headerResources.acl) {
-        resourceInfo.acl = headerResources.acl
-        resourceInfos.push(headerResources.acl)
-      } 
-      if (headerResources.meta) {
-        resourceInfo.metadata = headerResources.meta
-        resourceInfos.push(headerResources.meta)
+    promiseList.push(new Promise((resolve, reject) => {
+      let resourceInfo = getResourceInfoFromDataset(dataset, containedResourceUrl, url);
+      if (resourceInfo && !resourceInfo.isDir && commandOptions.all) { //  We only want to show acl files in the current dir. Aka the ones of the current dir + the ones of contained files
+        getAclAndMetadata(containedResourceUrl, url, commandOptions.fetch)
+          .then((headerResources) => { 
+            if (headerResources.acl) resourceInfo.acl = headerResources.acl
+            if (headerResources.meta) resourceInfo.metadata = headerResources.meta
+            resolve(resourceInfo);
+          })
+      } else {
+        resolve(resourceInfo);
       }
-    }
-    if (resourceInfo) resourceInfos.push(resourceInfo)
+    }))
   }
+
+  const metadataResourceInfoList = (await Promise.all(promiseList)).filter((e) => !!e)
+  resourceInfos = resourceInfos.concat(metadataResourceInfoList)
+  metadataResourceInfoList.forEach( (resourceInfo: ResourceInfo) => {
+    if(resourceInfo.acl) resourceInfos.push(resourceInfo.acl)
+    if(resourceInfo.metadata) resourceInfos.push(resourceInfo.metadata)
+  });
   return resourceInfos
+
 }
