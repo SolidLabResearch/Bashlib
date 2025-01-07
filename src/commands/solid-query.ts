@@ -1,11 +1,33 @@
 import { QueryEngine } from '@comunica/query-sparql';
-import { isDirectory, writeErrorString, FileInfo } from '../utils/util';
+import { isDirectory, writeErrorString, FileInfo, generateRecursiveListing, isRDFResource, readRemoteDirectoryRecursively, DirInfo } from '../utils/util';
 import find from './solid-find';
 import type { Logger } from '../logger';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
 
 export interface ICommandOptionsQuery extends ICommandOptions{
   all?: boolean,
+}
+
+
+export async function queryFederated(containerUrl: string, query: string, options?: ICommandOptionsQuery) {
+  let commandOptions = setOptionDefaults<ICommandOptionsQuery>(options || {});
+
+  if (!isDirectory(containerUrl)) throw new Error('Executing federated query over single resource!');
+
+  const directoryInfo: DirInfo = await readRemoteDirectoryRecursively(containerUrl, commandOptions);
+  const files = directoryInfo.files
+
+
+  try {
+    const rdfResourceURIs: string[] = [];
+    for (let file of files) {
+      if (await isRDFResource(file, options?.fetch)) rdfResourceURIs.push(file.absolutePath)
+    }
+    const bindings = await queryResource(query, rdfResourceURIs, commandOptions.fetch);
+    return bindings
+  } catch (e) {
+    writeErrorString('Could not evaluate query', e, commandOptions)
+  }
 }
 
 

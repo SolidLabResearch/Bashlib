@@ -5,6 +5,7 @@ import type { Logger } from '../logger';
 const fs = require('fs')
 const path = require('path')
 var LinkHeader = require( 'http-link-header' )
+const mime = require('mime-types');
 
 export type DirInfo = {
   files: FileInfo[], 
@@ -471,4 +472,35 @@ export function getRelativePath(path: string, basePath: string) {
 export function writeErrorString(explanation: string, e: any, options?: { logger?: Logger }) {
   let message = (e instanceof Error) ? e.message : String(e);
   (options?.logger || console).error(`${explanation}: ${message}`);
+}
+
+const parseableExtensions = [
+  "ttl",
+  "trig",
+  "nt",
+  "nq",
+  "jsonld",
+  "rdf",
+]
+export async function isRDFResource(fileInfo: FileInfo, fetch: any) {
+  let extension: string;
+  if (fileInfo.contentType) {
+    extension = mime.extension(fileInfo.contentType)
+    if (parseableExtensions.indexOf(extension) !== -1) return true;
+    return false;
+  } 
+  for (let extension of parseableExtensions) {
+    if (fileInfo.absolutePath.endsWith("."+extension)) return true;
+  }
+  // could be non-rdf extension OR rdf with no extension
+  const split = fileInfo.absolutePath.split('/')
+  if (!!mime.contentType(split[split.length - 1])) { return false }
+  // We cannot discover any info, so we need to go look
+
+  const res = await fetch(fileInfo.absolutePath);
+  let contentType = res.headers.get('Content-Type')
+
+  if(!contentType) return false;
+  else if (parseableExtensions.indexOf(mime.extension(contentType)) !== -1) return true;
+  return false
 }

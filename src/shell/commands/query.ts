@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import query from '../../commands/solid-query';
+import query, { queryFederated } from '../../commands/solid-query';
 import authenticate from '../../authentication/authenticate';
 import { addEnvOptions, changeUrlPrefixes, getAndNormalizeURL } from '../../utils/shellutils';
 import { writeErrorString } from '../../utils/util';
@@ -22,6 +22,7 @@ export default class QueryCommand extends SolidCommand {
       .option('-q, --queryfile', 'Process query parameter as file path of SPARQL query')
       .option('-p, --pretty', 'Pretty format')
       .option('-f, --full', 'Return containing files using full filename.')
+      .option('-F, --federated', 'Evaluate query over combined contents of all resources in container tree')
       .option('-v, --verbose', 'Log all operations') // Should this be default?
       .action(async (url, queryString, options) => {
         let programOpts = addEnvOptions(program.opts() || {});
@@ -33,8 +34,12 @@ export default class QueryCommand extends SolidCommand {
           if (options.queryfile) {
             queryString = fs.readFileSync(queryString, { encoding: "utf-8" })
           }
-          for await (let result of query(url, queryString, options)) {
-            formatBindings(result.fileName, result.bindings, options)
+          if (options.federated) {
+            formatBindings("Federated query", await queryFederated(url, queryString, options), options)
+          } else {
+            for await (let result of query(url, queryString, options)) {
+              formatBindings(result.fileName, result.bindings, options)
+            }
           }
         } catch (e) {
           writeErrorString(`Could not query resource at ${url}`, e, options)

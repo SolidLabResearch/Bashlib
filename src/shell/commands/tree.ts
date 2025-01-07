@@ -15,8 +15,8 @@ export default class TreeCommand extends SolidCommand {
       .command('tree')
       .description('View resource tree from container')
       .argument(urlParam, 'Base container to construct tree over')
-      .option('-a, --all', 'Match .acl and .meta files')
-      .option('-f, --full', 'Return containing files using full filename.')
+      .option('-a, --all', 'Display .acl, .acp and .meta resources')
+      .option('-f, --full', 'Display full resource URIs')
       .option('-v, --verbose', 'Log all operations') // Should this be default?
       .action(async (url: string, options: any) => { 
         await this.executeCommand(url, options)
