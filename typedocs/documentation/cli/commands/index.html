@@ -1791,7 +1791,7 @@ This will only work if the url targets a container. It is important to add the t
   -l, --long     List in long format
   -v, --verbose  
 </code></pre></div>
-The <code>--all</code> option includes both <code>.meta</code> and <code>.acl</code> files in the listing (<code>.acp</code> files are not yet supported).
+The <code>--all</code> option includes <code>.meta</code>, <code>.acl</code> and <code>.acp</code>  files in the listing.
 <br />
 The <code>--full</code> option writes full resource URIs, not only the resource name.
 <br />
@@ -1816,23 +1816,38 @@ The default behavior is to overwrite files, the <code>--interactive-override</co
   src                         file or directory to be copied
   dst                         destination to copy file or directory to
 </code></pre></div>
-The <code>src</code> argument is the location of the source file to be copied. If the URL does not start with <code>http(s)://</code>, the resource is assumed to be a local resource and matched with the local file system. The <code>dst</code> argument is the destination to which the source resource is to be copied. Similarly it uses the <code>http(s)://</code> prefix to decide if the location is local or remote.</p>
+The <code>src</code> argument is the location of the source file to be copied. If the URL does not start with <code>http(s)://</code>, the resource is assumed to be a local resource and matched with the local file system. The <code>dst</code> argument is the destination to which the source resource is to be copied. Similarly it uses the <code>http(s)://</code> prefix to decide if the location is local or remote.
+The default behavior ignores context resources such as <code>.meta</code>, <code>.acl</code> and <code>.acp</code> present in the directories. The <code>--all</code> flag ignores this behavior, though note that for authorization resources, as the target URIs are not edited, copying resources with these authorization resources does not imply they will result in the same access controls as the location they were copied from!</p>
 <h4 id="options_2">options<a class="headerlink" href="#options_2" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code>Options:
   -a, --all                   Copy .acl files in recursive directory copies
-  -i, --interactive-override  Interactive confirmation prompt when overriding existing files
+  -i, --interactive-override  Interactive confirmation prompt when overriding existing resource
   -n, --no-override           Do not override existing files
   -v, --verbose               Log all read and write operations
-  -h, --help                  display help for command
 </code></pre></div>
-The <code>--all</code> option includes both <code>.meta</code> and <code>.acl</code> files in the listing (<code>.acp</code> files are not yet supported).
+The <code>--all</code> option includes <code>.meta</code>, <code>.acl</code> and <code>.acp</code> files in the listing.
 <br />
-The <code>--full</code> option writes full resource URIs, not only the resource name.
+The <code>--interactive-override</code> option provides an interactive prompt when a copy will override an existing resource.
 <br />
-The <code>--long</code> option writes the listing in a table format, including available information about size, latest modification, related metadata resource and related acl resource.
+The <code>--no-override</code> option ignores existing resources.
 <br />
 The <code>--verbose</code> option shows warnings.</p>
 <h4 id="example_2">example<a class="headerlink" href="#example_2" title="Permanent link">&para;</a></h4>
+<p>Copying a local resource into a Solid pod container.
+<div class="highlight"><pre><span></span><code>sld cp /path/to/file https://mypod.org/container/
+</code></pre></div></p>
+<p>Copying a local resource to a specific remote resource
+<div class="highlight"><pre><span></span><code>sld cp /path/to/file.ttl https://mypod.org/container/resource.ttl
+</code></pre></div></p>
+<p>Copy the contents of container 1 of alice's pod to container 2 of bob's pod.</p>
+<div class="highlight"><pre><span></span><code>sld cp https://mypod.org/alice/container1/ https://mypod.org/bob/container2/
+</code></pre></div>
+<p>To copy the source container into the target container, we need to add the container in the target URI as follows: <code>https://mypod.org/bob/container2/container1/</code>.
+<div class="highlight"><pre><span></span><code>sld cp https://mypod.org/alice/container1/ https://mypod.org/bob/container2/container1/
+</code></pre></div></p>
+<p>Copy a resource from a solid pod to the local filesystem
+<div class="highlight"><pre><span></span><code>sld cp https://mypod.org/container/resource.ttl ./resource.ttl
+</code></pre></div></p>
 <h2 id="move">Move<a class="headerlink" href="#move" title="Permanent link">&para;</a></h2>
 <h4 id="arguments_3">arguments<a class="headerlink" href="#arguments_3" title="Permanent link">&para;</a></h4>
 <h4 id="options_3">options<a class="headerlink" href="#options_3" title="Permanent link">&para;</a></h4>
