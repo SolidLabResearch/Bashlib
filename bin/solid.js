@@ -22,8 +22,8 @@ program
   .version('0.2.0')
   .enablePositionalOptions()
   .option('-a, --auth <string>', 'token | interactive | request | none - Authentication type (defaults to "request")')
-  .option('-i, --idp <string>', 'URL of the Solid Identity Provider')
-  .option('-c, --config <string>', 'Location of config file with authentication info.')
+  // .option('-i, --idp <string>', 'URL of the Solid Identity Provider')
+  // .option('-c, --config <string>', 'Location of config file with authentication info.')
   .option('--port', 'Specify port to be used when redirecting in Solid authentication flow. Defaults to 3435.')
 
 program = new c.FetchCommand(undefined, true).addCommand(program)

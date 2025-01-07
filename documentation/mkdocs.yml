@@ -74,24 +74,19 @@ nav:
   - Welcome:
       - README.md
   - Documentation:
-      - CLI Interface: documentation/cli-interface.md
-      - Typescript Interface: documentation/typescript-interface.md
-  - Tutorial: tutorial.md
-  - Usage:
-      - Overview: usage/overview.md
+      - Overview: documentation/overview.md
       - CLI:
-          - Overview: usage/cli/overview.md
-          - Environment Variables: usage/cli/environment-variables.md
-          - Authentication: usage/cli/authentication.md
-          - Example requests: usage/cli/example-requests.md
-          - Metadata: usage/cli/metadata.md
-          - CSS specific features: usage/cli/css-specific.md
-      - Typescript:
-          - Overview: usage/typescript/overview.md
-          - Authentication: usage/typescript/authentication.md
-          - Example requests: usage/typescript/example-requests.md
-          - Metadata: usage/typescript/metadata.md
-          - CSS specific features: usage/typescript/css-specific.md
+          - Overview: documentation/cli/overview.md
+          - Manage Authentication: documentation/cli/authentication.md
+          - Available Commands: documentation/cli/commands.md
+          - Manage Resource Access: documentation/cli/authentication.md
+      # - Typescript:
+      #     - Overview: usage/typescript/overview.md
+      #     - Authentication: usage/typescript/authentication.md
+      #     - Example requests: usage/typescript/example-requests.md
+      #     - Metadata: usage/typescript/metadata.md
+      #     - CSS specific features: usage/typescript/css-specific.md
+  - Tutorial: tutorial.md
   - Contributing:
       - Pull requests: contributing/making-changes.md
   # - API: ./typedocs/" target="_blank_blank
