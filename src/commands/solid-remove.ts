@@ -7,6 +7,7 @@ import { ICommandOptions, setOptionDefaults, IPreparedCommandOptions } from './s
 
 export interface ICommandOptionsRemove extends ICommandOptions {
   recursive?: boolean,
+  saveRoot?: boolean,
 }
 
 export default async function remove(url: string, options?: ICommandOptionsRemove) {
@@ -16,7 +17,7 @@ export default async function remove(url: string, options?: ICommandOptionsRemov
     const listing = await list(url, { fetch: commandOptions.fetch })
     if(!listing || listing.length === 0) {
       // Remove single directory
-      await removeContainer(url, commandOptions)
+      if (!options || !options.saveRoot) await removeContainer(url, commandOptions)
     } else if (!commandOptions.recursive) {
       commandOptions.logger.error('Please use the recursive option when removing containers')
       return;
@@ -72,7 +73,11 @@ async function removeContainerRecursively(url: string, options: ICommandOptionsR
     for (let file of containedFiles) {
       await removeFile(file.absolutePath, options)
     }
-    await removeContainer(containerUrl, options)
+    if (!options || !options.saveRoot) { 
+      await removeContainer(containerUrl, options)
+    } else if (containerUrl !== url) {
+      await removeContainer(containerUrl, options)
+    }
   }
 }
 

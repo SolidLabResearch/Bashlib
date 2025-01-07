@@ -50,6 +50,10 @@ export function isDirectory(resourcePath: string) : boolean {
   return resourcePath.endsWith('/')
 }
 
+export function isDirectoryContents(resourcePath: string) : boolean {
+  return resourcePath.endsWith('/.')
+}
+
 export function ensureDirectoryExistence(filePath: string) {
   var dirname = path.dirname(filePath);
   if (fs.existsSync(dirname)) {

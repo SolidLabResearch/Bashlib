@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { getFile, getContentType, createContainerAt } from "@inrupt/solid-client"
-import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively, checkRemoteFileExists, writeErrorString } from '../utils/util';
+import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively, checkRemoteFileExists, writeErrorString, isDirectoryContents } from '../utils/util';
 import Blob from 'fetch-blob'
 import { requestUserCLIConfirmation } from '../utils/userInteractions';
 import BashlibError from '../utils/errors/BashlibError';
@@ -36,6 +36,25 @@ export default async function copy(src: string, dst: string, options?: ICommandO
   commandOptions.interactiveOverride = commandOptions.interactiveOverride || false;
   commandOptions.noOverride = commandOptions.noOverride || false;
   
+  /**************************
+   * Preprocess src and dst *
+   **************************/
+  if (isDirectoryContents(dst)) {
+    dst = dst.substring(0, dst.length - 1)
+  }
+  if (isDirectoryContents(src)) {
+    src = src.substring(0, src.length - 1)
+    // we are fine, just don't remove src
+  } else if (isDirectory(src)) {
+    if (!isDirectory(dst)) {
+      commandOptions.logger.error('Cannot copy a directory to a file')
+      process.exit(1);
+    }
+    const split = src.split('/')
+    const srcContainerName = src.endsWith('/') ? split[split.length - 2] : split[split.length - 1]
+    dst = dst+srcContainerName+'/'
+  }
+
   /*********************
    * Processing Source *
    *********************/
@@ -72,6 +91,7 @@ export default async function copy(src: string, dst: string, options?: ICommandO
     commandOptions.logger.error('Cannot copy a directory to a file')
     process.exit(1);
   } 
+
 
   let resourcesToTransfer : { files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[] };
   if (source.isRemote) {

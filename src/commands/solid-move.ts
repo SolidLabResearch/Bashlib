@@ -1,5 +1,5 @@
 import copy from './solid-copy';
-import { isDirectory, isRemote } from '../utils/util';
+import { isDirectory, isDirectoryContents, isRemote } from '../utils/util';
 import remove from './solid-remove';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
 
@@ -27,6 +27,12 @@ export default async function move(source: string, destination: string, options?
 
   // Remove source recursively
   if (isRemote(source)) {
-    await remove(source, { recursive: true, ...commandOptions });
+    if (isDirectoryContents(source)) {
+      const sourceDir = source.substring(0, source.length - 1)
+      await remove(sourceDir, { recursive: true, saveRoot: true, ...commandOptions });
+    } else {
+      await remove(source, { recursive: true, ...commandOptions });
+    }
+    
   }
 }
