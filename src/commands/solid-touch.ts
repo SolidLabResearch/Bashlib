@@ -3,8 +3,7 @@ import { setOptionDefaults, ICommandOptions } from './solid-command';
 const mime = require('mime-types');
 
 export interface ICommandOptionsTouch extends ICommandOptions{ 
-  all?: boolean,
-  full?: boolean,
+    contentType?: string;
 }
 
 export default async function touch(url: string, options?: ICommandOptionsTouch) { 
@@ -23,10 +22,15 @@ export default async function touch(url: string, options?: ICommandOptionsTouch)
     else {
         let path = url.replace(/.*\//,'')
         let mimetype = mime.lookup(path)
-        let contentType = path.endsWith('.acl') || path.endsWith('.meta') ? 'text/turtle': path.endsWith('.acp') ? 'application/ld+json':  mime.lookup(path)
+
+        let contentType = options?.contentType
 
         if (!contentType) {
-            throw new Error('Could not discover content type for the touched resource. Please add a file extension to the touched resource.')
+            contentType = path.endsWith('.acl') || path.endsWith('.meta') ? 'text/turtle': path.endsWith('.acp') ? 'application/ld+json':  mime.lookup(path)
+        }
+
+        if (!contentType) {
+            throw new Error('Could not discover content type for the touched resource. Please add a file extension or add a content type flag.')
         }
 
         let res = await fetch(

@@ -13,7 +13,8 @@ export default class TouchCommand extends SolidCommand {
     program
       .command('touch')
       .description('Create an empty resource')
-      .argument('<url>', 'file to be created')
+      .argument('<url>', 'resource to be created')
+      .option('-c, --content-type <string>', 'Content type of the created resource')
       .option('-v, --verbose', 'Log all operations')
       .action(async (url, options) => {
         let programOpts = addEnvOptions(program.opts() || {});
