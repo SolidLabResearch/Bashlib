@@ -1,20 +1,13 @@
-# Bashlib Tutorial - CLI edition
-This tutorial aims to teach the basics of the Solid Bashlib library.
-This tutorial only regards the CLI interface of the Bashlib library. For the Node.JS interface, please look at the [Bashlib tutorial - Node.JS edition]()!
-
-
-**Used aliases in this document:**
-All aliases are calculated from the root of the cloned bashlib repo.
-  - bashlib-css  - `alias bashlib-css="node bashlib/css/bin/css.js"`
-  - bashlib-solid  - `alias bashlib-solid="node bashlib/solid/bin/solid.js"`
-  - bashlib-auth - `alias bashlib-auth="node bashlib/solid/bin/solid.js --auth token -t .tokens/.bobs-auth-token"`
-Feel free to use a different authentication scheme for the `bashlib-auth` alias.
+# Bashlib Tutorial
+This tutorial provides a quick setup of a Community Solid Server,
+and some useful interactions to manage resources on a created Solid pod.
 
 
 ## Index
-- [Bashlib Tutorial - CLI edition](#bashlib-tutorial---cli-edition)
+- [Bashlib Tutorial](#bashlib-tutorial)
   - [Index](#index)
   - [Setting up a Solid Server](#setting-up-a-solid-server)
+    - [Creating an account](#creating-an-account)
   - [Setting up Bashlib](#setting-up-bashlib)
   - [Bashlib-css](#bashlib-css)
     - [Creating a new Solid account + data pod](#creating-a-new-solid-account--data-pod)
@@ -43,27 +36,51 @@ Feel free to use a different authentication scheme for the `bashlib-auth` alias.
     - [Setting up a profile image on your pod](#setting-up-a-profile-image-on-your-pod)
 
 ## Setting up a Solid Server
-Before we use the Bashlib library, we need a Solid account and accompanying data pod to use the library. In case you already own a Solid pod, you may still want to follow the setup process, as some of the functionality will only be available for pods created on a [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer) instance.
+To use Bashlib, we first explain how to setup your own local Solid Server on which 
+you can create your first Solid pod.
+In case you already have a Solid pod, feel free to skip this section.
+Alteratively, you may want to create a Solid pod on one of 
+<a href="https://solidproject.org/for-developers#hosted-pod-services">the free Pod provider services</a>.
+Note that when using a free provider, if something goes wrong you might not be able to recover
+your data, or that service may be relatively slow, as there are free and community hosted.
+Additionally, only server running the Community Solid Server or Inrupt Enterprise Solid Server versions
+will be able to make client credentials to authenticate automatically without needing an interactive browser session.
+A free CSS hosting service <a href="https://solidweb.me/.account/login/password/register/">can be found here</a>.
+A free ESS hosting service <a href="https://start.inrupt.com/profile">can be found here</a>.
 
-To setup a Solid Server where we can register an account and get an accompanying data pod, we will make use in this tutorial of the [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer). 
+<br />
+To setup your own local Community Solid Server,
+we make use in this tutorial of the [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer). 
+The full tutorial can be found [here](https://github.com/KNowledgeOnWebScale/solid-linked-data-workshops-hands-on-exercises/blob/main/css-tutorial.md).
+When you are done with the tutorial, you are free to remove the current folder to delete all created files!
 
-To setup a local Community Solid Server instance, please execute the code below.
-More information on the setup process can be found [here](https://github.com/KNowledgeOnWebScale/solid-linked-data-workshops-hands-on-exercises/blob/main/css-tutorial.md).
-When you are done with the tutorial, you can remove the current folder to delete all created files.
 
+We use NPX to setup a CSS instance, and use a file config to store all data in the `data/` folder.
+Ideally execute the tutorial in an empty directory, so afterwards you can remove all tutorial data by removing this directory!
 ```
-git clone https://github.com/CommunitySolidServer/CommunitySolidServer.git
-cd CommunitySolidServer/
-npm install
-npm start
+npx @solid/community-server -c @css:config/file.json -f data/
 ```
 
-Congratulations! Your own CSS instance is now running on localhost on port 2323. 
+Congratulations! Your own CSS instance is now running on localhost on port 3000! Keep this shell open during the tutorial!
 You can confirm this by browsing to `http://localhost:3000` in the browser, and you will be greeted with a setup screen.
-You do not have to do anything on this screen for now! 
+
+### Creating an account
+Now we will create an account and associated WebID on this local CSS instance.
+Navigating to `http://localhost:3000` in the browser, and you will be greeted with a setup screen.
+Press the <a href="http://localhost:3000/.account/login/password/register/">Sign up for an account</a>
+link to create an account on this local CSS instance. As this is a local instance, the email does not 
+really matter, as this is only used for authentication purposes and recovering a pod, but is never verified.
+
+For now, we make an example person Bob using his email `bob@test.com` and password `bob`.
+Next, we make a pod for this account by pressing the `Create pod` link!
+Here, we provide a pod name, for example `mydatapod`.
+Congratulations, you just created a new data pod at `http://localhost:3000/mydatapod/`
+and associated WebID at `http://localhost:3000/mydatapod/profile/card#me`!
+
+
 
 ## Setting up Bashlib
-To setup the `Bashlib` library, we execute the following code:
+With our Solid pod and WebID created, now it is time to setup Bashlib!
 ```
 git clone https://github.com/SolidLabResearch/Bashlib.git
 cd Bashlib
