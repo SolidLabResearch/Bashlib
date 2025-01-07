@@ -37,7 +37,7 @@ The `--file` option allows passing the file contents as the body of the request.
 The `--header` option allows the setting of a request header. Setting multiple headers requires multiple `--header` options to be set.
 
 
-#### example
+#### examples
 
 A simple fetch request to a resource requesting a JSON-LD format
 ```
@@ -77,7 +77,7 @@ The `--long` option writes the listing in a table format, including available in
 <br />
 The `--verbose` option shows warnings.
 
-#### example
+#### examples
 A listing of a container
 ```
 sld ls https://mypod.org/container/
@@ -122,7 +122,7 @@ The `--no-override` option ignores existing resources.
 <br />
 The `--verbose` option shows warnings.
 
-#### example
+#### examples
 Copying a local resource into a Solid pod container.
 ```
 sld cp /path/to/file https://mypod.org/container/
@@ -186,7 +186,7 @@ The `--no-override` option ignores existing resources.
 <br />
 The `--verbose` option shows warnings.
 
-#### example
+#### examples
 Moving a local resource into a Solid pod container. This does not remove the local resource!
 ```
 sld mv /path/to/file https://mypod.org/container/
@@ -234,7 +234,7 @@ The `--recursive` flag must be set when removing container resources. This autom
 <br /> 
 The `--verbose` flag outputs operation logs.
 
-#### example
+#### examples
 
 Remove two resources
 ```
@@ -267,7 +267,7 @@ Options:
 ```
 The `--verbose` flag outputs operation logs.
 
-#### example
+#### examples
 
 Create a new container
 ```
@@ -297,7 +297,7 @@ Options:
 the `--content-type` flag provides 
 The `--verbose` flag outputs operation logs.
 
-#### example
+#### examples
 
 Create a new resource
 ```
@@ -328,7 +328,7 @@ The `--full` flag displays the resulting resources using their full URIs
 <br />
 The `--verbose` flag outputs operation logs.
 
-#### example
+#### examples
 Create tree listing on the root of a Solid pod.
 ```
 sld tree https://mypod.org/
@@ -360,7 +360,7 @@ The `--full` flag matches on and returns the full URIs of resources.
 <br />
 The `--verbose` flag outputs operation logs.
 
-#### example
+#### examples
 
 Find a resource named `card` in the `profile/` container.
 ```
@@ -405,7 +405,7 @@ The `--full` flag gives the full resource URIs of where the matches were found.
 <br />
 The `--verbose` outputs operation logs.
 
-#### example
+#### examples
 
 Evaluating a federated query over all resources in the profile container to look for entites with a given name.
 ```
@@ -446,7 +446,7 @@ The `--touch` option will create the resource if it does not exist yet.
 <br />
 The `--verbose` option outputs operation logs.
 
-#### example
+#### examples
 Editing a resource using the default editor.
 ```
 sld edit https://mypod.org/resource1
@@ -465,7 +465,7 @@ This is explained in <a href="../access">the access management section</a>.
 
 ## Auth
 The `auth` command is used to manage authentication in Bashlib.
-This is explained in <a href="../authentication">the access management section</a>.
+This is explained in <a href="../authentication">the authentication management section</a>.
 
 
 
