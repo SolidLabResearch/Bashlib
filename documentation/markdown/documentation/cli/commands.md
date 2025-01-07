@@ -69,7 +69,7 @@ Options:
   -l, --long     List in long format
   -v, --verbose  
 ```
-The `--all` option includes both `.meta` and `.acl` files in the listing (`.acp` files are not yet supported).
+The `--all` option includes `.meta`, `.acl` and `.acp`  files in the listing.
 <br />
 The `--full` option writes full resource URIs, not only the resource name.
 <br />
@@ -78,7 +78,6 @@ The `--long` option writes the listing in a table format, including available in
 The `--verbose` option shows warnings.
 
 #### example
-
 A listing of a container
 ```
 sld ls https://mypod.org/container/
@@ -104,25 +103,50 @@ Arguments:
   dst                         destination to copy file or directory to
 ```
 The `src` argument is the location of the source file to be copied. If the URL does not start with `http(s)://`, the resource is assumed to be a local resource and matched with the local file system. The `dst` argument is the destination to which the source resource is to be copied. Similarly it uses the `http(s)://` prefix to decide if the location is local or remote.
+The default behavior ignores context resources such as `.meta`, `.acl` and `.acp` present in the directories. The `--all` flag ignores this behavior, though note that for authorization resources, as the target URIs are not edited, copying resources with these authorization resources does not imply they will result in the same access controls as the location they were copied from!
 
 #### options
 ```
 Options:
   -a, --all                   Copy .acl files in recursive directory copies
-  -i, --interactive-override  Interactive confirmation prompt when overriding existing files
+  -i, --interactive-override  Interactive confirmation prompt when overriding existing resource
   -n, --no-override           Do not override existing files
   -v, --verbose               Log all read and write operations
-  -h, --help                  display help for command
 ```
-The `--all` option includes both `.meta` and `.acl` files in the listing (`.acp` files are not yet supported).
+The `--all` option includes `.meta`, `.acl` and `.acp` files in the listing.
 <br />
-The `--full` option writes full resource URIs, not only the resource name.
+The `--interactive-override` option provides an interactive prompt when a copy will override an existing resource.
 <br />
-The `--long` option writes the listing in a table format, including available information about size, latest modification, related metadata resource and related acl resource.
+The `--no-override` option ignores existing resources.
 <br />
 The `--verbose` option shows warnings.
 
 #### example
+Copying a local resource into a Solid pod container.
+```
+sld cp /path/to/file https://mypod.org/container/
+```
+
+Copying a local resource to a specific remote resource
+```
+sld cp /path/to/file.ttl https://mypod.org/container/resource.ttl
+```
+
+Copy the contents of container 1 of alice's pod to container 2 of bob's pod.
+
+```
+sld cp https://mypod.org/alice/container1/ https://mypod.org/bob/container2/
+```
+
+To copy the source container into the target container, we need to add the container in the target URI as follows: `https://mypod.org/bob/container2/container1/`.
+```
+sld cp https://mypod.org/alice/container1/ https://mypod.org/bob/container2/container1/
+```
+
+Copy a resource from a solid pod to the local filesystem
+```
+sld cp https://mypod.org/container/resource.ttl ./resource.ttl
+```
 
 
 ## Move

@@ -63,7 +63,6 @@ export default async function list(url: string, options?: ICommandOptionsList) {
 
 
   const metadataResourceInfoList = (await Promise.all(promiseList)).filter((e) => !!e)
-  console.log(JSON.stringify(metadataResourceInfoList, null, 2))
   resourceInfos = resourceInfos.concat(metadataResourceInfoList)
   metadataResourceInfoList.forEach( (resourceInfo: ResourceInfo) => {
     if(resourceInfo.acl) resourceInfos.push(resourceInfo.acl)
