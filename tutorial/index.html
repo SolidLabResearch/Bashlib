@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#bashlib-tutorial-cli-edition" class="md-skip">
+        <a href="#bashlib-tutorial" class="md-skip">
           Skip to content
         </a>
       
@@ -454,6 +454,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Setting up a Solid Server">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-an-account" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating an account
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -810,8 +825,6 @@
       
         
       
-        
-      
     
     
       
@@ -842,27 +855,6 @@
             CLI
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../documentation/cli/overview/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Overview
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
             
               
                 
@@ -913,11 +905,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../documentation/cli/authentication/" class="md-nav__link">
+      <a href="../documentation/cli/access/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Manage Authentication
+    Manage Resource Access
   </span>
   
 
@@ -1004,6 +996,21 @@
       Setting up a Solid Server
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Setting up a Solid Server">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-an-account" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating an account
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1286,20 +1293,17 @@
                   
 
 
-<h1 id="bashlib-tutorial-cli-edition">Bashlib Tutorial - CLI edition<a class="headerlink" href="#bashlib-tutorial-cli-edition" title="Permanent link">&para;</a></h1>
-<p>This tutorial aims to teach the basics of the Solid Bashlib library.
-This tutorial only regards the CLI interface of the Bashlib library. For the Node.JS interface, please look at the <a href="">Bashlib tutorial - Node.JS edition</a>!</p>
-<p><strong>Used aliases in this document:</strong>
-All aliases are calculated from the root of the cloned bashlib repo.
-  - bashlib-css  - <code>alias bashlib-css="node bashlib/css/bin/css.js"</code>
-  - bashlib-solid  - <code>alias bashlib-solid="node bashlib/solid/bin/solid.js"</code>
-  - bashlib-auth - <code>alias bashlib-auth="node bashlib/solid/bin/solid.js --auth token -t .tokens/.bobs-auth-token"</code>
-Feel free to use a different authentication scheme for the <code>bashlib-auth</code> alias.</p>
+<h1 id="bashlib-tutorial">Bashlib Tutorial<a class="headerlink" href="#bashlib-tutorial" title="Permanent link">&para;</a></h1>
+<p>This tutorial provides a quick setup of a Community Solid Server,
+and some useful interactions to manage resources on a created Solid pod.</p>
 <h2 id="index">Index<a class="headerlink" href="#index" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="#bashlib-tutorial---cli-edition">Bashlib Tutorial - CLI edition</a></li>
+<li><a href="#bashlib-tutorial">Bashlib Tutorial</a></li>
 <li><a href="#index">Index</a></li>
-<li><a href="#setting-up-a-solid-server">Setting up a Solid Server</a></li>
+<li><a href="#setting-up-a-solid-server">Setting up a Solid Server</a><ul>
+<li><a href="#creating-an-account">Creating an account</a></li>
+</ul>
+</li>
 <li><a href="#setting-up-bashlib">Setting up Bashlib</a></li>
 <li><a href="#bashlib-css">Bashlib-css</a><ul>
 <li><a href="#creating-a-new-solid-account--data-pod">Creating a new Solid account + data pod</a></li>
@@ -1334,21 +1338,41 @@ Feel free to use a different authentication scheme for the <code>bashlib-auth</c
 </li>
 </ul>
 <h2 id="setting-up-a-solid-server">Setting up a Solid Server<a class="headerlink" href="#setting-up-a-solid-server" title="Permanent link">&para;</a></h2>
-<p>Before we use the Bashlib library, we need a Solid account and accompanying data pod to use the library. In case you already own a Solid pod, you may still want to follow the setup process, as some of the functionality will only be available for pods created on a <a href="https://github.com/CommunitySolidServer/CommunitySolidServer">Community Solid Server</a> instance.</p>
-<p>To setup a Solid Server where we can register an account and get an accompanying data pod, we will make use in this tutorial of the <a href="https://github.com/CommunitySolidServer/CommunitySolidServer">Community Solid Server</a>. </p>
-<p>To setup a local Community Solid Server instance, please execute the code below.
-More information on the setup process can be found <a href="https://github.com/KNowledgeOnWebScale/solid-linked-data-workshops-hands-on-exercises/blob/main/css-tutorial.md">here</a>.
-When you are done with the tutorial, you can remove the current folder to delete all created files.</p>
-<div class="highlight"><pre><span></span><code>git clone https://github.com/CommunitySolidServer/CommunitySolidServer.git
-cd CommunitySolidServer/
-npm install
-npm start
-</code></pre></div>
-<p>Congratulations! Your own CSS instance is now running on localhost on port 2323. 
-You can confirm this by browsing to <code>http://localhost:3000</code> in the browser, and you will be greeted with a setup screen.
-You do not have to do anything on this screen for now! </p>
+<p>To use Bashlib, we first explain how to setup your own local Solid Server on which 
+you can create your first Solid pod.
+In case you already have a Solid pod, feel free to skip this section.
+Alteratively, you may want to create a Solid pod on one of 
+<a href="https://solidproject.org/for-developers#hosted-pod-services">the free Pod provider services</a>.
+Note that when using a free provider, if something goes wrong you might not be able to recover
+your data, or that service may be relatively slow, as there are free and community hosted.
+Additionally, only server running the Community Solid Server or Inrupt Enterprise Solid Server versions
+will be able to make client credentials to authenticate automatically without needing an interactive browser session.
+A free CSS hosting service <a href="https://solidweb.me/.account/login/password/register/">can be found here</a>.
+A free ESS hosting service <a href="https://start.inrupt.com/profile">can be found here</a>.</p>
+<p><br />
+To setup your own local Community Solid Server,
+we make use in this tutorial of the <a href="https://github.com/CommunitySolidServer/CommunitySolidServer">Community Solid Server</a>. 
+The full tutorial can be found <a href="https://github.com/KNowledgeOnWebScale/solid-linked-data-workshops-hands-on-exercises/blob/main/css-tutorial.md">here</a>.
+When you are done with the tutorial, you are free to remove the current folder to delete all created files!</p>
+<p>We use NPX to setup a CSS instance, and use a file config to store all data in the <code>data/</code> folder.
+Ideally execute the tutorial in an empty directory, so afterwards you can remove all tutorial data by removing this directory!
+<div class="highlight"><pre><span></span><code>npx @solid/community-server -c @css:config/file.json -f data/
+</code></pre></div></p>
+<p>Congratulations! Your own CSS instance is now running on localhost on port 3000! Keep this shell open during the tutorial!
+You can confirm this by browsing to <code>http://localhost:3000</code> in the browser, and you will be greeted with a setup screen.</p>
+<h3 id="creating-an-account">Creating an account<a class="headerlink" href="#creating-an-account" title="Permanent link">&para;</a></h3>
+<p>Now we will create an account and associated WebID on this local CSS instance.
+Navigating to <code>http://localhost:3000</code> in the browser, and you will be greeted with a setup screen.
+Press the <a href="http://localhost:3000/.account/login/password/register/">Sign up for an account</a>
+link to create an account on this local CSS instance. As this is a local instance, the email does not 
+really matter, as this is only used for authentication purposes and recovering a pod, but is never verified.</p>
+<p>For now, we make an example person Bob using his email <code>bob@test.com</code> and password <code>bob</code>.
+Next, we make a pod for this account by pressing the <code>Create pod</code> link!
+Here, we provide a pod name, for example <code>mydatapod</code>.
+Congratulations, you just created a new data pod at <code>http://localhost:3000/mydatapod/</code>
+and associated WebID at <code>http://localhost:3000/mydatapod/profile/card#me</code>!</p>
 <h2 id="setting-up-bashlib">Setting up Bashlib<a class="headerlink" href="#setting-up-bashlib" title="Permanent link">&para;</a></h2>
-<p>To setup the <code>Bashlib</code> library, we execute the following code:
+<p>With our Solid pod and WebID created, now it is time to setup Bashlib!
 <div class="highlight"><pre><span></span><code>git clone https://github.com/SolidLabResearch/Bashlib.git
 cd Bashlib
 bash setup.sh
