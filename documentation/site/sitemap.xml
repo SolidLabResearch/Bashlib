@@ -2,87 +2,54 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://SolidLabResearch.github.io/Bashlib/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-01-07</lastmod>
     </url>
     <url>
          <loc>https://SolidLabResearch.github.io/Bashlib/tutorial/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-01-07</lastmod>
     </url>
     <url>
          <loc>https://SolidLabResearch.github.io/Bashlib/contributing/making-changes/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-01-07</lastmod>
     </url>
     <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/documentation/cli-interface/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
+         <loc>https://SolidLabResearch.github.io/Bashlib/documentation/overview/</loc>
+         <lastmod>2025-01-07</lastmod>
     </url>
     <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/documentation/typescript-interface/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
+         <loc>https://SolidLabResearch.github.io/Bashlib/documentation/cli/access/</loc>
+         <lastmod>2025-01-07</lastmod>
     </url>
     <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/usage/overview/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
+         <loc>https://SolidLabResearch.github.io/Bashlib/documentation/cli/authentication/</loc>
+         <lastmod>2025-01-07</lastmod>
     </url>
     <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/usage/cli/authentication/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
+         <loc>https://SolidLabResearch.github.io/Bashlib/documentation/cli/commands/</loc>
+         <lastmod>2025-01-07</lastmod>
     </url>
     <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/usage/cli/css-specific/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
+         <loc>https://SolidLabResearch.github.io/Bashlib/documentation/cli/overview/</loc>
+         <lastmod>2025-01-07</lastmod>
     </url>
     <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/usage/cli/environment-variables/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
+         <loc>https://SolidLabResearch.github.io/Bashlib/documentation/typescript/authentication/</loc>
+         <lastmod>2025-01-07</lastmod>
     </url>
     <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/usage/cli/example-requests/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
+         <loc>https://SolidLabResearch.github.io/Bashlib/documentation/typescript/css-specific/</loc>
+         <lastmod>2025-01-07</lastmod>
     </url>
     <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/usage/cli/metadata/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
+         <loc>https://SolidLabResearch.github.io/Bashlib/documentation/typescript/example-requests/</loc>
+         <lastmod>2025-01-07</lastmod>
     </url>
     <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/usage/cli/overview/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
+         <loc>https://SolidLabResearch.github.io/Bashlib/documentation/typescript/metadata/</loc>
+         <lastmod>2025-01-07</lastmod>
     </url>
     <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/usage/typescript/authentication/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/usage/typescript/css-specific/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/usage/typescript/example-requests/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/usage/typescript/metadata/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://SolidLabResearch.github.io/Bashlib/usage/typescript/overview/</loc>
-         <lastmod>2023-03-18</lastmod>
-         <changefreq>daily</changefreq>
+         <loc>https://SolidLabResearch.github.io/Bashlib/documentation/typescript/overview/</loc>
+         <lastmod>2025-01-07</lastmod>
     </url>
 </urlset>
