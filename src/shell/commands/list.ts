@@ -64,10 +64,11 @@ function formatListing(listings: any[], options: any) {
     let values = listings.map((listingInfo) => {
       let path = options.full
       ? listingInfo.url
-      : listingInfo.relativePath 
+      : getResourceInfoRelativePath(listingInfo)
       
       if (listingInfo.isDir) return chalk.blue.bold(path)
       else if (path.endsWith('.acl')) return chalk.red(path)
+      else if (path.endsWith('.acp')) return chalk.red(path)
       else if (path.endsWith('.meta')) return chalk.greenBright(path)
       else return path
     })
@@ -77,10 +78,10 @@ function formatListing(listings: any[], options: any) {
     const fileNameLengths = listings.map(fileInfo => options.full ? fileInfo.url.length : getResourceInfoRelativePath(fileInfo).length)
     const fileNameFieldLength = Math.max(...[Math.max(...fileNameLengths.map(x => x || 0)), 8])
 
-    const aclLengths = listings.map(fileInfo => fileInfo.acl ? (options.full ? fileInfo.acl.url.length : fileInfo.acl.relativePath.length) : 0)
+    const aclLengths = listings.map(fileInfo => fileInfo.acl ? (options.full ? fileInfo.acl.url.length : getResourceInfoRelativePath(fileInfo.acl).length) : 0)
     const aclFieldLength = Math.max(...[Math.max(...aclLengths.map(x => x || 0)), 3])
 
-    const metaLengths = listings.map(fileInfo => fileInfo.metadata ? (options.full ? fileInfo.metadata.url.length : fileInfo.metadata.relativePath.length) : 0)
+    const metaLengths = listings.map(fileInfo => fileInfo.metadata ? (options.full ? fileInfo.metadata.url.length : getResourceInfoRelativePath(fileInfo.metadata).length) : 0)
     const metaFieldLength = Math.max(...[Math.max(...metaLengths.map(x => x || 0)), 4])
 
     const mtimeLength = listings.map(listingInfo => listingInfo.mtime ? listingInfo.mtime.toString().length : 0)
@@ -111,6 +112,7 @@ function formatListing(listings: any[], options: any) {
       let pathString = '';
       if (listingInfo.isDir) pathString = chalk.blue.bold(path.padEnd(fileNameFieldLength))
       else if (path.endsWith('.acl')) pathString = chalk.red(path.padEnd(fileNameFieldLength))
+      else if (path.endsWith('.acp')) pathString = chalk.red(path.padEnd(fileNameFieldLength))
       else if (path.endsWith('.meta')) pathString = chalk.greenBright(path.padEnd(fileNameFieldLength))
       else pathString = path.padEnd(fileNameFieldLength)
 

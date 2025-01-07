@@ -225,7 +225,7 @@ async function getRemoteSourceFiles(source: SourceOptions, fetch: typeof globalT
 function readLocalFile(path: string, verbose: boolean, options?: { logger?: Logger }): { buffer: Buffer, contentType: string} {
   if (verbose) (options?.logger || console).log('Reading local file:', path)
   const file = fs.readFileSync(path)
-  let contentType = path.endsWith('.acl') || path.endsWith('.meta') ? 'text/turtle' : mime.lookup(path)
+  let contentType = path.endsWith('.acl') || path.endsWith('.meta') ? 'text/turtle': path.endsWith('.acp') ? 'application/ld+json':  mime.lookup(path)
   return { buffer: file, contentType };
 }
 
@@ -279,6 +279,7 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options:
     let ext = path.extname(resourcePath) 
     // Hardcode missing common extensions
     if (resourcePath.endsWith('.acl')) ext = '.acl'
+    if (resourcePath.endsWith('.acp')) ext = '.acp'
     if (resourcePath.endsWith('.meta')) ext = '.meta'
     if (!ext) {
       const extension = mime.extension(fileData.contentType)
@@ -378,6 +379,8 @@ function readLocalDirectoryRecursively(
       subdirLocalPaths.push(local_path + resource) // Push the updated local path
       directories.push({ absolutePath: resourcePath + resource + '/', relativePath: local_path + resource + '/'});
     } else if (resource.endsWith('.acl')) {
+      if (options.all) { aclfiles.push({ absolutePath: resourcePath + resource, relativePath: local_path + resource }) }
+    } else if (resource.endsWith('.acp')) {
       if (options.all) { aclfiles.push({ absolutePath: resourcePath + resource, relativePath: local_path + resource }) }
     } else {
       files.push({ absolutePath: resourcePath + resource, relativePath: local_path + resource });

@@ -23,7 +23,7 @@ export default async function touch(url: string, options?: ICommandOptionsTouch)
     else {
         let path = url.replace(/.*\//,'')
         let mimetype = mime.lookup(path)
-        let contentType = (path.endsWith('.acl') || path.endsWith('.meta') || !mimetype) ? 'text/turtle' : mimetype
+        let contentType = path.endsWith('.acl') || path.endsWith('.meta') ? 'text/turtle': path.endsWith('.acp') ? 'application/ld+json':  mime.lookup(path)
 
         if (!contentType) {
             throw new Error('Could not discover content type for the touched resource. Please add a file extension to the touched resource.')

@@ -407,7 +407,7 @@ export async function getResourceInfoFromHeaders(resourceUrl: string, containerU
   const types = linkTypes.length ? linkTypes : undefined
   const resourceInfo : ResourceInfo = {
     url: resourceUrl,
-    relativePath: containerUrl ? resourceUrl.slice(containerUrl.length) : undefined, 
+    relativePath: containerUrl && resourceUrl.startsWith(containerUrl) ? resourceUrl.slice(containerUrl.length) : undefined, 
     isDir: isDirectory(resourceUrl),
     modified, types
   }

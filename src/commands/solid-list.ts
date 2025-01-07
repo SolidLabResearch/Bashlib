@@ -34,14 +34,15 @@ export default async function list(url: string, options?: ICommandOptionsList) {
   if (commandOptions.all) {
     let headerInfo = await checkHeadersForAclAndMetadata(url, commandOptions.fetch)
     if (headerInfo.acl) {
-      let resourceInfo = await getResourceInfoFromHeaders(headerInfo.acl, url, commandOptions.fetch)
+      const resourceInfo = await getResourceInfoFromHeaders(headerInfo.acl, url, commandOptions.fetch)
       if(resourceInfo) resourceInfos.push(resourceInfo)
     }
     if (headerInfo.meta) {
-      let resourceInfo = await getResourceInfoFromHeaders(headerInfo.meta, url, commandOptions.fetch)
+      const resourceInfo = await getResourceInfoFromHeaders(headerInfo.meta, url, commandOptions.fetch)
       if(resourceInfo) resourceInfos.push(resourceInfo)
     }
   }
+
   const promiseList: Promise<ResourceInfo>[] = [];
   for (let containedResourceUrl of containedResources) {
     promiseList.push(new Promise((resolve, reject) => {
@@ -49,6 +50,7 @@ export default async function list(url: string, options?: ICommandOptionsList) {
       if (resourceInfo && !resourceInfo.isDir && commandOptions.all) { //  We only want to show acl files in the current dir. Aka the ones of the current dir + the ones of contained files
         getAclAndMetadata(containedResourceUrl, url, commandOptions.fetch)
           .then((headerResources) => { 
+            console.log('headerResources', headerResources)
             if (headerResources.acl) resourceInfo.acl = headerResources.acl
             if (headerResources.meta) resourceInfo.metadata = headerResources.meta
             resolve(resourceInfo);
@@ -59,12 +61,14 @@ export default async function list(url: string, options?: ICommandOptionsList) {
     }))
   }
 
+
   const metadataResourceInfoList = (await Promise.all(promiseList)).filter((e) => !!e)
+  console.log(JSON.stringify(metadataResourceInfoList, null, 2))
   resourceInfos = resourceInfos.concat(metadataResourceInfoList)
   metadataResourceInfoList.forEach( (resourceInfo: ResourceInfo) => {
     if(resourceInfo.acl) resourceInfos.push(resourceInfo.acl)
     if(resourceInfo.metadata) resourceInfos.push(resourceInfo.metadata)
   });
-  return resourceInfos
+  return resourceInfos.filter(resource => resource.url.startsWith(url)) // ugly workaround to .acl and .acp resources not appearing in container
 
 }
