@@ -16,58 +16,75 @@
 <a href="#bashlib" id="bashlib" style="color: inherit; text-decoration: none;">
   <h1>Bashlib</h1>
 </a>
-<p>This repository contains a suite of functionality to facilitate use and development for Solid, mainly focused on supporting the <a href="https://github.com/CommunitySolidServer/CommunitySolidServer">Community Solid Server</a>.
-The <strong><a href="/bashlib/css">Bashlib-css</a></strong> library provides functionality for pod-creation and authentication options that are mostly restricted in compatilibty with the <a href="https://github.com/CommunitySolidServer/CommunitySolidServer">Community Solid Server</a>.
-The <strong><a href="/bashlib/solid">Bashlib-solid</a></strong> library provides functionality to interact with Solid environments from Node.JS and the CLI, providing shell-like functionality to facilitate the use of and development for Solid for people without knowledge of Solid or Linked Data Platform (LDP).</p>
+<p>This repository contains a suite of functionality to facilitate use and development for Solid</p>
+<p>For a tutorial and documentation, see <a href="solidlabresearch.github.io/Bashlib/">the documentation website</a></p>
+<!--
+## Requirements
 
-<a href="#requirements" id="requirements" style="color: inherit; text-decoration: none;">
-  <h2>Requirements</h2>
-</a>
-<ul>
-<li>Node &gt;= 16.0.0</li>
-</ul>
+- Node >= 16.0.0
 
-<a href="#setup" id="setup" style="color: inherit; text-decoration: none;">
-  <h2>Setup</h2>
-</a>
-<p>Using github</p>
-<pre><code><span class="hl-0">git</span><span class="hl-1"> </span><span class="hl-0">clone</span><span class="hl-1"> </span><span class="hl-0">git</span><span class="hl-1">@</span><span class="hl-0">github</span><span class="hl-1">.</span><span class="hl-0">com</span><span class="hl-1">:</span><span class="hl-0">SolidLabResearch</span><span class="hl-1">/</span><span class="hl-0">Bashlib</span><span class="hl-1">.</span><span class="hl-0">git</span><br/><span class="hl-0">cd</span><span class="hl-1"> </span><span class="hl-0">Bashlib</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-0">install</span><span class="hl-1"> </span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-0">run</span><span class="hl-1"> </span><span class="hl-0">build</span>
-</code></pre>
-<p>Using NPM</p>
-<pre><code><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-0">install</span><span class="hl-1"> </span><span class="hl-0">solid</span><span class="hl-1">-</span><span class="hl-0">bashlib</span>
-</code></pre>
+## Setup
+Using github
+``` 
+git clone git@github.com:SolidLabResearch/Bashlib.git
+cd Bashlib
+npm install 
+npm run build
+```
 
-<a href="#synopsis" id="synopsis" style="color: inherit; text-decoration: none;">
-  <h2>Synopsis</h2>
-</a>
-<pre><code><span class="hl-0">node</span><span class="hl-1"> </span><span class="hl-0">bin</span><span class="hl-1">/</span><span class="hl-0">solid</span><span class="hl-1">.</span><span class="hl-0">js</span><span class="hl-1"> </span><span class="hl-0">ls</span><span class="hl-1"> </span><span class="hl-2">https</span><span class="hl-1">:</span><span class="hl-3">//somepod.org/</span><br/><span class="hl-0">node</span><span class="hl-1"> </span><span class="hl-0">bin</span><span class="hl-1">/</span><span class="hl-0">solid</span><span class="hl-1">.</span><span class="hl-0">js</span><span class="hl-1"> </span><span class="hl-0">cat</span><span class="hl-1"> </span><span class="hl-2">https</span><span class="hl-1">:</span><span class="hl-3">//somepod.org/public.txt</span><br/><br/><span class="hl-1"># </span><span class="hl-0">Create</span><span class="hl-1"> </span><span class="hl-0">an</span><span class="hl-1"> </span><span class="hl-0">authenticated</span><span class="hl-1"> </span><span class="hl-4">session</span><span class="hl-1"> (</span><span class="hl-0">for</span><span class="hl-1"> </span><span class="hl-5">CSS</span><span class="hl-1"> </span><span class="hl-6">4.0</span><span class="hl-1">.</span><span class="hl-6">0</span><span class="hl-1"> </span><span class="hl-0">and</span><span class="hl-1"> </span><span class="hl-0">up</span><span class="hl-1">)</span><br/><span class="hl-0">node</span><span class="hl-1"> </span><span class="hl-0">bin</span><span class="hl-1">/</span><span class="hl-0">solid</span><span class="hl-1">.</span><span class="hl-0">js</span><span class="hl-1"> </span><span class="hl-0">auth</span><span class="hl-1"> </span><span class="hl-0">create</span><span class="hl-1">-</span><span class="hl-0">token</span><br/><span class="hl-1"># -- </span><span class="hl-0">and</span><span class="hl-1"> </span><span class="hl-0">fill</span><span class="hl-1"> </span><span class="hl-7">in</span><span class="hl-1"> </span><span class="hl-0">all</span><span class="hl-1"> </span><span class="hl-0">the</span><span class="hl-1"> </span><span class="hl-0">questions</span><br/><br/><span class="hl-1"># </span><span class="hl-0">Set</span><span class="hl-1"> </span><span class="hl-0">the</span><span class="hl-1"> </span><span class="hl-0">webid</span><span class="hl-1"> </span><span class="hl-0">you</span><span class="hl-1"> </span><span class="hl-0">want</span><span class="hl-1"> </span><span class="hl-0">to</span><span class="hl-1"> </span><span class="hl-0">use</span><span class="hl-1"> </span><span class="hl-0">for</span><span class="hl-1"> </span><span class="hl-0">authenticated</span><span class="hl-1"> </span><span class="hl-0">session</span><br/><span class="hl-0">node</span><span class="hl-1"> </span><span class="hl-0">bin</span><span class="hl-1">/</span><span class="hl-0">solid</span><span class="hl-1">.</span><span class="hl-0">js</span><span class="hl-1"> </span><span class="hl-0">auth</span><span class="hl-1"> </span><span class="hl-0">set</span><span class="hl-1"> &lt;</span><span class="hl-0">your</span><span class="hl-1">-</span><span class="hl-0">web</span><span class="hl-1">-</span><span class="hl-0">id</span><span class="hl-1">&gt;</span><br/><br/><span class="hl-1"># </span><span class="hl-0">Now</span><span class="hl-1"> </span><span class="hl-0">you</span><span class="hl-1"> </span><span class="hl-0">can</span><span class="hl-1"> </span><span class="hl-0">read</span><span class="hl-1"> </span><span class="hl-0">some</span><span class="hl-1"> </span><span class="hl-0">private</span><span class="hl-1"> </span><span class="hl-0">data</span><br/><span class="hl-0">node</span><span class="hl-1"> </span><span class="hl-0">bin</span><span class="hl-1">/</span><span class="hl-0">solid</span><span class="hl-1">.</span><span class="hl-0">js</span><span class="hl-1"> </span><span class="hl-0">ls</span><span class="hl-1"> </span><span class="hl-2">https</span><span class="hl-1">:</span><span class="hl-3">//somepod.org/private/secret.txt</span><br/><br/><span class="hl-1"># </span><span class="hl-0">Or</span><span class="hl-1">, </span><span class="hl-0">shorten</span><span class="hl-1"> </span><span class="hl-7">this</span><span class="hl-1"> </span><span class="hl-0">to</span><span class="hl-1"> </span><br/><span class="hl-0">node</span><span class="hl-1"> </span><span class="hl-0">bin</span><span class="hl-1">/</span><span class="hl-0">solid</span><span class="hl-1">.</span><span class="hl-0">js</span><span class="hl-1"> </span><span class="hl-0">ls</span><span class="hl-1"> </span><span class="hl-2">root</span><span class="hl-1">:/</span><span class="hl-0">private</span><span class="hl-1">/</span><span class="hl-0">secret</span><span class="hl-1">.</span><span class="hl-0">txt</span><br/><br/><span class="hl-1"># </span><span class="hl-0">Upload</span><span class="hl-1"> </span><span class="hl-0">some</span><span class="hl-1"> </span><span class="hl-0">data</span><br/><span class="hl-0">node</span><span class="hl-1"> </span><span class="hl-0">bin</span><span class="hl-1">/</span><span class="hl-0">solid</span><span class="hl-1">.</span><span class="hl-0">js</span><span class="hl-1"> </span><span class="hl-0">cp</span><span class="hl-1"> </span><span class="hl-0">local</span><span class="hl-1">.</span><span class="hl-0">txt</span><span class="hl-1"> </span><span class="hl-2">root</span><span class="hl-1">:</span><span class="hl-8">/private/</span>
-</code></pre>
+Using NPM
+```
+npm install solid-bashlib
+```
 
-<a href="#available-features" id="available-features" style="color: inherit; text-decoration: none;">
-  <h2>Available features</h2>
-</a>
-<ul>
-<li>Reading resources</li>
-<li>Fetch resources </li>
-<li>Container listing</li>
-<li>Tree listing</li>
-<li>Copy/move resources local to remote</li>
-<li>Copy/move resources remote to local</li>
-<li>Copy/move resources remote to remote</li>
-<li>Remote resources</li>
-<li>Create/touch an empty resource </li>
-<li>SPARQL query a resource</li>
-<li>List ACL permissions of resources</li>
-<li>Change ACL permissions of resources</li>
-<li>Authenticate against a Pod</li>
-<li>Make long lasting client credentials (CSS &gt;=4.0.0 only)</li>
-</ul>
+## Synopsis
 
-<a href="#contributors-how-to-release" id="contributors-how-to-release" style="color: inherit; text-decoration: none;">
-  <h2>Contributors: how to release</h2>
-</a>
-<p>This repo uses <a href="https://www.npmjs.com/package/release-it">release-it</a> to manage SemVer version numbers, create GitHub releases and publish to npm.</p>
-<p>Run <code>npm run release</code> and follow the intructions on the CLI. Don&#39;t forget to create a <a href="https://github.com/settings/tokens">personal access token</a> and expose it through the <code>GITHUB_TOKEN</code> environment variable, or the github release won&#39;t work. For more information, visit the <code>release-it</code> docs.</p>
+```
+node bin/solid.js ls https://somepod.org/
+node bin/solid.js cat https://somepod.org/public.txt
+
+# Create an authenticated session (for CSS 4.0.0 and up)
+node bin/solid.js auth create-token
+# -- and fill in all the questions
+
+# Set the webid you want to use for authenticated session
+node bin/solid.js auth set <your-web-id>
+
+# Now you can read some private data
+node bin/solid.js ls https://somepod.org/private/secret.txt
+
+# Or, shorten this to 
+node bin/solid.js ls root:/private/secret.txt
+
+# Upload some data
+node bin/solid.js cp local.txt root:/private/
+```
+
+## Available features
+
+- Reading resources
+- Fetch resources 
+- Container listing
+- Tree listing
+- Copy/move resources local to remote
+- Copy/move resources remote to local
+- Copy/move resources remote to remote
+- Remote resources
+- Create/touch an empty resource 
+- SPARQL query a resource
+- List ACL permissions of resources
+- Change ACL permissions of resources
+- Authenticate against a Pod
+- Make long lasting client credentials (CSS >=4.0.0 only)
+
+## Contributors: how to release
+
+This repo uses [release-it](https://www.npmjs.com/package/release-it) to manage SemVer version numbers, create GitHub releases and publish to npm.
+
+Run `npm run release` and follow the intructions on the CLI. Don't forget to create a [personal access token](https://github.com/settings/tokens) and expose it through the `GITHUB_TOKEN` environment variable, or the github release won't work. For more information, visit the `release-it` docs.
+
+-->
+
 
 <a href="#bashlib-features-in-progress" id="bashlib-features-in-progress" style="color: inherit; text-decoration: none;">
   <h3>Bashlib features in progress</h3>
