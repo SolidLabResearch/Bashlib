@@ -522,3 +522,8 @@ export async function discoverAccessMechanism(url: string, fetch: any) {
   
   return ({ acp: false, acl: false })
 }
+
+export async function resourceExists(url: string, fetch: any) {
+  let res = await fetch(url, {method: "HEAD"})
+  return res.ok
+}

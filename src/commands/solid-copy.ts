@@ -8,6 +8,7 @@ import BashlibError from '../utils/errors/BashlibError';
 import { BashlibErrorMessage } from '../utils/errors/BashlibError';
 import type { Logger } from '../logger';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
+import { resourceExists } from './solid-touch';
 
 const mime = require('mime-types');
 
@@ -326,7 +327,7 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
 
   let executeWrite = true
   if (options.interactiveOverride || options.noOverride) {
-    if (fs.existsSync(resourcePath)) { 
+    if (await resourceExists(resourcePath, fetch)) { 
       if (options.noOverride) {
         executeWrite = false;
       } else if (options.interactiveOverride) { 
