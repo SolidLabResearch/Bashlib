@@ -1738,27 +1738,28 @@ The <code>--verbose</code> option shows warnings.</p>
 If the source location is a container or directory, it will recursively copy the container and all sub-containers recursively copying the whole underlying resource tree, including empty containers.</p>
 <!-- todo: check if empty containers are included. -->
 <p>The default copying behavior ignores <code>.meta</code>, <code>.acl</code> and <code>.acp</code> resources, which can be changed using the <code>--all</code> flag.
-The default behavior is to overwrite files, the <code>--interactive-override</code> and <code>--no-override</code> options provide alternative behaviors.</p>
+The copy command automatically copies the full recursive resource tree. At the moment this behavior cannot be altered.
+In terms of overriding resources, the default setting is that every time a resource is found to already exist, an interactive prompt is shown.
+This behavior can be altered either by the <code>--never-override</code> or the <code>--override</code> options.</p>
 <h4 id="arguments_2">arguments<a class="headerlink" href="#arguments_2" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code>Arguments:
-  src                         file or directory to be copied
-  dst                         destination to copy file or directory to
+  src                   resource or container to be copied
+  dst                   destination to copy file or directory to
 </code></pre></div>
 The <code>src</code> argument is the location of the resource or container to be moved. If the URL starts with <code>http(s)://</code>, the resource is assumed to be a remote resource, if not the resource is assumed to be local and matched with the local file system. The <code>dst</code> argument is the destination to which the source resource is to be copied. Similarly it uses the <code>http(s)://</code> prefix to decide if the location is local or remote.
-The default behavior ignores context resources such as <code>.meta</code>, <code>.acl</code> and <code>.acp</code> present in the directories. The <code>--all</code> flag ignores this behavior, though note that for authorization resources, as the target URIs are not edited, copying resources with these authorization resources does not imply they will result in the same access controls as the location they were copied from!
-The default behavior always automatically works recursively. At the moment this behavior cannot be altered.</p>
+The default behavior ignores context resources such as <code>.meta</code>, <code>.acl</code> and <code>.acp</code> present in the directories. The <code>--all</code> flag ignores this behavior, though note that for authorization resources, as the target URIs are not edited, copying resources with these authorization resources does not imply they will result in the same access controls as the location they were copied from!</p>
 <h4 id="options_2">options<a class="headerlink" href="#options_2" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code>Options:
-  -a, --all                   Copy .acl files in recursive directory copies
-  -i, --interactive-override  Interactive confirmation prompt when overriding existing resource
-  -n, --no-override           Do not override existing files
-  -v, --verbose               Log all read and write operations
+  -a, --all             Copy .acl files in recursive directory copies
+  -o, --override        Automatically override existing files
+  -n, --never-override  Automatically override existing files
+  -v, --verbose         Log all read and write operations
 </code></pre></div>
 The <code>--all</code> option includes <code>.meta</code>, <code>.acl</code> and <code>.acp</code> files in the listing.
 <br />
-The <code>--interactive-override</code> option provides an interactive prompt when a copy will override an existing resource.
+The <code>--override</code> option automatically overrides existing resources.
 <br />
-The <code>--no-override</code> option ignores existing resources.
+The <code>--never-override</code> option automatically mitigates resource overrides.
 <br />
 The <code>--verbose</code> option shows warnings.</p>
 <h4 id="examples_2">examples<a class="headerlink" href="#examples_2" title="Permanent link">&para;</a></h4>
@@ -1783,27 +1784,28 @@ If the source location is a container or directory, it will recursively move the
 When moving from the local file system, files will not be deleted!</p>
 <!-- todo: check if empty containers are included. -->
 <p>The default copying behavior ignores <code>.meta</code>, <code>.acl</code> and <code>.acp</code> resources, which can be changed using the <code>--all</code> flag.
-The default behavior is to overwrite files, the <code>--interactive-override</code> and <code>--no-override</code> options provide alternative behaviors.
-The default behavior always automatically works recursively. At the moment this behavior cannot be altered.</p>
+The move command automatically moves the full recursive resource tree. At the moment this behavior cannot be altered.
+In terms of overriding resources, the default setting is that every time a resource is found to already exist, an interactive prompt is shown.
+This behavior can be altered either by the <code>--never-override</code> or the <code>--override</code> options.</p>
 <h4 id="arguments_3">arguments<a class="headerlink" href="#arguments_3" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code>Arguments:
-  src                         file or directory to be moved
-  dst                         destination of the move
+  src                   resource or container to be moved
+  dst                   destination of the move
 </code></pre></div>
 The <code>src</code> argument is the location of the resource or container to be moved. If the URL starts with <code>http(s)://</code>, the resource is assumed to be a remote resource, if not the resource is assumed to be local and matched with the local file system. The <code>dst</code> argument is the destination to which the source resource is to be copied. Similarly it uses the <code>http(s)://</code> prefix to decide if the location is local or remote.
 The default behavior ignores context resources such as <code>.meta</code>, <code>.acl</code> and <code>.acp</code> present in the directories. The <code>--all</code> flag ignores this behavior, though note that for authorization resources, as the target URIs are not edited, copying resources with these authorization resources does not imply they will result in the same access controls as the location they were copied from!</p>
 <h4 id="options_3">options<a class="headerlink" href="#options_3" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code>Options:
-  -a, --all                   Move .acl files when moving directories recursively
-  -i, --interactive-override  Interactive confirmation prompt when overriding existing files
-  -n, --no-override           Do not override existing files
-  -v, --verbose               Log all operations
+  -a, --all             Copy .acl files in recursive directory copies
+  -o, --override        Automatically override existing files
+  -n, --never-override  Automatically override existing files
+  -v, --verbose         Log all read and write operations
 </code></pre></div>
 The <code>--all</code> option includes <code>.meta</code>, <code>.acl</code> and <code>.acp</code> files in the listing.
 <br />
-The <code>--interactive-override</code> option provides an interactive prompt when a copy will override an existing resource.
+The <code>--override</code> option automatically overrides existing resources.
 <br />
-The <code>--no-override</code> option ignores existing resources.
+The <code>--never-override</code> option automatically mitigates resource overrides.
 <br />
 The <code>--verbose</code> option shows warnings.</p>
 <h4 id="examples_3">examples<a class="headerlink" href="#examples_3" title="Permanent link">&para;</a></h4>
