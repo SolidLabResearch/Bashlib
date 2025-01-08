@@ -84,7 +84,7 @@ export async function listPermissions(resourceUrl: string, options?: ICommandOpt
     }
     return permissions
   } catch (e) {
-    if (commandOptions.verbose) writeErrorString(`Could not retrieve permissions for ${resourceUrl}`, e, commandOptions)
+    if (commandOptions.verbose) writeErrorString(`Could not retrieve acl permissions for ${resourceUrl}`, e, commandOptions)
   }
 }
 

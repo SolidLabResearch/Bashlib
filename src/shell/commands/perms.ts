@@ -39,6 +39,11 @@ export default class PermsCommand extends SolidCommand {
         } else {
           const listings = await listPermissions(url, options)
           if (listings) formatPermissionListing(url, listings, options)
+          else {
+            // try fallback to acl.
+            const listings = await acl_perms.listPermissions(url, options)
+            if (listings) formatPermissionListing(url, listings, options)
+          }
         }
         if (this.mayExit) process.exit(0)
       })
