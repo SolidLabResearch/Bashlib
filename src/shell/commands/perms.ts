@@ -111,12 +111,14 @@ export default class PermsCommand extends SolidCommand {
           for (let permission of parsedPermissions) {
             try {
               await acl_perms.changePermissions(url, [permission], options)
+              return;
             } catch (e) {
               if (options.verbose) writeErrorString(`Could not set permissions for ${permission.id} using WAC`, e, options)
             }
             try {
               if (options.group || options.default) throw new Error("Cannot set WAC-specific options such as group and default for non-WAC environments ")
               await setPermission(url, [permission], options)
+              return;
             } catch (e) {
               if (options.verbose) writeErrorString(`Could not set permissions for ${permission.id} using ACP`, e, options)
             }
