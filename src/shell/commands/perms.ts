@@ -1,11 +1,12 @@
 import { Command } from 'commander';
 import * as acl_perms from '../../commands/solid-perms_acl';
-import { setPermission, listPermissions, IPermissionOperation } from '../../commands/solid-perms';
+import { setPermission, listPermissions, IPermissionOperation, IPermissionListing } from '../../commands/solid-perms';
 import authenticate from '../../authentication/authenticate';
 import { addEnvOptions, changeUrlPrefixes, getAndNormalizeURL } from '../../utils/shellutils';
 import { writeErrorString } from '../../utils/util';
 import chalk from 'chalk';
 import SolidCommand from './SolidCommand';
+import list from '../../commands/solid-list';
 const Table = require('cli-table');
 
 export default class PermsCommand extends SolidCommand { 
@@ -23,7 +24,6 @@ export default class PermsCommand extends SolidCommand {
     access
       .command('list')
       .argument('<url>', 'Resource URL')
-      .option('--acl', 'Displays ACL specific information such as group and default access')
       .option('-p, --pretty', 'Pretty format')
       .option('-v, --verbose', 'Log all operations') 
       .action(async (url: string, options: any) => {
@@ -32,18 +32,25 @@ export default class PermsCommand extends SolidCommand {
         const authenticationInfo = await authenticate(programOpts)
         options.fetch = authenticationInfo.fetch
         url = await changeUrlPrefixes(authenticationInfo, url)
-
-        if (options.acl) {
+        // try WAC
+        try {
           const listings = await acl_perms.listPermissions(url, options)
-          if (listings) formatACLPermissionListing(url, listings, options)
-        } else {
+          if (listings?.access.agent || listings?.access.public) {
+            await formatACLPermissionListing(url, listings, options)
+            return;
+          }   
+        } catch (e) {
+          if (options.verbose) writeErrorString('Unable to list permissions for WAC', e, options)
+        }
+        // try Universal
+        try {
           const listings = await listPermissions(url, options)
-          if (listings) formatPermissionListing(url, listings, options)
-          else {
-            // try fallback to acl.
-            const listings = await acl_perms.listPermissions(url, options)
-            if (listings) formatPermissionListing(url, listings, options)
+          if (listings?.access.agent || listings?.access.public) {
+            await formatPermissionListing(url, listings, options)
+            return;
           }
+        } catch (e) {
+          if (options.verbose) writeErrorString('Unable to list permissions for Universal Access', e, options)
         }
         if (this.mayExit) process.exit(0)
       })
@@ -155,7 +162,7 @@ export default class PermsCommand extends SolidCommand {
 
 
 
-
+// todo: unduplicate these functions for universal and ACL
 function formatPermissionListing(url: string, permissions: any, options: any) {
   let formattedString = ``    
   let formattedPerms = permissions.access 
