@@ -11,10 +11,10 @@
         <link rel="canonical" href="https://SolidLabResearch.github.io/Bashlib/documentation/cli/authentication/">
       
       
-        <link rel="prev" href="../commands/">
+        <link rel="prev" href="../../overview/">
       
       
-        <link rel="next" href="../aliases/">
+        <link rel="next" href="../commands/">
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
@@ -72,6 +72,11 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
+      
+        
+        <a href="#authentication-management" class="md-skip">
+          Skip to content
+        </a>
       
     </div>
     <div data-md-component="announce">
@@ -490,8 +495,6 @@
       
         
       
-        
-      
     
     
       
@@ -527,27 +530,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Overview
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -557,6 +539,19 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Manage Authentication
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
@@ -567,6 +562,271 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#enforcing-specific-authorization-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enforcing specific authorization flows
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auth-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      Auth command
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Auth command">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Set">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      arguments
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show" class="md-nav__link">
+    <span class="md-ellipsis">
+      Show
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Show">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear" class="md-nav__link">
+    <span class="md-ellipsis">
+      Clear
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Clear">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list" class="md-nav__link">
+    <span class="md-ellipsis">
+      List
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="List">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remove
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Remove">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arguments_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      arguments
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-token-css" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create Token (CSS)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Create Token (CSS)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-token-ess" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create Token (ESS)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Create Token (ESS)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -598,26 +858,18 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../access/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Manage Authentication
+    Manage Resource Access
   </span>
   
 
       </a>
-      
     </li>
   
 
@@ -676,6 +928,262 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#enforcing-specific-authorization-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enforcing specific authorization flows
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auth-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      Auth command
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Auth command">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Set">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      arguments
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show" class="md-nav__link">
+    <span class="md-ellipsis">
+      Show
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Show">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear" class="md-nav__link">
+    <span class="md-ellipsis">
+      Clear
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Clear">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list" class="md-nav__link">
+    <span class="md-ellipsis">
+      List
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="List">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remove
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Remove">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arguments_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      arguments
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-token-css" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create Token (CSS)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Create Token (CSS)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-token-ess" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create Token (ESS)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Create Token (ESS)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -690,9 +1198,148 @@
                   
 
 
-  <h1>Manage Authentication</h1>
-
-
+<h1 id="authentication-management">Authentication Management<a class="headerlink" href="#authentication-management" title="Permanent link">&para;</a></h1>
+<p>The Bashlib CLI interface provides multiple options for authentication management.
+It enables interactive login flows using the browser, that work with any Solid pod server.
+Additionally, it includes the client credentials flow to generate authentication tokens without needing a browser login
+both for the Community Solid Server v7 and the Enterprise Solid Server from Inrupt.</p>
+<p><br />
+All examples make use of the abstraction <code>sld</code> as an alias for <code>node bin/solid.js</code>, </p>
+<h2 id="enforcing-specific-authorization-flows">Enforcing specific authorization flows<a class="headerlink" href="#enforcing-specific-authorization-flows" title="Permanent link">&para;</a></h2>
+<p>When setting up test flows on Solid, it might be interesting to force a specific authentication flows to be used.
+For this, the <code>--auth</code> option can be set on the bashlib program as such:]
+<div class="highlight"><pre><span></span><code>sld --auth interactive
+</code></pre></div>
+This examples forces authentication via an interactive browser session. Other options are <code>token</code> for only token based authentication,
+<code>none</code> for no authentication and <code>request</code> to dynamically choose an authentication option during use, which is the default.
+The <code>--port</code> option can be changed to change the port of the local service that is setup to manage interactive authentication flows with the browser.</p>
+<h2 id="auth-command">Auth command<a class="headerlink" href="#auth-command" title="Permanent link">&para;</a></h2>
+<p>The <code>auth</code> command contains all functionality to manage authentication options and create client credentials tokens.</p>
+<h3 id="set">Set<a class="headerlink" href="#set" title="Permanent link">&para;</a></h3>
+<p>The <code>set</code> subcommand is used to manage the authentication session for Bashlib.
+It provides the ability to set a specific WebID as an argument, or if no argument is given starts an interactive selection dialog to change the active WebID.</p>
+<h4 id="arguments">arguments<a class="headerlink" href="#arguments" title="Permanent link">&para;</a></h4>
+<p><div class="highlight"><pre><span></span><code>Arguments:
+  webid       Set active WebID directly, without requiring manual selection.
+</code></pre></div>
+The <code>webid</code> argument directly sets the session to the provided WebID value.</p>
+<h4 id="examples">examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h4>
+<p>Interactive session management
+<div class="highlight"><pre><span></span><code>sld auth set
+</code></pre></div></p>
+<p>Setting a specific active WebID
+<div class="highlight"><pre><span></span><code>sld auth set https://people.org/alice/webid
+</code></pre></div></p>
+<h3 id="show">Show<a class="headerlink" href="#show" title="Permanent link">&para;</a></h3>
+<p>The <code>show</code> subcommand shows the current authentication session. It shows the WebId, if there is an active authentication session and if a client credential token is available.</p>
+<h4 id="options">options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h4>
+<p><div class="highlight"><pre><span></span><code>Options:
+  -p, --pretty  Show listing in table format.
+</code></pre></div>
+The <code>--pretty</code> option displays the result in a table formate.</p>
+<h4 id="examples_1">examples<a class="headerlink" href="#examples_1" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>sld auth show
+</code></pre></div>
+<h3 id="clear">Clear<a class="headerlink" href="#clear" title="Permanent link">&para;</a></h3>
+<p>The <code>clear</code> subcommand clears the current authentication session and active WebID. It does not remove any stored authentication information.</p>
+<h4 id="examples_2">examples<a class="headerlink" href="#examples_2" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>sld auth clear
+</code></pre></div>
+<h3 id="list">List<a class="headerlink" href="#list" title="Permanent link">&para;</a></h3>
+<p>The <code>list</code> subcommand lists the stored authentication information. It shows the WebIds, if there is an active authentication session and if a client credential token is available.</p>
+<h4 id="options_1">options<a class="headerlink" href="#options_1" title="Permanent link">&para;</a></h4>
+<p><div class="highlight"><pre><span></span><code>Options:
+  -p, --pretty  Show listing in table format.
+</code></pre></div>
+The <code>--pretty</code> option displays the result in a table formate.</p>
+<h4 id="examples_3">examples<a class="headerlink" href="#examples_3" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>sld auth list
+</code></pre></div>
+<h3 id="remove">Remove<a class="headerlink" href="#remove" title="Permanent link">&para;</a></h3>
+<p>The <code>remove</code> subcommand provides the ability to remove authentication information from Bashlib.
+It provides an interactive menu if no argument is given, or can remove information for specific WebIDs or all information directly via the CLI arguments.</p>
+<h4 id="arguments_1">arguments<a class="headerlink" href="#arguments_1" title="Permanent link">&para;</a></h4>
+<p><div class="highlight"><pre><span></span><code>Arguments:
+  string      webid | all
+</code></pre></div>
+The command has an optional parameter. 
+When passing the argument string <code>all</code>, all authentication information is removed.
+Passing a specific WebID removes all authentication information tied to that WebID.
+If no argument is passed, an interactive CLI menu is provided.</p>
+<h4 id="examples_4">examples<a class="headerlink" href="#examples_4" title="Permanent link">&para;</a></h4>
+<p>Opening the interactive menu
+<div class="highlight"><pre><span></span><code>sld auth remove
+</code></pre></div></p>
+<p>Removing all authentication information
+<div class="highlight"><pre><span></span><code>sld auth remove all
+</code></pre></div></p>
+<p>Removing a specific WebID
+<div class="highlight"><pre><span></span><code>sld auth remove https://people.org/alice/webid
+</code></pre></div></p>
+<h3 id="create-token-css">Create Token (CSS)<a class="headerlink" href="#create-token-css" title="Permanent link">&para;</a></h3>
+<p>The token creation is divided in two subcommands, 
+one for the Community Solid Server and one for the Inrupt Enterprise Solid Server,
+as both have a different approach to token generation for client applications.</p>
+<p>The <code>create-token-css</code> command creates a client credentials token for pods hosted on
+a Community Solid Server version 7. The authentication options can be passed both
+as command line arguments, or in an interactive dialog if they are not provided through
+the CLI options.
+The interactive creation menu will ask to use the WebID of the current session to create
+a token when available.</p>
+<h4 id="options_2">options<a class="headerlink" href="#options_2" title="Permanent link">&para;</a></h4>
+<p><div class="highlight"><pre><span></span><code>Options:
+  -w, --webid &lt;string&gt;     User WebID
+  -n, --name &lt;string&gt;      Token name
+  -e, --email &lt;string&gt;     User email
+  -p, --password &lt;string&gt;  User password
+  -v, --verbose            Log actions
+  -h, --help               display help for command
+</code></pre></div>
+The <code>--webid</code> option is the WebID for which the token is created.
+<br />
+The <code>--name</code> option is the name of the token (only important for token management).
+<br />
+The <code>--email</code> option is the email that was used to create the account tied to the WebID.
+<br />
+The <code>--password</code> option is the password tied to the account.
+<br />
+the <code>--verbose</code> option outputs operation logs.</p>
+<h4 id="examples_5">examples<a class="headerlink" href="#examples_5" title="Permanent link">&para;</a></h4>
+<p>Open interactive dialog to create token
+<div class="highlight"><pre><span></span><code>sld auth create-token-css
+</code></pre></div></p>
+<h3 id="create-token-ess">Create Token (ESS)<a class="headerlink" href="#create-token-ess" title="Permanent link">&para;</a></h3>
+<p>The <code>create-token-ess</code> command creates a client credentials token for pods hosted on
+an Inrupt Enterprise Solid Server. The authentication options can be passed both
+as command line arguments, or in an interactive dialog if they are not provided through
+the CLI options.
+The interactive creation menu will ask to use the WebID of the current session to create
+a token when available.
+<br />
+The Inrupt token generation relies on the registration of applications via their 
+<a href="https://login.inrupt.com/registration.html">application registration service</a>.
+After registering Bashlib, an <code>id</code> and <code>secret</code> value will be shown. These values need
+to be provided to this command to be able to automatically create authenticated sessions
+without needing interactive login.</p>
+<h4 id="options_3">options<a class="headerlink" href="#options_3" title="Permanent link">&para;</a></h4>
+<p><div class="highlight"><pre><span></span><code>Options:
+  -w, --webid &lt;string&gt;     User WebID
+  -i, --id &lt;string&gt;        application registration id
+  -s, --secret &lt;string&gt;    application registration secret
+  -v, --verbose            Log actions
+  -h, --help               display help for command
+</code></pre></div>
+The <code>--webid</code> option is the WebID for which the token is created.
+<br />
+The <code>--id</code> option is the <code>id</code> value retrieved from the registration flow described above.
+<br />
+The <code>--secret</code> option is the <code>secret</code> value retrieved from the registration flow described above.
+<br />
+the <code>--verbose</code> option outputs operation logs.</p>
+<h4 id="examples_6">examples<a class="headerlink" href="#examples_6" title="Permanent link">&para;</a></h4>
+<p>Open interactive dialog to create token
+<div class="highlight"><pre><span></span><code>sld auth create-token-ess
+</code></pre></div></p>
 
 
 

@@ -94,31 +94,32 @@ The `cp` command can copy resources between Solid pod locations, across Solid po
 If the source location is a container or directory, it will recursively copy the container and all sub-containers recursively copying the whole underlying resource tree, including empty containers.
 <!-- todo: check if empty containers are included. -->
 The default copying behavior ignores `.meta`, `.acl` and `.acp` resources, which can be changed using the `--all` flag.
-The default behavior is to overwrite files, the `--interactive-override` and `--no-override` options provide alternative behaviors.
+The copy command automatically copies the full recursive resource tree. At the moment this behavior cannot be altered.
+In terms of overriding resources, the default setting is that every time a resource is found to already exist, an interactive prompt is shown.
+This behavior can be altered either by the `--never-override` or the `--override` options.
 
 #### arguments
 ```
 Arguments:
-  src                         file or directory to be copied
-  dst                         destination to copy file or directory to
+  src                   resource or container to be copied
+  dst                   destination to copy file or directory to
 ```
 The `src` argument is the location of the resource or container to be moved. If the URL starts with `http(s)://`, the resource is assumed to be a remote resource, if not the resource is assumed to be local and matched with the local file system. The `dst` argument is the destination to which the source resource is to be copied. Similarly it uses the `http(s)://` prefix to decide if the location is local or remote.
 The default behavior ignores context resources such as `.meta`, `.acl` and `.acp` present in the directories. The `--all` flag ignores this behavior, though note that for authorization resources, as the target URIs are not edited, copying resources with these authorization resources does not imply they will result in the same access controls as the location they were copied from!
-The default behavior always automatically works recursively. At the moment this behavior cannot be altered.
 
 #### options
 ```
 Options:
-  -a, --all                   Copy .acl files in recursive directory copies
-  -i, --interactive-override  Interactive confirmation prompt when overriding existing resource
-  -n, --no-override           Do not override existing files
-  -v, --verbose               Log all read and write operations
+  -a, --all             Copy .acl files in recursive directory copies
+  -o, --override        Automatically override existing files
+  -n, --never-override  Automatically override existing files
+  -v, --verbose         Log all read and write operations
 ```
 The `--all` option includes `.meta`, `.acl` and `.acp` files in the listing.
 <br />
-The `--interactive-override` option provides an interactive prompt when a copy will override an existing resource.
+The `--override` option automatically overrides existing resources.
 <br />
-The `--no-override` option ignores existing resources.
+The `--never-override` option automatically mitigates resource overrides.
 <br />
 The `--verbose` option shows warnings.
 
@@ -156,33 +157,32 @@ If the source location is a container or directory, it will recursively move the
 When moving from the local file system, files will not be deleted!
 <!-- todo: check if empty containers are included. -->
 The default copying behavior ignores `.meta`, `.acl` and `.acp` resources, which can be changed using the `--all` flag.
-The default behavior is to overwrite files, the `--interactive-override` and `--no-override` options provide alternative behaviors.
-The default behavior always automatically works recursively. At the moment this behavior cannot be altered.
+The move command automatically moves the full recursive resource tree. At the moment this behavior cannot be altered.
+In terms of overriding resources, the default setting is that every time a resource is found to already exist, an interactive prompt is shown.
+This behavior can be altered either by the `--never-override` or the `--override` options.
 
 #### arguments
 ```
 Arguments:
-  src                         file or directory to be moved
-  dst                         destination of the move
+  src                   resource or container to be moved
+  dst                   destination of the move
 ```
 The `src` argument is the location of the resource or container to be moved. If the URL starts with `http(s)://`, the resource is assumed to be a remote resource, if not the resource is assumed to be local and matched with the local file system. The `dst` argument is the destination to which the source resource is to be copied. Similarly it uses the `http(s)://` prefix to decide if the location is local or remote.
 The default behavior ignores context resources such as `.meta`, `.acl` and `.acp` present in the directories. The `--all` flag ignores this behavior, though note that for authorization resources, as the target URIs are not edited, copying resources with these authorization resources does not imply they will result in the same access controls as the location they were copied from!
 
-
-
 #### options
 ```
 Options:
-  -a, --all                   Move .acl files when moving directories recursively
-  -i, --interactive-override  Interactive confirmation prompt when overriding existing files
-  -n, --no-override           Do not override existing files
-  -v, --verbose               Log all operations
+  -a, --all             Copy .acl files in recursive directory copies
+  -o, --override        Automatically override existing files
+  -n, --never-override  Automatically override existing files
+  -v, --verbose         Log all read and write operations
 ```
 The `--all` option includes `.meta`, `.acl` and `.acp` files in the listing.
 <br />
-The `--interactive-override` option provides an interactive prompt when a copy will override an existing resource.
+The `--override` option automatically overrides existing resources.
 <br />
-The `--no-override` option ignores existing resources.
+The `--never-override` option automatically mitigates resource overrides.
 <br />
 The `--verbose` option shows warnings.
 
