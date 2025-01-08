@@ -143,7 +143,7 @@ npx solid-bashlib ls base:/profile --pretty
 
 Looking at the current authentication status
 ```
-sldv auth show --pretty
+sld auth show --pretty
 ```
 we see that an active session is available now.
 
