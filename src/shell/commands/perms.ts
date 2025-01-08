@@ -50,7 +50,7 @@ export default class PermsCommand extends SolidCommand {
             return;
           }
         } catch (e) {
-          if (options.verbose) writeErrorString('Unable to list permissions for Universal Access', e, options)
+          if (options.verbose) writeErrorString('Unable to list permissions for ACP', e, options)
         }
         if (this.mayExit) process.exit(0)
       })
@@ -88,13 +88,8 @@ export default class PermsCommand extends SolidCommand {
             let id = splitPerm[0]
             const permissionOptions = splitPerm[1].split('')
             let type;
-            const acl = options.acl
 
             if (options.group) {
-              if (!acl) {
-                writeErrorString('Cannot set group permissions outside of --acl mode.', options);
-                process.exit(0)
-              }
               type = 'group'
             } else if (id === 'p') {
               type = 'public'
@@ -111,23 +106,20 @@ export default class PermsCommand extends SolidCommand {
             const append = permissionOptions.indexOf('a') !== -1
             const control = permissionOptions.indexOf('c') !== -1
             const def = options.default
-            if (options.default && !options.acl) {
-              writeErrorString('Cannot set default permissions outside of --acl mode.', options);
-              process.exit(0)
-            }
-            return ({ type, id, read, write, append, control, default: def, acl } as IPermissionOperation)
+            return ({ type, id, read, write, append, control, default: def } as IPermissionOperation)
           })
-          try {
-            for (let permission of parsedPermissions) {
-              if (permission.acl) {
-                await acl_perms.changePermissions(url, parsedPermissions, options)
-              } else {
-                await setPermission(url, parsedPermissions, options)
-              }
-
+          for (let permission of parsedPermissions) {
+            try {
+              await acl_perms.changePermissions(url, [permission], options)
+            } catch (e) {
+              if (options.verbose) writeErrorString(`Could not set permissions for ${permission.id} using WAC`, e, options)
             }
-          } catch (e) {
-            if (options.verbose) writeErrorString(`Could not update permissions for resource at ${url}`, e, options)
+            try {
+              if (options.group || options.default) throw new Error("Cannot set WAC-specific options such as group and default for non-WAC environments ")
+              await setPermission(url, [permission], options)
+            } catch (e) {
+              if (options.verbose) writeErrorString(`Could not set permissions for ${permission.id} using ACP`, e, options)
+            }
           }
         }
         catch (e) {
