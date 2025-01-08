@@ -32,7 +32,6 @@ export default class PermsCommand extends SolidCommand {
         const authenticationInfo = await authenticate(programOpts)
         options.fetch = authenticationInfo.fetch
         url = await changeUrlPrefixes(authenticationInfo, url)
-        
 
         const { acp, acl } = await discoverAccessMechanism(url, options.fetch)
         if ( !acp && !acl ) {
@@ -47,7 +46,7 @@ export default class PermsCommand extends SolidCommand {
               return;
             }   
           } catch (e) {
-            if (options.verbose) writeErrorString('Unable to list permissions for WAC', e, options)
+            if (options.verbose) writeErrorString('Unable to list permissions using WAC', e, options)
           }
         }
         if (acp) {
@@ -64,7 +63,6 @@ export default class PermsCommand extends SolidCommand {
         
         if (this.mayExit) process.exit(0)
       })
-
 
     access
       .command('set')
@@ -96,7 +94,7 @@ export default class PermsCommand extends SolidCommand {
             }
             let id = splitPerm[0]
             const permissionOptions = splitPerm[1].split('')
-            let type;
+            let type = 'agent';
 
             if (options.group) {
               type = 'group'
@@ -107,7 +105,6 @@ export default class PermsCommand extends SolidCommand {
                 writeErrorString('Could not autmatically fill in webId of authenticated user.', 'Please make sure you have an authenticated session to auto-fill your webId', options);
                 process.exit(0)
               }
-              type = 'agent'
               id = authenticationInfo.webId
             } 
             const read = permissionOptions.indexOf('r') !== -1
