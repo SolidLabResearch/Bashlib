@@ -183,7 +183,7 @@ function formatPermissionListing(url: string, permissions: any, options: any) {
     if (!isEmpty(formattedPerms.agent)) {
       table.push([chalk.bold('Agent'), '', '', '', ''])
       for (let id of Object.keys(formattedPerms.agent)) {
-        const control = formattedPerms.agent[id].controlRead && formattedPerms.agent[id].controlWrite
+        const control = formattedPerms.agent[id].control || (formattedPerms.agent[id].controlRead && formattedPerms.agent[id].controlWrite)
         table.push([
           id,
           formattedPerms.agent[id].read || 'false',
@@ -194,7 +194,7 @@ function formatPermissionListing(url: string, permissions: any, options: any) {
       }
     }
     if (!isEmpty(formattedPerms.public)) {
-      const control = formattedPerms.public.controlRead && formattedPerms.public.controlWrite
+      const control = formattedPerms.public.control || (formattedPerms.public.controlRead && formattedPerms.public.controlWrite)
       table.push([chalk.bold('Public'), '', '', '', ''])
       table.push([
         chalk.blue('#public'),
