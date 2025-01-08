@@ -20,8 +20,7 @@ export default async function touch(url: string, options?: ICommandOptionsTouch)
         if (commandOptions.verbose) commandOptions.logger.log(`Remote file already exists`)
     }
     else {
-        let path = url.replace(/.*\//,'')
-        let mimetype = mime.lookup(path)
+        let path = url.replace(/.*\//,'') // todo: remove this? Might be leftover from shell experiment
 
         let contentType = options?.contentType
 

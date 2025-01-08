@@ -20,6 +20,7 @@ export default class EditCommand extends SolidCommand {
       .argument('<url>', 'Resource URL')
       .option('-e, --editor <path_to_editor_executable>', 'Use custom editor')
       .option('-t, --touch', 'Create file if not exists') // Should this be default?
+      .option('-c, --content-type <string>', 'Content type of the created resource when using --touch')
       .option('-v, --verbose', 'Log all operations') // Should this be default?
       .action(async (url, options) => {
         let programOpts = addEnvOptions(program.opts() || {});
