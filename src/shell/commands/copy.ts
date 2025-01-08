@@ -16,8 +16,9 @@ export default class CopyCommand extends SolidCommand {
       .argument('<src>', 'file or directory to be copied')
       .argument('<dst>', 'destination to copy file or directory to')
       .option('-a, --all', 'Copy .acl files in recursive directory copies')
-      .option('-i, --interactive-override', 'Interactive confirmation prompt when overriding existing files')
-      .option('-n, --no-override', 'Do not override existing files')
+      // .option('-i, --interactive-override', 'Interactive confirmation prompt when overriding existing files')
+      .option('-o, --override', 'Automatically override existing files')
+      .option('-n, --never-override', 'Automatically override existing files')
       .option('-v, --verbose', 'Log all read and write operations')
       .action(this.executeCommand)
     
@@ -40,7 +41,5 @@ export default class CopyCommand extends SolidCommand {
     }
     if (this.mayExit) process.exit(0)
   }
-
-
 }
 

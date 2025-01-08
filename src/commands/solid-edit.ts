@@ -86,7 +86,7 @@ async function editRemoteFile(url: string, options: ICommandOptionsEdit) {
     } 
 
     if (updateChanges) {
-      await copy(tmpFilePath, remoteFileUrl, options)
+      await copy(tmpFilePath, remoteFileUrl, { ...options, override: true })
       if (options.verbose) (options.logger || console).log('Remote file updated!');
     }
     else {

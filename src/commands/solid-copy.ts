@@ -1,14 +1,13 @@
 import fs from 'fs'
 import path from 'path'
 import { getFile, getContentType, createContainerAt } from "@inrupt/solid-client"
-import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively, checkRemoteFileExists, writeErrorString, isDirectoryContents } from '../utils/util';
+import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively, checkRemoteFileExists, writeErrorString, isDirectoryContents, resourceExists } from '../utils/util';
 import Blob from 'fetch-blob'
-import { requestUserCLIConfirmation } from '../utils/userInteractions';
+import { requestUserCLIConfirmationDefaultNegative } from '../utils/userInteractions';
 import BashlibError from '../utils/errors/BashlibError';
 import { BashlibErrorMessage } from '../utils/errors/BashlibError';
 import type { Logger } from '../logger';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
-import { resourceExists } from './solid-touch';
 
 const mime = require('mime-types');
 
@@ -23,8 +22,8 @@ interface SourceOptions {
 
 export interface ICommandOptionsCopy extends ICommandOptions {
   all?: boolean,
-  interactiveOverride?: boolean,
-  noOverride?: boolean,
+  override?: boolean,
+  neverOverride?: boolean,
 }
 
 export default async function copy(src: string, dst: string, options?: ICommandOptionsCopy) : Promise<{
@@ -34,8 +33,8 @@ export default async function copy(src: string, dst: string, options?: ICommandO
   let commandOptions = setOptionDefaults<ICommandOptionsCopy>(options || {});
   let fetch = commandOptions.fetch;
   commandOptions.all = commandOptions.all || false;
-  commandOptions.interactiveOverride = commandOptions.interactiveOverride || false;
-  commandOptions.noOverride = commandOptions.noOverride || false;
+  commandOptions.override = commandOptions.override || false;
+  commandOptions.neverOverride = commandOptions.neverOverride || false;
   
   /**************************
    * Preprocess src and dst *
@@ -277,12 +276,12 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options:
   ensureDirectoryExistence(resourcePath);
   
   let executeWrite = true
-  if (options.interactiveOverride || options.noOverride) {
-    if (fs.existsSync(resourcePath)) { 
-      if (options.noOverride) {
+  if (options.neverOverride || !options.override) {
+    if (await resourceExists(resourcePath, options.fetch)) { 
+      if (options.neverOverride) {
         executeWrite = false;
-      } else if (options.interactiveOverride) { 
-        executeWrite = await requestUserCLIConfirmation(`Overwrite local file: ${resourcePath}`)
+      } else { 
+        executeWrite = await requestUserCLIConfirmationDefaultNegative(`Overwrite local file: ${resourcePath}`)
       }
     }
   }
@@ -309,6 +308,7 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options:
     
     if (fileData.buffer) {
       fs.writeFileSync(resourcePath, fileData.buffer)
+      if (options.verbose) (options.logger || console).log(`Writing local resource: ${resourcePath}`);
     } else if (fileData.blob) {
       let buffer = Buffer.from(await fileData.blob.arrayBuffer())
       fs.writeFileSync(resourcePath, buffer)
@@ -324,17 +324,17 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options:
 
 async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: any, options: ICommandOptionsCopy): Promise<string | undefined> {
   resourcePath = resourcePath.split('$.')[0];
-
   let executeWrite = true
-  if (options.interactiveOverride || options.noOverride) {
+  if (options.neverOverride || !options.override) {
     if (await resourceExists(resourcePath, fetch)) { 
-      if (options.noOverride) {
+      if (options.neverOverride) {
         executeWrite = false;
-      } else if (options.interactiveOverride) { 
-        executeWrite = await requestUserCLIConfirmation(`Overwrite local file: ${resourcePath}`)
+      } else { 
+        executeWrite = await requestUserCLIConfirmationDefaultNegative(`Overwrite remote file: ${resourcePath}`)
       }
     }
   }
+
   if (!executeWrite) {
     if (options.verbose) (options.logger || console).log('Skipping existing local file:', resourcePath)
     return undefined;
@@ -358,6 +358,7 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
       )
       if (!res.ok)
         throw new BashlibError(BashlibErrorMessage.httpResponseError, resourcePath, `${res.status} ${res.statusText}`)
+      else if (options.verbose) (options.logger || console).log(`Writing remote resource: ${resourcePath}`);
 
     } else if (fileData.blob) {
       let res = await fetch(
@@ -372,6 +373,7 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
       )
       if (!res.ok)
         throw new BashlibError(BashlibErrorMessage.httpResponseError, resourcePath, `${res.status} ${res.statusText}`)
+      else if (options.verbose) (options.logger || console).log(`Writing remote resource: ${resourcePath}`);
     } else {
       throw new BashlibError(BashlibErrorMessage.cannotWriteResource, resourcePath, "No contents to write")
     }

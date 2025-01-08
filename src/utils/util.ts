@@ -1,4 +1,4 @@
-import { getSolidDataset, getContainedResourceUrlAll, getUrl, getUrlAll, getThing, getThingAll, getDatetime, getInteger, SolidDataset, acp_ess_2, hasAccessibleAcl } from '@inrupt/solid-client';
+import { getSolidDataset, getContainedResourceUrlAll, getUrl, getUrlAll, getThing, getThingAll, getDatetime, getInteger, SolidDataset, acp_ess_2, hasAccessibleAcl, FetchError } from '@inrupt/solid-client';
 import { requestUserIdp } from './userInteractions';
 import type { Logger } from '../logger';
 
@@ -524,6 +524,16 @@ export async function discoverAccessMechanism(url: string, fetch: any) {
 }
 
 export async function resourceExists(url: string, fetch: any) {
-  let res = await fetch(url, {method: "HEAD"})
-  return res.ok
+  try {
+      let res = await fetch(url, { method: "HEAD" })
+      return res.ok;
+  }
+  catch (e) {
+      if (e instanceof FetchError && e.response.status === 404) {
+          return false;
+      } 
+      else {
+          return undefined;
+      }
+  }
 }

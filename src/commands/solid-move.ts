@@ -4,7 +4,10 @@ import remove from './solid-remove';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
 
 export interface ICommandOptionsMove extends ICommandOptions {
-  all: boolean,
+  all?: boolean,
+  neverOverride?: boolean,
+  override?: boolean,
+  verbose?: boolean,
 }
 export default async function move(source: string, destination: string, options?: ICommandOptionsMove) {
   let commandOptions = setOptionDefaults<ICommandOptionsMove>(options || {});

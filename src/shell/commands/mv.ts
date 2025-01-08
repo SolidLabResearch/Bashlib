@@ -16,8 +16,9 @@ export default class MkdirCommand extends SolidCommand {
       .argument('<src>', 'file or directory to be moved')
       .argument('<dst>', 'destination of the move')
       .option('-a, --all', 'Move .acl files when moving directories recursively')
-      .option('-i, --interactive-override', 'Interactive confirmation prompt when overriding existing files')
-      .option('-n, --no-override', 'Do not override existing files')
+      // .option('-i, --interactive-override', 'Interactive confirmation prompt when overriding existing files')
+      .option('-o, --override', 'Automatically override existing files')
+      .option('-n, --never-override', 'Automatically override existing files')
       .option('-v, --verbose', 'Log all operations')
       .action(this.executeCommand)
     
