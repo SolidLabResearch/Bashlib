@@ -63,7 +63,7 @@ export async function changeUrlPrefixes(authenticationInfo: any, url: string) {
     return mergeStringsSingleSlash(podRoot, url.replace('root:', '')) 
 
   } else if (url.startsWith('base:')) {
-    if (!authenticationInfo.webId) throw new Error('Cannot process URL with "root:" prefix, no WebID value currently known.')
+    if (!authenticationInfo.webId) throw new Error('Cannot process URL with "base:" prefix, no WebID value currently known.')
     let podRoot = await getPodRoot(authenticationInfo.webId, authenticationInfo.fetch);
     if (!podRoot) throw new Error('No pod root container found')
     return mergeStringsSingleSlash(podRoot, url.replace('base:', '')) 
