@@ -50,7 +50,6 @@ export default async function list(url: string, options?: ICommandOptionsList) {
       if (resourceInfo && !resourceInfo.isDir && commandOptions.all) { //  We only want to show acl files in the current dir. Aka the ones of the current dir + the ones of contained files
         getAclAndMetadata(containedResourceUrl, url, commandOptions.fetch)
           .then((headerResources) => { 
-            console.log('headerResources', headerResources)
             if (headerResources.acl) resourceInfo.acl = headerResources.acl
             if (headerResources.meta) resourceInfo.metadata = headerResources.meta
             resolve(resourceInfo);

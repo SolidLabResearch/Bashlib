@@ -115,7 +115,6 @@ async function createFetchWithNewAccessToken(oidcIssuer: string, appName: string
     
     app.get("/", async (_req: any, res: any) => {
       try {
-        console.log('HEADERS', _req.headers, _req)
         const code = new URL(_req.url, redirectUrl).searchParams.get('code');
         if (!code) throw new BashlibError(BashlibErrorMessage.authFlowError, undefined, 'Server did not return code.')
         let { accessToken, expirationDate, dpopKey, webId } = await handleIncomingRedirect(oidcIssuer, redirectUrl, code, storage)

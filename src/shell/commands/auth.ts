@@ -437,7 +437,6 @@ async function removeAuthenticationOption(options?: any) {
       clearConfigCurrentWebID();
       return;
     } else if (selected as string) { 
-      console.log('webid', selected)
       removeConfigSession(selected as string)
       if(selected === getConfigCurrentWebID()) clearConfigCurrentWebID();
       console.log(`Removed all saved auth information for ${selected}.`)
