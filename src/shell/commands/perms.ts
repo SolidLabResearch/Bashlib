@@ -2,11 +2,11 @@ import { Command } from 'commander';
 import * as acl_perms from '../../commands/solid-perms_acl';
 import { setPermission, listPermissions, IPermissionOperation, IPermissionListing } from '../../commands/solid-perms';
 import authenticate from '../../authentication/authenticate';
-import { addEnvOptions, changeUrlPrefixes, getAndNormalizeURL } from '../../utils/shellutils';
-import { writeErrorString } from '../../utils/util';
+import { addEnvOptions, changeUrlPrefixes } from '../../utils/shellutils';
+import { discoverAccessMechanism, writeErrorString } from '../../utils/util';
 import chalk from 'chalk';
 import SolidCommand from './SolidCommand';
-import list from '../../commands/solid-list';
+import { acp_ess_2, hasAccessibleAcl, WithAcl } from "@inrupt/solid-client";
 const Table = require('cli-table');
 
 export default class PermsCommand extends SolidCommand { 
@@ -32,26 +32,36 @@ export default class PermsCommand extends SolidCommand {
         const authenticationInfo = await authenticate(programOpts)
         options.fetch = authenticationInfo.fetch
         url = await changeUrlPrefixes(authenticationInfo, url)
-        // try WAC
-        try {
-          const listings = await acl_perms.listPermissions(url, options)
-          if (listings?.access.agent || listings?.access.public) {
-            await formatACLPermissionListing(url, listings, options)
-            return;
-          }   
-        } catch (e) {
-          if (options.verbose) writeErrorString('Unable to list permissions for WAC', e, options)
+        
+
+        const { acp, acl } = await discoverAccessMechanism(url, options.fetch)
+        if ( !acp && !acl ) {
+          if (options.verbose) writeErrorString(`Could not list permissions for ${url}`, { message: "Could not find attached WAC or ACP management resource." }, options)
+          return;
         }
-        // try Universal
-        try {
-          const listings = await listPermissions(url, options)
-          if (listings?.access.agent || listings?.access.public) {
-            await formatPermissionListing(url, listings, options)
-            return;
+        if (acl) {
+          try {
+            const listings = await acl_perms.listPermissions(url, options)
+            if (listings?.access.agent || listings?.access.public) {
+              await formatACLPermissionListing(url, listings, options)
+              return;
+            }   
+          } catch (e) {
+            if (options.verbose) writeErrorString('Unable to list permissions for WAC', e, options)
           }
-        } catch (e) {
-          if (options.verbose) writeErrorString('Unable to list permissions for ACP', e, options)
         }
+        if (acp) {
+          try {
+            const listings = await listPermissions(url, options)
+            if (listings?.access.agent || listings?.access.public) {
+              await formatPermissionListing(url, listings, options)
+              return;
+            }
+          } catch (e) {
+            if (options.verbose) writeErrorString('Unable to list permissions for ACP', e, options)
+          }
+        }
+        
         if (this.mayExit) process.exit(0)
       })
 
@@ -66,9 +76,8 @@ export default class PermsCommand extends SolidCommand {
       For the current authenticated user please set id to "u".
       For specific agents, set id to be the agent webid.
       `)
-      .option('--acl', 'Enables ACL specific operations --default and --group')
-      .option('--default', 'Set the defined permissions as default (only in --acl mode)')
-      .option('--group', 'Process identifier as a group identifier (only in --acl mode)')
+      .option('--default', 'Set the defined permissions as default (only for pods on a WAC-based solid server)')
+      .option('--group', 'Process identifier as a group identifier (only for pods on a WAC-based solid server)')
       .option('-v, --verbose', 'Log all operations') // Should this be default?
       .action( async (url: string, permissions: string[], options: any) => {
 
@@ -109,18 +118,27 @@ export default class PermsCommand extends SolidCommand {
             return ({ type, id, read, write, append, control, default: def } as IPermissionOperation)
           })
           for (let permission of parsedPermissions) {
-            try {
-              await acl_perms.changePermissions(url, [permission], options)
-              return;
-            } catch (e) {
-              if (options.verbose) writeErrorString(`Could not set permissions for ${permission.id} using WAC`, e, options)
+            const { acp, acl } = await discoverAccessMechanism(url, options.fetch)
+            if ( !acp && !acl ) {
+              if (options.verbose) writeErrorString(`Could not set permissions for ${permission.id}`, { message: "Could not find attached WAC or ACP management resource." }, options)
+                continue;
             }
-            try {
-              if (options.group || options.default) throw new Error("Cannot set WAC-specific options such as group and default for non-WAC environments ")
-              await setPermission(url, [permission], options)
-              return;
-            } catch (e) {
-              if (options.verbose) writeErrorString(`Could not set permissions for ${permission.id} using ACP`, e, options)
+            if (acp) {
+              try {
+                if (options.group || options.default) throw new Error("Cannot set WAC-specific options such as group and default for non-WAC environments ")
+                await setPermission(url, [permission], options)
+                return;
+              } catch (e) {
+                if (options.verbose) writeErrorString(`Could not set permissions for ${permission.id} using ACP`, e, options)
+              }
+            } 
+            if (acl) {
+              try {
+                await acl_perms.changePermissions(url, [permission], options)
+                return;
+              } catch (e) {
+                if (options.verbose) writeErrorString(`Could not set permissions for ${permission.id} using WAC`, e, options)
+              }
             }
           }
         }

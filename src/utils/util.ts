@@ -1,4 +1,4 @@
-import { getSolidDataset, getContainedResourceUrlAll, getUrl, getUrlAll, getThing, getThingAll, getDatetime, getInteger, SolidDataset } from '@inrupt/solid-client';
+import { getSolidDataset, getContainedResourceUrlAll, getUrl, getUrlAll, getThing, getThingAll, getDatetime, getInteger, SolidDataset, acp_ess_2, hasAccessibleAcl } from '@inrupt/solid-client';
 import { requestUserIdp } from './userInteractions';
 import type { Logger } from '../logger';
 
@@ -503,4 +503,18 @@ export async function isRDFResource(fileInfo: FileInfo, fetch: any) {
   if(!contentType) return false;
   else if (parseableExtensions.indexOf(mime.extension(contentType)) !== -1) return true;
   return false
+}
+
+export async function discoverAccessMechanism(url: string, fetch: any) {
+  // We need to first check acp because Inrupt libs are kinda wack and reuse of acl rel header is confusing their own libs.
+  const acpInfo = await acp_ess_2.getResourceInfoWithAcr(url, { fetch })  
+  const acp = acp_ess_2.hasAccessibleAcr(acpInfo)
+  if (acp) return({ acp: true, acl: false })
+
+  // Now we check acl
+  const dataset = await acp_ess_2.getResourceInfoWithAccessDatasets(url, { fetch })  
+  const acl = hasAccessibleAcl(dataset) && !acp
+  if (acl) return({ acp: false, acl: true })
+
+  return ({ acp: false, acl: false })
 }
