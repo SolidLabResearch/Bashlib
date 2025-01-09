@@ -1,26 +1,41 @@
 # Bashlib
 This repository contains a suite of functionality to facilitate use and development for Solid
 
-For a tutorial and documentation, see [the documentation website](solidlabresearch.github.io/Bashlib/)
 
-<!--
 ## Requirements
 
 - Node >= 16.0.0
 
 ## Setup
-Using github
+**Using github**
 ``` 
 git clone git@github.com:SolidLabResearch/Bashlib.git
 cd Bashlib
 npm install 
 npm run build
 ```
+After the install, add an alias to your `.bashrc` for convenience:
+```
+alias sld="node /path/to/folder/.../bin/solid.js"
+```
+**Using NPX**
+```
+npx solid-bashlib
+```
+This will automatically install any dependencies.
+You can add an alias to your `.bashrc` for convenience:
+```
+alias sld="npx solid-bashlib"
+```
 
-Using NPM
-```
-npm install solid-bashlib
-```
+**Note that while more straightforward, using NPX incurs a performance penalty of up to 1 second!
+Consider a github install if you plan to use this tool regularly!**
+
+
+## Documentation
+For a tutorial and documentation, see [the documentation website](solidlabresearch.github.io/Bashlib/)
+
+<!--
 
 ## Synopsis
 
