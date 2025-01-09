@@ -17,25 +17,38 @@
   <h1>Bashlib</h1>
 </a>
 <p>This repository contains a suite of functionality to facilitate use and development for Solid</p>
+
+<a href="#requirements" id="requirements" style="color: inherit; text-decoration: none;">
+  <h2>Requirements</h2>
+</a>
+<ul>
+<li>Node &gt;= 16.0.0</li>
+</ul>
+
+<a href="#setup" id="setup" style="color: inherit; text-decoration: none;">
+  <h2>Setup</h2>
+</a>
+<p><strong>Using github</strong></p>
+<pre><code><span class="hl-0">git</span><span class="hl-1"> </span><span class="hl-0">clone</span><span class="hl-1"> </span><span class="hl-0">git</span><span class="hl-1">@</span><span class="hl-0">github</span><span class="hl-1">.</span><span class="hl-0">com</span><span class="hl-1">:</span><span class="hl-0">SolidLabResearch</span><span class="hl-1">/</span><span class="hl-0">Bashlib</span><span class="hl-1">.</span><span class="hl-0">git</span><br/><span class="hl-0">cd</span><span class="hl-1"> </span><span class="hl-0">Bashlib</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-0">install</span><span class="hl-1"> </span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-0">run</span><span class="hl-1"> </span><span class="hl-0">build</span>
+</code></pre>
+<p>After the install, add an alias to your <code>.bashrc</code> for convenience:</p>
+<pre><code><span class="hl-0">alias</span><span class="hl-1"> </span><span class="hl-0">sld</span><span class="hl-1">=</span><span class="hl-2">&quot;node /path/to/folder/.../bin/solid.js&quot;</span>
+</code></pre>
+<p><strong>Using NPX</strong></p>
+<pre><code><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-0">solid</span><span class="hl-1">-</span><span class="hl-0">bashlib</span>
+</code></pre>
+<p>This will automatically install any dependencies.
+You can add an alias to your <code>.bashrc</code> for convenience:</p>
+<pre><code><span class="hl-0">alias</span><span class="hl-1"> </span><span class="hl-0">sld</span><span class="hl-1">=</span><span class="hl-2">&quot;npx solid-bashlib&quot;</span>
+</code></pre>
+<p><strong>Note that while more straightforward, using NPX incurs a performance penalty of up to 1 second!
+Consider a github install if you plan to use this tool regularly!</strong></p>
+
+<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
+  <h2>Documentation</h2>
+</a>
 <p>For a tutorial and documentation, see <a href="solidlabresearch.github.io/Bashlib/">the documentation website</a></p>
 <!--
-## Requirements
-
-- Node >= 16.0.0
-
-## Setup
-Using github
-``` 
-git clone git@github.com:SolidLabResearch/Bashlib.git
-cd Bashlib
-npm install 
-npm run build
-```
-
-Using NPM
-```
-npm install solid-bashlib
-```
 
 ## Synopsis
 
