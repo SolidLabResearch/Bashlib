@@ -126,7 +126,7 @@ export default class PermsCommand extends SolidCommand {
                 await setPermission(url, [permission], options)
                 return;
               } catch (e) {
-                if (options.verbose) writeErrorString(`Could not set permissions for ${permission.id} using ACP`, e, options)
+                writeErrorString(`Could not set permissions for ${permission.id} using ACP`, e, options)
               }
             } 
             if (acl) {
@@ -134,7 +134,7 @@ export default class PermsCommand extends SolidCommand {
                 await acl_perms.changePermissions(url, [permission], options)
                 return;
               } catch (e) {
-                if (options.verbose) writeErrorString(`Could not set permissions for ${permission.id} using WAC`, e, options)
+                writeErrorString(`Could not set permissions for ${permission.id} using WAC`, e, options)
               }
             }
           }
