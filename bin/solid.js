@@ -38,6 +38,8 @@ program = new c.FindCommand(undefined, true).addCommand(program)
 program = new c.QueryCommand(undefined, true).addCommand(program)
 program = new c.PermsCommand(undefined, true).addCommand(program)
 program = new c.EditCommand(undefined, true).addCommand(program)
+program = new c.PatchCommand(undefined, true).addCommand(program)
+
 // program = new c.ShellCommand(undefined, true).addCommand(program) 
 // program = new c.ExitCommand(undefined, true).addCommand(program) 
 program = new c.AuthCommand(undefined, true).addCommand(program) 

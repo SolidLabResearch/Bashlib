@@ -7,6 +7,7 @@ import find, {ICommandOptionsFind} from "./commands/solid-find"
 import query, {ICommandOptionsQuery} from './commands/solid-query'
 import makeDirectory, { ICommandOptionsMakeDirectory } from "./commands/solid-mkdir"
 import touch, {ICommandOptionsTouch} from "./commands/solid-touch"
+import { makePatchBody, readPatchBodyFromFile, readPatchBodyFromURL, sendPatchRequest} from "./commands/solid-patch"
 // import shell from "./commands/solid-shell"
 import createSolidPods, {IAccountData} from "./commands/solid-pod-create"
 import { listPermissions, setPermission, ICommandOptionsPermissions, IPermissionOperation, IPermissionListing, Record } from './commands/solid-perms'
