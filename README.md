@@ -23,6 +23,7 @@ To support querying requirements, this library makes use of the [Comunica Query 
 - [ ] Improve consistency of exported Javascript interface
 - [ ] Add WebID parameter to force using specific webid
 - [ ] Add output parameter to log to specified file
+- [ ] Improve error handling messaging
 - [X] npm release
 - [ ] Refactor to use components.js for dynamic extension with new utilities
 
