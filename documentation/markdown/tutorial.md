@@ -45,8 +45,6 @@ Here, we provide a pod name, for example `mydatapod`.
 Congratulations, you just created a new data pod at `http://localhost:3000/mydatapod/`
 and associated WebID at `http://localhost:3000/mydatapod/profile/card#me`!
 
-
-
 ## Setting up Bashlib
 With our Solid pod and WebID created, now it is time to setup Bashlib!
 For a quick setup, we use NPX
@@ -397,4 +395,26 @@ most likely your browser will stop you from looking at localhost links because o
 
 
 
+<!-- ## Creating an automated flow
 
+Many background workflows may require a lot of automation, using Bashlib mainly in shell scripts.
+For this, Bashlib supports all required functionality to fully automate Solid workflows,
+although support for these flows relies on the non-interactive token-based authentication option,
+which is only available for the <a href="../documentation/cli/authentication#create-token-css">Community Solid Server</a>
+and <a href="../documentation/cli/authentication#create-token-ess">Enterprise Solid Server</a> implementations.
+
+
+### Automate token creation
+
+To start out, we create an authentication token for the token-based authentication flows.
+```
+sld auth create-token-css
+  --webid http://localhost:3000/mydatapod/profile/card#me
+  --name bashlib_token
+  --email bob@test.com
+  --password bob
+```
+
+### Automate profile selection for different functions
+
+To automate the selection of a WebID when running a background script,  -->
