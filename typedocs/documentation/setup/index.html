@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://SolidLabResearch.github.io/Bashlib/typedocs/documentation/overview/">
+        <link rel="canonical" href="https://SolidLabResearch.github.io/Bashlib/typedocs/documentation/setup/">
       
       
-        <link rel="prev" href="../../tutorial/">
+        <link rel="prev" href="../overview/">
       
       
-        <link rel="next" href="../setup/">
+        <link rel="next" href="../cli/authentication/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Overview - Bashlib</title>
+        <title>Setup - Bashlib</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#documentation-overview" class="md-skip">
+        <a href="#setting-up-bashlib" class="md-skip">
           Skip to content
         </a>
       
@@ -124,7 +124,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              Setup
             
           </span>
         </div>
@@ -272,7 +272,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+        <a href="../overview/" class="md-tabs__link">
           
   
     
@@ -470,6 +470,28 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -482,30 +504,19 @@
         
       
       
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
   
   <span class="md-ellipsis">
-    Overview
+    Setup
     
   </span>
   
 
-      </a>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../setup/" class="md-nav__link">
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -515,6 +526,44 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Requirements
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -635,6 +684,32 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Requirements
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -649,21 +724,30 @@
 
 
 
-<h1 id="documentation-overview">Documentation Overview<a class="headerlink" href="#documentation-overview" title="Permanent link">&para;</a></h1>
-<p>The Bashlib command line interface provides straightforward commands to interact with your Solid pod. 
-It can be useful both for personal use, setting up small workflows or quick demonstrations of proof of concepts.
-The authentication options enable quick switching between WebIDs and Solid Pods.
-<br />
-As not everything is optimized for performance, operations that target many resources or few but large resources 
-may not be performant enough for some use-cases, as the internal resource management does not make use of streaming.</p>
-<p><br />
-To login and manage authentication info for Bashlib, navigate to the <a href="../cli/authentication/">authentication management section</a>.
-<br />
-For an overview of the available commands, their options and code example, navigate to the <a href="../cli/commands/">available commands section</a>.
-<br />
-To view and manage access to resources, navigate to the <a href="../cli/access/">access management section</a>.
-<br />
-To see how to use aliases to speed up your flow, navigate to the <a href="../cli/aliases/">using aliases section</a>.</p>
+<h1 id="setting-up-bashlib">Setting up Bashlib<a class="headerlink" href="#setting-up-bashlib" title="Permanent link">&para;</a></h1>
+<h2 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Node &gt;= 16.0.0</li>
+</ul>
+<h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h2>
+<p><strong>Using github</strong>
+<div class="highlight"><pre><span></span><code>git clone git@github.com:SolidLabResearch/Bashlib.git
+cd Bashlib
+npm install 
+npm run build
+</code></pre></div>
+After the install, add an alias to your <code>.bashrc</code> for convenience:
+<div class="highlight"><pre><span></span><code>alias sld=&quot;node /path/to/folder/.../bin/solid.js&quot;
+</code></pre></div></p>
+<p><strong>Using NPX</strong>
+<div class="highlight"><pre><span></span><code>npx solid-bashlib
+</code></pre></div>
+This will automatically install any dependencies.
+You can add an alias to your <code>.bashrc</code> for convenience:
+<div class="highlight"><pre><span></span><code>alias sld=&quot;npx solid-bashlib&quot;
+</code></pre></div></p>
+<p><strong>Note that while more straightforward, using NPX incurs a performance penalty of up to 1 second!
+Consider installing the tool via Github to speed things up!</strong></p>
 
 
 
