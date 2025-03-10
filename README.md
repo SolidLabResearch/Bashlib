@@ -1,9 +1,11 @@
 # Bashlib
+
+**For [documentation](https://solidlabresearch.github.io/Bashlib/documentation/overview/) and a [tutorial](https://solidlabresearch.github.io/Bashlib/tutorial/),
+please visit the [Bashlib Website](https://solidlabresearch.github.io/Bashlib/).**
+
+
 The Bashlib-solid library provides a set of functions for interacting with Solid environments from Node.JS and the CLI. 
 The aim is to provide shell-like functionality to facility the use of and development for the Solid ecosystem with a low requirement of specific knowledge of Solid and LDP. 
-
-For [documentation](https://solidlabresearch.github.io/Bashlib/documentation/overview/) and a [tutorial](https://solidlabresearch.github.io/Bashlib/tutorial/),
-please visit the [Bashlib Website](https://solidlabresearch.github.io/Bashlib/).
 
 This library makes use of the [Developer tools by inrupt for Solid](https://docs.inrupt.com/developer-tools/javascript/client-libraries/using-libraries/) to support authorization, authentication and resource loading.
 To support querying requirements, this library makes use of the [Comunica Query engine](https://comunica.dev/).
