@@ -76,11 +76,11 @@ nav:
   - Tutorial: tutorial.md
   - Documentation:
       - Overview: documentation/overview.md
-      - CLI:
-          - Manage Authentication: documentation/cli/authentication.md
-          - Available Commands: documentation/cli/commands.md
-          - Manage Resource Access: documentation/cli/access.md
-          - Using Aliases: documentation/cli/aliases.md
+      - Setup: documentation/setup.md
+      - Manage Authentication: documentation/cli/authentication.md
+      - Available Commands: documentation/cli/commands.md
+      - Manage Resource Access: documentation/cli/access.md
+      - Using Aliases: documentation/cli/aliases.md
       # - Typescript:
       #     - Overview: usage/typescript/overview.md
       #     - Authentication: usage/typescript/authentication.md
