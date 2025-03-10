@@ -6,15 +6,15 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         
         
-        <link rel="canonical" href="https://SolidLabResearch.github.io/Bashlib/documentation/typescript/overview/">
-        <link rel="shortcut icon" href="../../../img/favicon.ico">
-        <title>Overview Usage for Typescript - Bashlib</title>
-        <link href="../../../css/bootstrap.min.css" rel="stylesheet">
-        <link href="../../../css/fontawesome.min.css" rel="stylesheet">
-        <link href="../../../css/brands.min.css" rel="stylesheet">
-        <link href="../../../css/solid.min.css" rel="stylesheet">
-        <link href="../../../css/v4-font-face.min.css" rel="stylesheet">
-        <link href="../../../css/base.css" rel="stylesheet">
+        <link rel="canonical" href="https://SolidLabResearch.github.io/Bashlib/documentation/setup/">
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>Setup - Bashlib</title>
+        <link href="../../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../../css/brands.min.css" rel="stylesheet">
+        <link href="../../css/solid.min.css" rel="stylesheet">
+        <link href="../../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
         <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
         <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
@@ -24,7 +24,7 @@
     <body>
         <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" href="../../..">Bashlib</a>
+                <a class="navbar-brand" href="../..">Bashlib</a>
                 <!-- Expander button -->
                 <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -39,39 +39,39 @@
                                 <ul class="dropdown-menu">
                                     
 <li>
-    <a href="../../.." class="dropdown-item">Welcome</a>
+    <a href="../.." class="dropdown-item">Welcome</a>
 </li>
                                 </ul>
                             </li>
                             <li class="nav-item">
-                                <a href="../../../tutorial/" class="nav-link">Tutorial</a>
+                                <a href="../../tutorial/" class="nav-link">Tutorial</a>
                             </li>
                             <li class="nav-item dropdown">
-                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Documentation</a>
+                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Documentation</a>
                                 <ul class="dropdown-menu">
                                     
 <li>
-    <a href="../../overview/" class="dropdown-item">Overview</a>
+    <a href="../overview/" class="dropdown-item">Overview</a>
 </li>
                                     
 <li>
-    <a href="../../setup/" class="dropdown-item">Setup</a>
+    <a href="./" class="dropdown-item active" aria-current="page">Setup</a>
 </li>
                                     
 <li>
-    <a href="../../cli/authentication/" class="dropdown-item">Manage Authentication</a>
+    <a href="../cli/authentication/" class="dropdown-item">Manage Authentication</a>
 </li>
                                     
 <li>
-    <a href="../../cli/commands/" class="dropdown-item">Available Commands</a>
+    <a href="../cli/commands/" class="dropdown-item">Available Commands</a>
 </li>
                                     
 <li>
-    <a href="../../cli/access/" class="dropdown-item">Manage Resource Access</a>
+    <a href="../cli/access/" class="dropdown-item">Manage Resource Access</a>
 </li>
                                     
 <li>
-    <a href="../../cli/aliases/" class="dropdown-item">Using Aliases</a>
+    <a href="../cli/aliases/" class="dropdown-item">Using Aliases</a>
 </li>
                                 </ul>
                             </li>
@@ -83,6 +83,16 @@
                                 <i class="fa fa-search"></i> Search
                             </a>
                         </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../overview/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../cli/authentication/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
                             <li class="nav-item">
                                 <a href="https://github.com/SolidLabResearch/Bashlib" class="nav-link">Bashlib</a>
                             </li>
@@ -104,8 +114,16 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-bs-level="1"><a href="#overview-usage-for-typescript" class="nav-link">Overview Usage for Typescript</a>
+            <li class="nav-item" data-bs-level="1"><a href="#setting-up-bashlib" class="nav-link">Setting up Bashlib</a>
               <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#requirements" class="nav-link">Requirements</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#setup" class="nav-link">Setup</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -113,7 +131,26 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="overview-usage-for-typescript">Overview Usage for Typescript<a class="headerlink" href="#overview-usage-for-typescript" title="Permanent link">&para;</a></h1></div>
+<h1 id="setting-up-bashlib">Setting up Bashlib<a class="headerlink" href="#setting-up-bashlib" title="Permanent link">&para;</a></h1>
+<h2 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Node &gt;= 16.0.0</li>
+</ul>
+<h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h2>
+<p><strong>Using github</strong>
+<pre class="highlight"><code>git clone git@github.com:SolidLabResearch/Bashlib.git
+cd Bashlib
+npm install 
+npm run build</code></pre>
+After the install, add an alias to your <code>.bashrc</code> for convenience:
+<pre class="highlight"><code>alias sld="node /path/to/folder/.../bin/solid.js"</code></pre></p>
+<p><strong>Using NPX</strong>
+<pre class="highlight"><code>npx solid-bashlib</code></pre>
+This will automatically install any dependencies.
+You can add an alias to your <code>.bashrc</code> for convenience:
+<pre class="highlight"><code>alias sld="npx solid-bashlib"</code></pre></p>
+<p><strong>Note that while more straightforward, using NPX incurs a performance penalty of up to 1 second!
+Consider installing the tool via Github to speed things up!</strong></p></div>
             </div>
         </div>
 
@@ -121,13 +158,13 @@
             <hr>
             <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
-        <script src="../../../js/bootstrap.bundle.min.js"></script>
+        <script src="../../js/bootstrap.bundle.min.js"></script>
         <script>
-            var base_url = "../../..",
+            var base_url = "../..",
                 shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
         </script>
-        <script src="../../../js/base.js"></script>
-        <script src="../../../search/main.js"></script>
+        <script src="../../js/base.js"></script>
+        <script src="../../search/main.js"></script>
 
         <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
