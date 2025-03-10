@@ -39,6 +39,8 @@ export type Record<K extends keyof any, T> = {
   [P in K]: T;
 };
 
+const denyAllAccess = { read: false, write: false, append: false, control: false };
+
 
 export interface IPermissionListing {
   access: {
@@ -64,22 +66,22 @@ export async function listPermissions(resourceUrl: string, options?: ICommandOpt
   let permissions : IPermissionListing = { access: {} }
   try {
     const resourceInfo = await getResourceInfoWithAcl(resourceUrl, { fetch: commandOptions.fetch })
-    permissions.access.agent = await getAgentAccessAll(resourceInfo)
-    permissions.access.group = await getGroupAccessAll(resourceInfo)
-    permissions.access.public = await getPublicAccess(resourceInfo)
+    permissions.access.agent = getAgentAccessAll(resourceInfo)
+    permissions.access.group = getGroupAccessAll(resourceInfo)
+    permissions.access.public = getPublicAccess(resourceInfo)
 
     let aclDataset = getResourceAcl(resourceInfo); 
     
     if (aclDataset) {
       permissions.default = {};
-      permissions.default.agent = await getAgentDefaultAccessAll(aclDataset)
-      permissions.default.group = await getGroupDefaultAccessAll(aclDataset)
-      permissions.default.public = await getPublicDefaultAccess(aclDataset)
+      permissions.default.agent = getAgentDefaultAccessAll(aclDataset)
+      permissions.default.group = getGroupDefaultAccessAll(aclDataset)
+      permissions.default.public = getPublicDefaultAccess(aclDataset)
 
       permissions.resource = {};
-      permissions.resource.agent = await getAgentResourceAccessAll(aclDataset)
-      permissions.resource.group = await getGroupResourceAccessAll(aclDataset)
-      permissions.resource.public = await getPublicResourceAccess(aclDataset)
+      permissions.resource.agent = getAgentResourceAccessAll(aclDataset)
+      permissions.resource.group = getGroupResourceAccessAll(aclDataset)
+      permissions.resource.public = getPublicResourceAccess(aclDataset)
       
     }
     return permissions
@@ -129,8 +131,18 @@ export async function changePermissions(resourceUrl: string, operations: IPermis
       let access = { read: false, write: false, append: false, control: false }
       access = updateAccess(access, operation)
       // Update local acl for agent with new rights
-      if (operation.default) aclDataset = await setAgentDefaultAccess(aclDataset, operation.id, access)
-      aclDataset = await setAgentResourceAccess(aclDataset, operation.id, access)
+      if (operation.default) {
+        // remove non default entry
+        aclDataset = setAgentResourceAccess(aclDataset, operation.id, denyAllAccess)
+        // update default entry
+        aclDataset = setAgentDefaultAccess(aclDataset, operation.id, access)
+      } else {
+        // remove default entry
+        aclDataset = setAgentDefaultAccess(aclDataset, operation.id, denyAllAccess)
+        // add non default entry 
+        aclDataset = await setAgentResourceAccess(aclDataset, operation.id, access)
+      }
+      
 
     } else if (operation.type === 'group') {
       // Update access rights
@@ -138,17 +150,34 @@ export async function changePermissions(resourceUrl: string, operations: IPermis
       let access = { read: false, write: false, append: false, control: false }
       access = updateAccess(access, operation)
       // Update local acl for group with new rights
-      if (operation.default) aclDataset = await setGroupDefaultAccess(aclDataset, operation.id, access)
-      aclDataset = await setGroupResourceAccess(aclDataset, operation.id, access)
-
+      if (operation.default) {
+        // remove non default entry
+        aclDataset = setGroupResourceAccess(aclDataset, operation.id, denyAllAccess)
+        // update default entry
+        aclDataset = setGroupDefaultAccess(aclDataset, operation.id, access)
+      } else {
+        // remove default entry
+        aclDataset = setGroupDefaultAccess(aclDataset, operation.id, denyAllAccess)
+        // add non default entry 
+        aclDataset = setGroupResourceAccess(aclDataset, operation.id, access)
+      }
     } else if (operation.type === 'public') {
       // Update access rights
       if (!operation.id) { throw new Error('Please specify agent id in the passed operation.')}
       let access = { read: false, write: false, append: false, control: false }
       access = updateAccess(access, operation)
       // Update local acl for agent with new rights
-      if (operation.default) aclDataset = await setPublicDefaultAccess(aclDataset, access)
-      aclDataset = await setPublicResourceAccess(aclDataset, access)
+      if (operation.default) {
+        // remove non default entry
+        aclDataset = setPublicResourceAccess(aclDataset, denyAllAccess)
+        // update default entry
+        aclDataset = setPublicDefaultAccess(aclDataset, access)
+      } else {
+        // remove default entry
+        aclDataset = setPublicDefaultAccess(aclDataset, denyAllAccess)
+        // add non default entry 
+        aclDataset = setPublicResourceAccess(aclDataset, access)
+      }
     } else { 
       if (commandOptions.verbose) writeErrorString("Incorrect operation type", 'Please provide an operation type of agent, group or public.', commandOptions)
     }
