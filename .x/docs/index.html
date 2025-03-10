@@ -18,90 +18,10 @@
 </a>
 <p>The Bashlib-solid library provides a set of functions for interacting with Solid environments from Node.JS and the CLI. 
 The aim is to provide shell-like functionality to facility the use of and development for the Solid ecosystem with a low requirement of specific knowledge of Solid and LDP. </p>
-<p>The <a href="https://solidlabresearch.github.io/Bashlib/">Bashlib Website</a> includes both <a href="https://solidlabresearch.github.io/Bashlib/tutorial/">a tutorial</a> for the tooling, as well as the <a href="https://solidlabresearch.github.io/Bashlib/documentation/overview/">documentation</a>.</p>
+<p>For <a href="https://solidlabresearch.github.io/Bashlib/documentation/overview/">documentation</a> and a <a href="https://solidlabresearch.github.io/Bashlib/tutorial/">tutorial</a>,
+please visit the <a href="https://solidlabresearch.github.io/Bashlib/">Bashlib Website</a>.</p>
 <p>This library makes use of the <a href="https://docs.inrupt.com/developer-tools/javascript/client-libraries/using-libraries/">Developer tools by inrupt for Solid</a> to support authorization, authentication and resource loading.
 To support querying requirements, this library makes use of the <a href="https://comunica.dev/">Comunica Query engine</a>.</p>
-
-<a href="#requirements" id="requirements" style="color: inherit; text-decoration: none;">
-  <h2>Requirements</h2>
-</a>
-<ul>
-<li>Node &gt;= 16.0.0</li>
-</ul>
-
-<a href="#setup" id="setup" style="color: inherit; text-decoration: none;">
-  <h2>Setup</h2>
-</a>
-<p><strong>Using github</strong></p>
-<pre><code><span class="hl-0">git</span><span class="hl-1"> </span><span class="hl-0">clone</span><span class="hl-1"> </span><span class="hl-0">git</span><span class="hl-1">@</span><span class="hl-0">github</span><span class="hl-1">.</span><span class="hl-0">com</span><span class="hl-1">:</span><span class="hl-0">SolidLabResearch</span><span class="hl-1">/</span><span class="hl-0">Bashlib</span><span class="hl-1">.</span><span class="hl-0">git</span><br/><span class="hl-0">cd</span><span class="hl-1"> </span><span class="hl-0">Bashlib</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-0">install</span><span class="hl-1"> </span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-0">run</span><span class="hl-1"> </span><span class="hl-0">build</span>
-</code></pre>
-<p>After the install, add an alias to your <code>.bashrc</code> for convenience:</p>
-<pre><code><span class="hl-0">alias</span><span class="hl-1"> </span><span class="hl-0">sld</span><span class="hl-1">=</span><span class="hl-2">&quot;node /path/to/folder/.../bin/solid.js&quot;</span>
-</code></pre>
-<p><strong>Using NPX</strong></p>
-<pre><code><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-0">solid</span><span class="hl-1">-</span><span class="hl-0">bashlib</span>
-</code></pre>
-<p>This will automatically install any dependencies.
-You can add an alias to your <code>.bashrc</code> for convenience:</p>
-<pre><code><span class="hl-0">alias</span><span class="hl-1"> </span><span class="hl-0">sld</span><span class="hl-1">=</span><span class="hl-2">&quot;npx solid-bashlib&quot;</span>
-</code></pre>
-<p><strong>Note that while more straightforward, using NPX incurs a performance penalty of up to 1 second!
-Consider a github install if you plan to use this tool regularly!</strong></p>
-
-<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
-  <h2>Documentation</h2>
-</a>
-<p>For a tutorial and documentation, see <a href="solidlabresearch.github.io/Bashlib/">the documentation website</a></p>
-<!--
-
-## Synopsis
-
-```
-node bin/solid.js ls https://somepod.org/
-node bin/solid.js cat https://somepod.org/public.txt
-
-# Create an authenticated session (for CSS 4.0.0 and up)
-node bin/solid.js auth create-token
-# -- and fill in all the questions
-
-# Set the webid you want to use for authenticated session
-node bin/solid.js auth set <your-web-id>
-
-# Now you can read some private data
-node bin/solid.js ls https://somepod.org/private/secret.txt
-
-# Or, shorten this to 
-node bin/solid.js ls root:/private/secret.txt
-
-# Upload some data
-node bin/solid.js cp local.txt root:/private/
-```
-
-## Available features
-
-- Reading resources
-- Fetch resources 
-- Container listing
-- Tree listing
-- Copy/move resources local to remote
-- Copy/move resources remote to local
-- Copy/move resources remote to remote
-- Remote resources
-- Create/touch an empty resource 
-- SPARQL query a resource
-- List ACL permissions of resources
-- Change ACL permissions of resources
-- Authenticate against a Pod
-- Make long lasting client credentials (CSS >=4.0.0 only)
-
-## Contributors: how to release
-
-This repo uses [release-it](https://www.npmjs.com/package/release-it) to manage SemVer version numbers, create GitHub releases and publish to npm.
-
-Run `npm run release` and follow the intructions on the CLI. Don't forget to create a [personal access token](https://github.com/settings/tokens) and expose it through the `GITHUB_TOKEN` environment variable, or the github release won't work. For more information, visit the `release-it` docs.
-
--->
-
 
 <a href="#bashlib-features-in-progress" id="bashlib-features-in-progress" style="color: inherit; text-decoration: none;">
   <h3>Bashlib features in progress</h3>
@@ -112,13 +32,12 @@ Run `npm run release` and follow the intructions on the CLI. Don't forget to cre
 <li><input checked="" disabled="" type="checkbox"> Handle metadata</li>
 <li><input disabled="" type="checkbox"> Handling multiple pods for a given WebID (pim:storage)</li>
 <li><input checked="" disabled="" type="checkbox"> multi parameter removes: rm file1 file2 file3</li>
-<li><input disabled="" type="checkbox"> Session refreshing on longer commands where session may time-out in the middle of command!</li>
+<li><input disabled="" type="checkbox"> Fixing session refresh. Current implementation can have time-out isssues with longer commands.</li>
 <li><input disabled="" type="checkbox"> Make sure discovery of pim:storage and ldp:inbox are according to spec!</li>
 <li><input checked="" disabled="" type="checkbox"> Resource verification on edit (compare before / after hash and notify if something may have changed)</li>
 <li><input disabled="" type="checkbox"> Write concrete test cases and spin up local pod server to test</li>
 <li><input disabled="" type="checkbox"> Improve consistency of internal logging</li>
 <li><input disabled="" type="checkbox"> Improve consistency of exported Javascript interface</li>
-<li><input disabled="" type="checkbox"> Interactive Solid shell? -&gt; Not sure if this will be useful.</li>
 <li><input checked="" disabled="" type="checkbox"> npm release</li>
 </ul>
 </div></div>
