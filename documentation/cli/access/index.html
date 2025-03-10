@@ -11,10 +11,10 @@
         <link rel="canonical" href="https://SolidLabResearch.github.io/Bashlib/documentation/cli/access/">
       
       
-        <link rel="prev" href="../commands/">
+        <link rel="prev" href="../authentication/">
       
       
-        <link rel="next" href="../aliases/">
+        <link rel="next" href="../commands/">
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
@@ -536,28 +536,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../commands/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Available Commands
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -753,6 +731,28 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Available Commands
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -986,13 +986,14 @@ The access command has thee subcommands: <code>list</code>, <code>set</code> and
 The <code>url</code> argument is the target (container) resource for which access is to be listed.</p>
 <h4 id="options">options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code>Options:
-  --acl          Displays ACL specific information such as group and default access
   -p, --pretty   Pretty format
   -v, --verbose  Log all operations
 </code></pre></div>
-The <code>--acl</code> option displays information specific to <code>.acl</code> resources, 
-such as <code>default</code> access indicating that the authorization is also enforced on child resources without their own <code>.acl</code> file
-or <code>inhereted</code> access indicating that the access rules are derived from the default access of a parent resource.
+Depending on if the target Solid pod is managed using the <code>WAC</code> or <code>ACP</code>
+authorization system, options such as showing <code>default</code> access indicating 
+that the authorization is recursively enforced on child resources without their own <code>.acl</code> file
+or <code>inhereted</code> access indicating that the access rules are derived from the default access of a parent resource
+will be restricted to <code>WAC</code> based Solid servers.
 <br />
 The <code>--pretty</code> option outputs the information in a table format
 <br />
@@ -1029,25 +1030,26 @@ The <code>p</code> is write rights. For a resource this allows it to be overwrit
 For a container this allows resources to be added using both PUT and POST requests.</p>
 <h4 id="options_1">options<a class="headerlink" href="#options_1" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code>Options:
-  --acl          Enables ACL specific operations --default and --group
-  --default      Set the defined permissions as default (only in --acl mode)
-  --group        Process identifier as a group identifier (only in --acl mode)
+  --default      Set the defined permissions as default (only when target pod is hosted on a WAC-based instance)
+  --group        Process identifier as a group identifier (only when target pod is hosted on a WAC-based instance)
   -v, --verbose  Log all operations
   -h, --help     display help for command
 </code></pre></div>
-The <code>--acl</code> option enables the default and group flags to be used, which are WAC specific operations.
+The <code>--default</code> option makes the current access rules default for all children resources when defined on a container. Only available for pods hosted on a <code>WAC</code>-based Solid server.
 <br />
-The <code>--default</code> option makes the current access rules default for all children resources when defined on a container. Only available in <code>--acl</code> mode.
-<br />
-The <code>--group</code> option indicates that the identifier represents a group identifier. Only available in <code>--acl</code> mode.
+The <code>--group</code> option indicates that the identifier represents a group identifier. Only available for pods hosted on a <code>WAC</code>-based Solid server.
 <br />
 The <code>--verbose</code> option outputs operation logs.</p>
 <h4 id="examples_1">examples<a class="headerlink" href="#examples_1" title="Permanent link">&para;</a></h4>
-<p>Setting public read permissions for a resource
-<div class="highlight"><pre><span></span><code>sld access set https://mypod.org/resource p=r
+<p>Setting default public read permissions for a resource hosted on a WAC-based solid pod
+<div class="highlight"><pre><span></span><code>sld access set https://mypod.org/resource p=r --default
 </code></pre></div></p>
 <p>Giving access to alice to write to a container
 <div class="highlight"><pre><span></span><code>sld access set http://mypod.org/container/ http://people.org/alice/webid=w
+</code></pre></div></p>
+<p>Removing all public permissions from a resource (making it effectively private).
+Note that this will also remove any default permissions set on the resource.
+<div class="highlight"><pre><span></span><code>sld access set https://mypod.org/resource p=
 </code></pre></div></p>
 <h2 id="delete">Delete<a class="headerlink" href="#delete" title="Permanent link">&para;</a></h2>
 <p>The <code>delete</code> subcommand is only available for WAC based pods using <code>.acl</code> resources.
