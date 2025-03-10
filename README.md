@@ -21,5 +21,8 @@ To support querying requirements, this library makes use of the [Comunica Query 
 - [ ] Write concrete test cases and spin up local pod server to test
 - [ ] Improve consistency of internal logging
 - [ ] Improve consistency of exported Javascript interface
+- [ ] Add WebID parameter to force using specific webid
+- [ ] Add output parameter to log to specified file
 - [X] npm release
+- [ ] Refactor to use components.js for dynamic extension with new utilities
 
