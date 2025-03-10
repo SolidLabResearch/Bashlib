@@ -78,8 +78,8 @@ nav:
       - Overview: documentation/overview.md
       - Setup: documentation/setup.md
       - Manage Authentication: documentation/cli/authentication.md
-      - Available Commands: documentation/cli/commands.md
       - Manage Resource Access: documentation/cli/access.md
+      - Available Commands: documentation/cli/commands.md
       - Using Aliases: documentation/cli/aliases.md
       # - Typescript:
       #     - Overview: usage/typescript/overview.md

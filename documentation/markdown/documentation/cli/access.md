@@ -20,13 +20,14 @@ The `url` argument is the target (container) resource for which access is to be 
 #### options
 ```
 Options:
-  --acl          Displays ACL specific information such as group and default access
   -p, --pretty   Pretty format
   -v, --verbose  Log all operations
 ```
-The `--acl` option displays information specific to `.acl` resources, 
-such as `default` access indicating that the authorization is also enforced on child resources without their own `.acl` file
-or `inhereted` access indicating that the access rules are derived from the default access of a parent resource.
+Depending on if the target Solid pod is managed using the `WAC` or `ACP`
+authorization system, options such as showing `default` access indicating 
+that the authorization is recursively enforced on child resources without their own `.acl` file
+or `inhereted` access indicating that the access rules are derived from the default access of a parent resource
+will be restricted to `WAC` based Solid servers.
 <br />
 The `--pretty` option outputs the information in a table format
 <br />
@@ -71,29 +72,32 @@ For a container this allows resources to be added using both PUT and POST reques
 #### options
 ```
 Options:
-  --acl          Enables ACL specific operations --default and --group
-  --default      Set the defined permissions as default (only in --acl mode)
-  --group        Process identifier as a group identifier (only in --acl mode)
+  --default      Set the defined permissions as default (only when target pod is hosted on a WAC-based instance)
+  --group        Process identifier as a group identifier (only when target pod is hosted on a WAC-based instance)
   -v, --verbose  Log all operations
   -h, --help     display help for command
 ```
-The `--acl` option enables the default and group flags to be used, which are WAC specific operations.
+The `--default` option makes the current access rules default for all children resources when defined on a container. Only available for pods hosted on a `WAC`-based Solid server.
 <br />
-The `--default` option makes the current access rules default for all children resources when defined on a container. Only available in `--acl` mode.
-<br />
-The `--group` option indicates that the identifier represents a group identifier. Only available in `--acl` mode.
+The `--group` option indicates that the identifier represents a group identifier. Only available for pods hosted on a `WAC`-based Solid server.
 <br />
 The `--verbose` option outputs operation logs.
 
 #### examples
-Setting public read permissions for a resource
+Setting default public read permissions for a resource hosted on a WAC-based solid pod
 ```
-sld access set https://mypod.org/resource p=r
+sld access set https://mypod.org/resource p=r --default
 ```
 
 Giving access to alice to write to a container
 ```
 sld access set http://mypod.org/container/ http://people.org/alice/webid=w
+```
+
+Removing all public permissions from a resource (making it effectively private).
+Note that this will also remove any default permissions set on the resource.
+```
+sld access set https://mypod.org/resource p=
 ```
 
 
