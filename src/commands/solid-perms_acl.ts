@@ -133,7 +133,7 @@ export async function changePermissions(resourceUrl: string, operations: IPermis
       // Update local acl for agent with new rights
       if (operation.default) {
         // remove non default entry
-        aclDataset = setAgentResourceAccess(aclDataset, operation.id, denyAllAccess)
+        aclDataset = setAgentResourceAccess(aclDataset, operation.id, access)
         // update default entry
         aclDataset = setAgentDefaultAccess(aclDataset, operation.id, access)
       } else {
@@ -152,7 +152,7 @@ export async function changePermissions(resourceUrl: string, operations: IPermis
       // Update local acl for group with new rights
       if (operation.default) {
         // remove non default entry
-        aclDataset = setGroupResourceAccess(aclDataset, operation.id, denyAllAccess)
+        aclDataset = setGroupResourceAccess(aclDataset, operation.id, access)
         // update default entry
         aclDataset = setGroupDefaultAccess(aclDataset, operation.id, access)
       } else {
@@ -169,7 +169,7 @@ export async function changePermissions(resourceUrl: string, operations: IPermis
       // Update local acl for agent with new rights
       if (operation.default) {
         // remove non default entry
-        aclDataset = setPublicResourceAccess(aclDataset, denyAllAccess)
+        aclDataset = setPublicResourceAccess(aclDataset, access)
         // update default entry
         aclDataset = setPublicDefaultAccess(aclDataset, access)
       } else {
