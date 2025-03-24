@@ -1,8 +1,8 @@
 import { getSolidDataset, getContainedResourceUrlAll, getUrl, getUrlAll, getThing, getThingAll, getDatetime, getInteger, SolidDataset, acp_ess_2, hasAccessibleAcl, FetchError } from '@inrupt/solid-client';
 import { requestUserIdp } from './userInteractions';
 import type { Logger } from '../logger';
+import * as fs from "fs"
 
-const fs = require('fs')
 const path = require('path')
 var LinkHeader = require( 'http-link-header' )
 const mime = require('mime-types');
@@ -27,6 +27,7 @@ export type FileInfo = {
   directory?: string, 
   contentType?: string,
   buffer?: Buffer,
+  lastModified?: Date,
   blob?: Blob,
   loadFile?: FileLoadingFunction
 }
@@ -536,4 +537,31 @@ export async function resourceExists(url: string, fetch: any) {
           return undefined;
       }
   }
+}
+
+
+export async function compareLastModifiedTimes(sourceResourceTime: Date | undefined, targetResourceTime: Date | undefined ): Promise<{ 
+  write: boolean, request: boolean
+ }> {
+  if (!targetResourceTime || !sourceResourceTime) return { write: false, request: true }
+  else if ( targetResourceTime < sourceResourceTime ) return { write: true, request: false }
+  else return { write: false, request: false }
+}
+
+
+export async function getRemoteResourceLastModified(url: string, fetch: any): Promise< Date | undefined > {
+  try {
+    let res = await fetch(url, { method: "HEAD" })
+    if (!res.ok) return undefined
+    const lastModified = res.headers.get('last-modified')
+    return new Date(lastModified)
+  }
+  catch (e) { 
+    return undefined 
+  }
+}
+
+
+export function getLocalFileLastModified(path: string): Date {
+  return fs.statSync(path).mtime
 }

@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { getFile, getContentType, createContainerAt } from "@inrupt/solid-client"
-import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively, checkRemoteFileExists, writeErrorString, isDirectoryContents, resourceExists } from '../utils/util';
+import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively, writeErrorString, isDirectoryContents, resourceExists, getLocalFileLastModified, getRemoteResourceLastModified, compareLastModifiedTimes } from '../utils/util';
 import Blob from 'fetch-blob'
 import { requestUserCLIConfirmationDefaultNegative } from '../utils/userInteractions';
 import BashlibError from '../utils/errors/BashlibError';
@@ -20,10 +20,23 @@ interface SourceOptions {
   isDir: boolean
 }
 
+interface FileRetrieval {
+  buffer: Buffer, 
+  contentType: string, 
+  lastModified?: Date
+}
+
+interface ResourceRetrieval {
+  blob: any, 
+  contentType: string, 
+  lastModified?: Date
+}
+
 export interface ICommandOptionsCopy extends ICommandOptions {
   all?: boolean,
   override?: boolean,
   neverOverride?: boolean,
+  compareLastModified?: boolean,
 }
 
 export default async function copy(src: string, dst: string, options?: ICommandOptionsCopy) : Promise<{
@@ -35,6 +48,7 @@ export default async function copy(src: string, dst: string, options?: ICommandO
   commandOptions.all = commandOptions.all || false;
   commandOptions.override = commandOptions.override || false;
   commandOptions.neverOverride = commandOptions.neverOverride || false;
+  commandOptions.compareLastModified = commandOptions.compareLastModified || false; // todo: fix
   
   /**************************
    * Preprocess src and dst *
@@ -193,20 +207,23 @@ export default async function copy(src: string, dst: string, options?: ICommandO
  * UTILITY FUNCTIONS *
  *********************/
 
-async function getLocalSourceFiles(source: SourceOptions, verbose: boolean, all: boolean, options?: { logger?: Logger }): Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
+async function getLocalSourceFiles(source: SourceOptions, verbose: boolean, all: boolean, options?: { logger?: Logger, compareLastModified?: boolean }): Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
   if (source.isDir) {
     let filePathInfos = readLocalDirectoryRecursively(source.path, undefined, {verbose, all} )
     let files = await Promise.all(filePathInfos.files.map(async fileInfo => {
       fileInfo.loadFile = async () => readLocalFile(fileInfo.absolutePath, verbose, options) 
+      fileInfo.lastModified = options?.compareLastModified ? getLocalFileLastModified(source.path) : undefined;
       return fileInfo
     }))
     let aclfiles = await Promise.all(filePathInfos.aclfiles.map(async fileInfo => {
+      fileInfo.lastModified = options?.compareLastModified ? getLocalFileLastModified(source.path) : undefined;
       fileInfo.loadFile = async () => readLocalFile(fileInfo.absolutePath, verbose, options) 
       return fileInfo
     }))
     return { files, aclfiles, directories: filePathInfos.directories }
   } else {
     return { files: [ {
+      lastModified: options?.compareLastModified ? getLocalFileLastModified(source.path) : undefined,
       absolutePath: source.path,
       relativePath: '',
       loadFile: async () => readLocalFile(source.path, verbose, options)
@@ -214,13 +231,14 @@ async function getLocalSourceFiles(source: SourceOptions, verbose: boolean, all:
   }
 }
 
-async function getRemoteSourceFiles(source: SourceOptions, fetch: typeof globalThis.fetch, verbose: boolean, all: boolean, options?: { logger?: Logger }) : Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
+async function getRemoteSourceFiles(source: SourceOptions, fetch: typeof globalThis.fetch, verbose: boolean, all: boolean, options?: { logger?: Logger, compareLastModified?: boolean }) : Promise<{files: FileInfo[], directories: FileInfo[], aclfiles: FileInfo[]}> {
   if (source.isDir) {
     let discoveredResources = await readRemoteDirectoryRecursively(source.path, { fetch, verbose, all})
 
     // Filter out files that return errors (e.g no authentication privileges)
     let files = (await Promise.all(discoveredResources.files.map(async fileInfo => {
       fileInfo.loadFile = async () => readRemoteFile(fileInfo.absolutePath, fetch, verbose, options) 
+      fileInfo.lastModified = await (options?.compareLastModified ? getRemoteResourceLastModified(source.path, fetch) : undefined)
       return fileInfo
     }))).filter(f => f) as FileInfo[]
 
@@ -228,12 +246,14 @@ async function getRemoteSourceFiles(source: SourceOptions, fetch: typeof globalT
     if (all) {
       aclfiles = (await Promise.all(discoveredResources.aclfiles.map(async fileInfo => {
         fileInfo.loadFile = async () => readRemoteFile(fileInfo.absolutePath, fetch, verbose, options) 
+        fileInfo.lastModified = await (options?.compareLastModified ? getRemoteResourceLastModified(source.path, fetch) : undefined)
         return fileInfo
       }))).filter(f => f) as FileInfo[]
     }
     return { files, aclfiles, directories: discoveredResources.directories }
   } else {
     return { files: [ {
+      lastModified: await (options?.compareLastModified ? getRemoteResourceLastModified(source.path, fetch) : undefined),
       absolutePath: source.path,
       relativePath: '',
       loadFile: async () => readRemoteFile(source.path, fetch, verbose, options) 
@@ -242,19 +262,28 @@ async function getRemoteSourceFiles(source: SourceOptions, fetch: typeof globalT
 
 }
 
-function readLocalFile(path: string, verbose: boolean, options?: { logger?: Logger }): { buffer: Buffer, contentType: string} {
+function readLocalFile(path: string, verbose: boolean, options?: { logger?: Logger, compareLastModified?: boolean }): FileRetrieval {
   if (verbose) (options?.logger || console).log('Reading local file:', path)
   const file = fs.readFileSync(path)
-  let contentType = path.endsWith('.acl') || path.endsWith('.meta') ? 'text/turtle': path.endsWith('.acp') ? 'application/ld+json':  mime.lookup(path)
-  return { buffer: file, contentType };
+  const contentType = path.endsWith('.acl') || path.endsWith('.meta') ? 'text/turtle': path.endsWith('.acp') ? 'application/ld+json':  mime.lookup(path)
+  // if (options?.compareLastModified) {
+  //   const lastModified = getLocalFileLastModified(path)
+  //   return { buffer: file, contentType, lastModified };
+  // } else {
+    return { buffer: file, contentType };
+  // }
 }
 
-async function readRemoteFile(path: string, fetch: any, verbose: boolean, options?: { logger?: Logger }) : Promise<{ blob: any, contentType: string}> {
+async function readRemoteFile(path: string, fetch: any, verbose: boolean, options?: { logger?: Logger, compareLastModified?: boolean }) : Promise< ResourceRetrieval > {
   if (verbose) (options?.logger || console).log('Reading remote file:', path)
-  const file = await getFile(path, { fetch })
-  const contentType = await getContentType(file) as string // TODO:: error handling?
-  return { blob: file as any, contentType };
-  
+  const resourceFile = await getFile(path, { fetch })
+  const contentType = await getContentType(resourceFile) as string // TODO:: error handling?
+  // if (options?.compareLastModified) {
+  //   const lastModified = await getRemoteResourceLastModified(path, fetch)
+  //   return { blob: resourceFile as any, contentType, lastModified };
+  // } else {
+    return { blob: resourceFile as any, contentType };
+  // }
 }
 
 async function writeLocalDirectory(path: string, fileInfo: FileInfo, options: ICommandOptionsCopy): Promise<any> {
@@ -276,6 +305,11 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options:
   ensureDirectoryExistence(resourcePath);
   
   let executeWrite = true
+  if (options.compareLastModified) {
+    const targetResourceLastModified = await getLocalFileLastModified(resourcePath)
+    const decision = await compareLastModifiedTimes(fileInfo.lastModified, targetResourceLastModified)
+    executeWrite = decision.write
+  } 
   if (options.neverOverride || !options.override) {
     if (await resourceExists(resourcePath, options.fetch)) { 
       if (options.neverOverride) {
@@ -285,6 +319,7 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options:
       }
     }
   }
+
   if (!executeWrite) {
     if (options.verbose) (options.logger || console).log('Skipping existing local file:', resourcePath)
     return undefined;
@@ -325,7 +360,14 @@ async function writeLocalFile(resourcePath: string, fileInfo: FileInfo, options:
 async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: any, options: ICommandOptionsCopy): Promise<string | undefined> {
   resourcePath = resourcePath.split('$.')[0];
   let executeWrite = true
-  if (options.neverOverride || !options.override) {
+  let executeRequest = true;
+  if (options.compareLastModified) {
+    const targetResourceLastModified = await getRemoteResourceLastModified(resourcePath, options.fetch)
+    const decision = await compareLastModifiedTimes(fileInfo.lastModified, targetResourceLastModified)
+    executeWrite = decision.write
+    executeRequest = decision.request
+  } 
+  if (!executeWrite && executeRequest && (options.neverOverride || !options.override)) {
     if (await resourceExists(resourcePath, fetch)) { 
       if (options.neverOverride) {
         executeWrite = false;
@@ -336,7 +378,7 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
   }
 
   if (!executeWrite) {
-    if (options.verbose) (options.logger || console).log('Skipping existing local file:', resourcePath)
+    if (options.verbose) (options.logger || console).log('Skipping existing remote file:', resourcePath)
     return undefined;
   }
 

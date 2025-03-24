@@ -20,6 +20,7 @@ export default class CopyCommand extends SolidCommand {
       .option('-o, --override', 'Automatically override existing files')
       .option('-n, --never-override', 'Automatically override existing files')
       .option('-v, --verbose', 'Log all read and write operations')
+      .option('-c, --compare-last-modified', 'Skip targets with newer "last-modified" status')
       .action(this.executeCommand)
     
     return program
