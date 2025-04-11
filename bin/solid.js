@@ -19,7 +19,7 @@ initConfig();
 program
   .name('solid')
   .description('Utility toolings for interacting with a Solid server.')
-  .version('0.6.3')
+  .version('0.6.4')
   .enablePositionalOptions()
   .option('-a, --auth <string>', 'token | interactive | request | none - Authentication type (defaults to "request")')
   // .option('-i, --idp <string>', 'URL of the Solid Identity Provider')
