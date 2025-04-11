@@ -363,9 +363,12 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
   let executeRequest = true;
   if (options.compareLastModified) {
     const targetResourceLastModified = await getRemoteResourceLastModified(resourcePath, options.fetch)
-    const decision = await compareLastModifiedTimes(fileInfo.lastModified, targetResourceLastModified)
-    executeWrite = decision.write
-    executeRequest = decision.request
+    // only compare if file exists
+    if (targetResourceLastModified) {
+      const decision = await compareLastModifiedTimes(fileInfo.lastModified, targetResourceLastModified)
+      executeWrite = decision.write
+      executeRequest = decision.request
+    }
   } 
   if (!executeWrite && executeRequest && (options.neverOverride || !options.override)) {
     if (await resourceExists(resourcePath, fetch)) { 
