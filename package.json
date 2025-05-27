@@ -30,7 +30,6 @@
     "commander": "^13.0.0",
     "cross-fetch": "^3.1.5",
     "express": "^4.17.3",
-    "fetch-blob": "^2.1.1",
     "form-urlencoded": "^6.0.6",
     "http-link-header": "^1.0.4",
     "inquirer": "^8.2.4",

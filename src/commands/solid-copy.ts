@@ -389,11 +389,6 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
     if (!fileInfo.loadFile) throw new Error(`Could not load file at location: ${fileInfo.absolutePath}`)
     let fileData = await fileInfo.loadFile();
     if (fileData.buffer) {
-      // const arrayBuffer = toArrayBuffer(fileData.buffer);
-      // console.log('buffer', arrayBuffer, arrayBuffer.byteLength)
-      // let blob = new Blob([fileData.buffer], {type: fileData.contentType})
-      // console.log('blog', blob)
-      // const body = fileData.contentType.startsWith('text/') || fileData.contentType.startsWith('application/') ? fileData.buffer.toString() : blob;
       let res = await fetch(
         resourcePath, 
         {
