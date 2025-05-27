@@ -6,7 +6,6 @@ import { addEnvOptions, changeUrlPrefixes } from '../../utils/shellutils';
 import { discoverAccessMechanism, writeErrorString } from '../../utils/util';
 import chalk from 'chalk';
 import SolidCommand from './SolidCommand';
-import { acp_ess_2, hasAccessibleAcl, WithAcl } from "@inrupt/solid-client";
 const Table = require('cli-table');
 
 export default class PermsCommand extends SolidCommand { 

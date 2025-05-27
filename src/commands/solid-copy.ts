@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { getFile, getContentType, createContainerAt } from "@inrupt/solid-client"
 import { isRemote, isDirectory, FileInfo, ensureDirectoryExistence, fixLocalPath, readRemoteDirectoryRecursively, writeErrorString, isDirectoryContents, resourceExists, getLocalFileLastModified, getRemoteResourceLastModified, compareLastModifiedTimes } from '../utils/util';
-import Blob from 'fetch-blob'
+import { Blob } from "buffer"
 import { requestUserCLIConfirmationDefaultNegative } from '../utils/userInteractions';
 import BashlibError from '../utils/errors/BashlibError';
 import { BashlibErrorMessage } from '../utils/errors/BashlibError';
@@ -389,12 +389,16 @@ async function writeRemoteFile(resourcePath: string, fileInfo: FileInfo, fetch: 
     if (!fileInfo.loadFile) throw new Error(`Could not load file at location: ${fileInfo.absolutePath}`)
     let fileData = await fileInfo.loadFile();
     if (fileData.buffer) {
-      let blob = new Blob([toArrayBuffer(fileData.buffer)], {type: fileData.contentType})
+      // const arrayBuffer = toArrayBuffer(fileData.buffer);
+      // console.log('buffer', arrayBuffer, arrayBuffer.byteLength)
+      // let blob = new Blob([fileData.buffer], {type: fileData.contentType})
+      // console.log('blog', blob)
+      // const body = fileData.contentType.startsWith('text/') || fileData.contentType.startsWith('application/') ? fileData.buffer.toString() : blob;
       let res = await fetch(
         resourcePath, 
         {
           method: 'PUT',
-          body: blob,
+          body: fileData.buffer,
           headers: { 
             'Content-Type': fileData.contentType
           }

@@ -2,8 +2,7 @@ import os from "os";
 import path from "path"
 import copy from "./solid-copy";
 import fs from 'fs';
-import { checkRemoteFileAccess, checkRemoteFileExists, getPodRoot } from "../utils/util";
-import type { Logger } from '../logger';
+import { checkRemoteFileAccess, checkRemoteFileExists } from "../utils/util";
 import { ICommandOptions, setOptionDefaults } from './solid-command';
 import touch from "./solid-touch";
 const mime = require('mime-types');

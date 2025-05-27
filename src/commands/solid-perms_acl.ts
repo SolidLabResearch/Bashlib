@@ -19,7 +19,6 @@ import {
   setGroupResourceAccess, 
   setPublicResourceAccess, 
   hasAccessibleAcl,
-  getFallbackAcl,
   AclDataset,
   saveAclFor,
   WithAccessibleAcl,

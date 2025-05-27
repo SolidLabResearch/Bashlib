@@ -3,7 +3,6 @@ import { generateDpopKeyPair, KeyPair, createDpopHeader, buildAuthenticatedFetch
 import formurlencoded from 'form-urlencoded';
 import { Session } from '@inrupt/solid-client-authn-node';
 import open from 'open';
-import { SessionInfo, IInteractiveAuthOptions, DEFAULTPORT, APPNAME } from './CreateFetch';
 import { removeConfigSession, getConfigCurrentSession, getConfigCurrentWebID, ISessionEntry, setConfigCurrentWebID, setConfigSession } from '../utils/configoptions';
 import chalk from 'chalk';
 import { getUserIdp } from './authenticate';
@@ -11,7 +10,24 @@ import BashlibError from '../utils/errors/BashlibError';
 import { BashlibErrorMessage } from '../utils/errors/BashlibError';
 import crossfetch from 'cross-fetch';
 
-const express = require('express')
+import express from 'express';
+import { Logger } from '../logger';
+
+export interface SessionInfo {
+  fetch: typeof fetch
+  webId?: string
+}
+
+export interface IInteractiveAuthOptions {
+  idp?: string,
+  sessionInfoStorageLocation?: string, // Storage location of session information to reuse in subsequent runs of the application.
+  port?: number, // Used for redirect url of Solid login sequence
+  verbose?: boolean,
+  logger?: Logger,
+}
+
+export const DEFAULTPORT = 3435
+export const APPNAME = "Solid-cli"
 
 export default async function authenticateInteractive(options: IInteractiveAuthOptions) : Promise<SessionInfo> {
 

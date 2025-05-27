@@ -1,7 +1,6 @@
 import { QueryEngine } from '@comunica/query-sparql';
-import { isDirectory, writeErrorString, FileInfo, generateRecursiveListing, isRDFResource, readRemoteDirectoryRecursively, DirInfo } from '../utils/util';
+import { isDirectory, writeErrorString, isRDFResource, readRemoteDirectoryRecursively, DirInfo } from '../utils/util';
 import find from './solid-find';
-import type { Logger } from '../logger';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
 
 export interface ICommandOptionsQuery extends ICommandOptions{

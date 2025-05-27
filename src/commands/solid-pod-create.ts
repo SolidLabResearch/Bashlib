@@ -1,5 +1,3 @@
-import fetch from 'cross-fetch';
-import type { Logger } from '../logger';
 import { setOptionDefaults, ICommandOptions } from './solid-command';
 
 export interface IAccountData {

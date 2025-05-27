@@ -1,6 +1,5 @@
 import { ResourceInfo } from './../utils/util';
 import { createContainerAt } from '@inrupt/solid-client';
-import type { Logger } from '../logger';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
 
 const LDP = "http://www.w3.org/ns/ldp#";

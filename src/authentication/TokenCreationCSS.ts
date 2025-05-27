@@ -1,8 +1,5 @@
-import { Session } from '@inrupt/solid-client-authn-node';
-import { StorageHandler, getOIDCConfig } from '../utils/authenticationUtils';
 import BashlibError from '../utils/errors/BashlibError';
 import { BashlibErrorMessage } from '../utils/errors/BashlibError';
-import { createDpopHeader, generateDpopKeyPair } from '@inrupt/solid-client-authn-core';
 
 const express = require('express')
 

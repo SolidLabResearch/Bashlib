@@ -1,8 +1,7 @@
 import { isDirectory, readRemoteDirectoryRecursively } from '../utils/util';
-import { list } from '..';
+import list from '../commands/solid-list';
 import chalk from 'chalk';
 import { deleteContainer, deleteFile } from '@inrupt/solid-client';
-import type { Logger } from '../logger';
 import { ICommandOptions, setOptionDefaults, IPreparedCommandOptions } from './solid-command';
 
 export interface ICommandOptionsRemove extends ICommandOptions {

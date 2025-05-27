@@ -2,10 +2,9 @@ import { getSolidDataset, getContainedResourceUrlAll, getUrl, getUrlAll, getThin
 import { requestUserIdp } from './userInteractions';
 import type { Logger } from '../logger';
 import * as fs from "fs"
-
-const path = require('path')
-var LinkHeader = require( 'http-link-header' )
-const mime = require('mime-types');
+import * as path from "path"
+import LinkHeader from "http-link-header"
+import * as mime from "mime-types"
 
 export type DirInfo = {
   files: FileInfo[], 
@@ -484,10 +483,10 @@ const parseableExtensions = [
   "rdf",
 ]
 export async function isRDFResource(fileInfo: FileInfo, fetch: any) {
-  let extension: string;
+  let extension: string | boolean;
   if (fileInfo.contentType) {
     extension = mime.extension(fileInfo.contentType)
-    if (parseableExtensions.indexOf(extension) !== -1) return true;
+    if (!!extension && parseableExtensions.indexOf(extension) !== -1) return true;
     return false;
   } 
   for (let extension of parseableExtensions) {
@@ -501,8 +500,9 @@ export async function isRDFResource(fileInfo: FileInfo, fetch: any) {
   const res = await fetch(fileInfo.absolutePath);
   let contentType = res.headers.get('Content-Type')
 
+  const ct = mime.extension(contentType)
   if(!contentType) return false;
-  else if (parseableExtensions.indexOf(mime.extension(contentType)) !== -1) return true;
+  else if (!!ct && parseableExtensions.indexOf(ct) !== -1) return true;
   return false
 }
 

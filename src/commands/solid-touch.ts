@@ -1,4 +1,3 @@
-import { FetchError, getResourceInfo } from "@inrupt/solid-client" 
 import { setOptionDefaults, ICommandOptions } from './solid-command';
 import { resourceExists } from "../utils/util";
 const mime = require('mime-types');

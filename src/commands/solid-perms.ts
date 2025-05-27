@@ -4,7 +4,6 @@ import {
   AccessModes,
 } from '@inrupt/solid-client';
 import { writeErrorString } from '../utils/util';
-import type { Logger } from '../logger';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
 
 export interface ICommandOptionsPermissions extends ICommandOptions { }

@@ -1,5 +1,4 @@
 import fs from 'fs';
-import type { Logger } from '../logger';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
 
 interface ICommandOptionsFetch extends ICommandOptions {

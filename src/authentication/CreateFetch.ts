@@ -2,9 +2,6 @@ import authenticateInteractive from "./AuthenticationInteractive";
 import { authenticateToken } from "./AuthenticationToken";
 import type { Logger } from '../logger';
 
-export const DEFAULTPORT = 3435
-export const APPNAME = "Solid-cli"
-
 export interface IInteractiveAuthOptions {
   idp?: string,
   sessionInfoStorageLocation?: string, // Storage location of session information to reuse in subsequent runs of the application.

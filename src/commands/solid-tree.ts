@@ -1,7 +1,6 @@
 import find from './solid-find'
 import { isDirectory, FileInfo, writeErrorString } from '../utils/util';
 import chalk from 'chalk';
-import type { Logger } from '../logger';
 import { ICommandOptions, setOptionDefaults } from './solid-command';
 
 export interface ICommandOptionsTree extends ICommandOptions {
